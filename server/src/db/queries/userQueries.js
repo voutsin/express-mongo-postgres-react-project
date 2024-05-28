@@ -1,0 +1,1 @@
+export const findAllUsersSQL = 'SELECT * FROM users';
