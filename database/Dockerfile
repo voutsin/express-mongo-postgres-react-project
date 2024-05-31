@@ -1,2 +1,3 @@
 FROM postgres
-COPY users.sql /docker-entrypoint-initdb.d/
+COPY entities.sql /docker-entrypoint-initdb.d/
+# COPY db_init.sql /docker-entrypoint-initdb.d/

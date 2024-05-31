@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 const MessageSchema = new mongoose.Schema({
   groupId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
-    // ref: 'MessageGroup'
+    ref: 'MessageGroup'
   },
   senderId: {
     type: Number, // Reference to users table in PostgreSQL
