@@ -1,32 +1,136 @@
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
+import { userIsTheCurrent, usernameExists } from './commonMethods.js';
+import { findOtherUsersByEmail } from '../db/queries/userQueries.js';
 import { postgresQuery } from '../db/postgres.js';
-import { findByEmail, findByUserName } from '../db/queries/userQueries.js';
+import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
+import { FriendStatus } from '../common/enums.js';
+import { getActiveUser } from '../common/utils.js';
 
-export const registerUserValidations = [
-      // Check if the email is valid
-      body('email').isEmail().withMessage('Email is invalid')
-        // Custom validator for checking if email already exists
-        .custom(async (email) => {
-          if (await emailExists(email)) {
-            throw new Error('Email already in use');
-          }
-        }),
-      // Password must be at least 5 chars long
-      body('password').isLength({ min: 5 }).withMessage('Password must be at least 5 characters long'),
-      // check if username already exists
-      body('username').custom(async username => {
-        if (await usernameExists(username)) {
-            throw new Error('Username already in use');
+export const updateUserValidations = [
+  // check if username already exists
+  body('username')
+    .exists().withMessage('Username is required')
+    .notEmpty().withMessage('Username cannot be empty')
+    .custom(async (username, { req }) => {
+      if (!(await usernameExists(username))) {
+          throw new Error('Username does not exist');
+      }
+      if (!userIsTheCurrent(req, username, 'username')) {
+        throw new Error('Access denied for user ' + username);
+      }
+    }),
+  // Check if the email is valid
+  body('email')
+    .exists().withMessage('Email is required')
+    .notEmpty().withMessage('Email cannot be empty')
+    .custom(async (email, { req }) => {
+      if (await emailEditCheck(req)) {
+        throw new Error('Email already in use');
+      }
+    }),
+  body('password')
+    .exists().withMessage('Password is required')
+    .notEmpty().withMessage('Password cannot be empty')
+    .isLength({ min: 5 }).withMessage('Password must be at least 5 characters long'),
+  body('name')
+    .exists().withMessage('Name is required')
+    .notEmpty().withMessage('Name cannot be empty'),
+]
+
+export const requestFriendValidations = [
+  // check if username already exists
+  param('friendId')
+    .exists().withMessage('Friend ID is required')
+    .notEmpty().withMessage('Friend ID cannot be empty')
+    .custom(async (friendId, { req }) => {
+      if (!(await usernameExists(friendId, 'id'))) {
+          throw new Error('Friend ID does not exist');
+      }
+      if (userIsTheCurrent(req, friendId, 'id')) {
+        throw new Error('Friend cannot be the same with current user');
+      }
+      const friendships = await alreadyFriends(req, friendId);
+      if (friendships.length > 0) {
+        const friendshipStatus = friendships[0].status;
+        if (FriendStatus.ACCEPTED === friendshipStatus) {
+          throw new Error('You are already friends with this user.');
+        } else if (FriendStatus.PENDING === friendshipStatus) {
+          throw new Error('You have already send request to this user.');
+        } else if (FriendStatus.REQUESTED === friendshipStatus) {
+          throw new Error('You have already a request from this user.');
+        } else {
+          throw new Error('Your friendship with this user has been blocked.');
         }
-      })
-];
+      }
+    }),
+]
 
-const emailExists = async email => {
-    const res = await postgresQuery(findByEmail, [email]);
-    return res.rows.length > 0;
+export const acceptFriendValidations = [
+  param('friendId')
+    .exists().withMessage('Friend ID is required')
+    .notEmpty().withMessage('Friend ID cannot be empty')
+    .custom(async (friendId, { req }) => {
+      if (!(await usernameExists(friendId, 'id'))) {
+          throw new Error('Friend ID does not exist');
+      }
+      if (userIsTheCurrent(req, friendId, 'id')) {
+        throw new Error('Friend cannot be the same with current user');
+      }
+      const friendships = await alreadyFriends(req, friendId);
+      if (friendships.length > 0) {
+        const friendshipStatus = friendships[0].status;
+        if (FriendStatus.REQUESTED !== friendshipStatus) {
+          throw new Error('Cannot accept friendship with this user.');
+        } 
+      } else {
+        throw new Error('There is no requested friendship with this user.');
+      }
+    }),
+]
+
+export const deleteFriendValidations = [
+  param('friendId')
+    .exists().withMessage('Friend ID is required')
+    .notEmpty().withMessage('Friend ID cannot be empty')
+    .custom(async (friendId, { req }) => {
+      if (!(await usernameExists(friendId, 'id'))) {
+          throw new Error('Friend ID does not exist');
+      }
+      if (userIsTheCurrent(req, friendId, 'id')) {
+        throw new Error('Friend cannot be the same with current user');
+      }
+      const friendships = await alreadyFriends(req, friendId);
+      if (friendships.length === 0) {
+        throw new Error('There is no friendship with this user.');
+      }
+    }),
+]
+
+export const blockFriendValidations = [
+  param('friendId')
+    .exists().withMessage('Friend ID is required')
+    .notEmpty().withMessage('Friend ID cannot be empty')
+    .custom(async (friendId, { req }) => {
+      if (!(await usernameExists(friendId, 'id'))) {
+          throw new Error('Friend ID does not exist');
+      }
+      if (userIsTheCurrent(req, friendId, 'id')) {
+        throw new Error('Friend cannot be the same with current user');
+      }
+    }),
+]
+
+const emailEditCheck = async req => {
+  const { username, email } = req.body;
+  const res = await postgresQuery(findOtherUsersByEmail, [email, username]);
+  return res.rows.length > 0;
 }
 
-const usernameExists = async username => {
-    const res = await postgresQuery(findByUserName, [username]);
-    return res.rows.length > 0;
+const alreadyFriends = async (req, friendId) => {
+  const activeUser = getActiveUser(req);
+  if (activeUser == null) {
+    throw new Error('No active user found');
+  }
+  const res = await postgresQuery(findFriendshipByIds, [activeUser.userId, friendId]);
+  return res.rows;
 }

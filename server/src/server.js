@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import authRouter from './routes/auth.js';
 import cookieParser from 'cookie-parser';
 import { authenticate } from './validators/authenticate.js';
+import friendsRouter from './routes/friends.js';
 // import WebSocket, {WebSocketServer} from 'ws';
 
 dotenv.config();
@@ -17,7 +18,7 @@ app.use(express.json());
 // Use the cookie-parser middleware
 app.use(cookieParser());
 
-const mongoDb = connectToMongoDB();
+connectToMongoDB();
 
 app.use('/auth', authRouter);
 
@@ -25,6 +26,7 @@ app.use('/auth', authRouter);
 app.use(authenticate);
 // all the routes after authenticate use will use this middleware
 app.use('/users', usersRouter);
+app.use('/friends', friendsRouter);
 app.use('/messages', messagesRouter);
 
 const port = process.env.SERVER_PORT;

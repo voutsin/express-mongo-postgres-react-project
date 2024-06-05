@@ -1,21 +1,13 @@
 import express from "express";
-import dotenv from "dotenv";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { postgresQuery } from "../db/postgres.js";
 import { findByUserName } from "../db/queries/userQueries.js";
 import UserController from "../controller/UserController.js";
-import { registerUserValidations } from "../validators/userValidator.js";
-
-dotenv.config();
+import { registerUserValidations } from "../validators/authValidator.js";
+import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY } from "../common/utils.js";
 
 const authRouter = express.Router();
-
-export const ACCESS_TOKEN_EXPIRE_TIME = '10s';
-export const REFRESH_TOKEN_EXPIRE_TIME = '1d';
-export const SECRET_KEY = process.env.TOKEN_SECRET;
-export const ACCESS_TOKEN_COOKIE = 'accessToken';
-export const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
 // login
 authRouter.post('/login', async (req, res, next) => {

@@ -6,7 +6,8 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     profile_pic VARCHAR(255),
     displayed_name VARCHAR(255) NOT NULL,
-    description VARCHAR(255)
+    description VARCHAR(255),
+    active INT NOT NULL DEFAULT 1
 );
 INSERT INTO users (
     username,

@@ -1,4 +1,4 @@
-import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, SECRET_KEY } from "../routes/auth.js";
+import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, SECRET_KEY } from "../common/utils.js";
 import jwt from 'jsonwebtoken';
 
 export const authenticate = (req, res, next) => {
