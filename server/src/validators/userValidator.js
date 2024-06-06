@@ -120,6 +120,18 @@ export const blockFriendValidations = [
     }),
 ]
 
+export const findUserByIdValidations = [
+  param('id')
+    .exists().withMessage('User id is required')
+    .notEmpty().withMessage('User id cannot be empty'),
+]
+
+export const searchUserValidations = [
+  param('text')
+    .exists().withMessage('Search text is required')
+    .notEmpty().withMessage('Search text cannot be empty'),
+]
+
 const emailEditCheck = async req => {
   const { username, email } = req.body;
   const res = await postgresQuery(findOtherUsersByEmail, [email, username]);

@@ -2,7 +2,7 @@ import { FriendStatus } from "../common/enums.js";
 import { getActiveUser } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
 import { findAllFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship } from "../db/queries/friendsQueries.js";
-import { findAllUsersSQL, findUserById, insertNewUser, updateUserSQL } from "../db/queries/userQueries.js";
+import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, searchUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
 import { friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
 import { validationResult } from 'express-validator';
 
@@ -39,16 +39,11 @@ const registerNewUser = async (req, res) => {
 
 const findByUserId = async (req, res) => {
   try {
-    if (req.params == null || req.params.id == null) {
-      const error = {
-          type: "field",
-          value: null,
-          msg: "User ID not defined",
-          path: "id",
-      }
-      return res.status(400).json({ errors: [error] });
-    } 
-
+    // check validations
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     const params = Object.values(req.params).map(param => parseInt(param));
     const result = await postgresQuery(findUserById, params);
     if (result.rows.length > 0) {
@@ -240,6 +235,78 @@ const blockUser = async (req, res) => {
   }
 }
 
+const deactivateProfile = async (req, res) => {
+  try {
+    const activeUser = getActiveUser(req);
+    if (activeUser == null) {
+      throw new Error('No active user found');
+    }
+
+    // deactive user
+    const result = await postgresQuery(deactivateUser, [activeUser.id]);
+    if (result) {
+      res.json(result.rows.map(result => userToResDto(result)));
+      res.status(200);
+    }
+  } catch(e) {
+    console.log(e);
+    res.status(500).send('Internal Server Error: ', e);
+  }
+}
+
+const searchUserByCriteria = async (req, res) => {
+  try {
+    // Handle validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const params = Object.values(req.params);
+    const results = await postgresQuery(`SELECT * FROM users WHERE (username ILIKE '%${params[0]}%' OR email ILIKE '%${params[0]}%' OR displayed_name ILIKE '%${params[0]}%') AND active = 1;`)
+    if (results) {
+      res.json(results.rows.map(result => userToResDto(result)));
+      res.status(200);
+    }
+  } catch(e) {
+    console.log(e);
+    res.status(500).send('Internal Server Error: ', e);
+  }
+}
+
+const editProfilePic = async (req, res) => {
+  try {
+    // Handle validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const profilePicPath = req.file ? req.file.path : null;
+    if (!profilePicPath) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const activeUser = getActiveUser(req);
+    if (activeUser == null) {
+      throw new Error('No active user found');
+    }
+
+    const params = [activeUser.id, profilePicPath]
+    const results = await postgresQuery(updateProfilePic, params)
+    
+    // TODO: add post here
+
+    if (results) {
+      res.json(results.rows.map(result => userToResDto(result)));
+      res.status(200);
+    }
+  } catch(e) {
+    console.log(e);
+    res.status(500).send('Internal Server Error: ', e);
+  }
+}
+
 export default {
     findAll,
     registerNewUser,
@@ -250,4 +317,7 @@ export default {
     acceptFriendship,
     deleteFriend,
     blockUser,
+    deactivateProfile,
+    searchUserByCriteria,
+    editProfilePic,
 };

@@ -35,7 +35,7 @@ export const userToResDto = user => {
         profilePictureUrl: user.profile_pic,
         name: user.displayed_name,
         description: user.description,
-        active: user.active,
+        active: Boolean(user.active),
     }
 }
 

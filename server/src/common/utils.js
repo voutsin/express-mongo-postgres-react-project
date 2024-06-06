@@ -45,3 +45,18 @@ export const insertMultipleStatements = async statements => {
     throw new Error('Error while inserting: ', e);
   }
 }
+
+export const addActiveUserIdInReq = (req, res, next) => {
+  try {
+    const activeUser = getActiveUser(req);
+    if (activeUser == null) {
+      throw new Error('No active user found');
+    }
+
+    req.userId = activeUser.id;
+    next();
+  } catch (e) {
+    console.log(e);
+    return res.status(403).send('Something went wrong retrieving user id.');
+  }
+}
