@@ -37,7 +37,6 @@ export const insertMultipleStatements = async statements => {
     await statements.forEach( async statement => {
       const res = await postgresQuery(statement.SQL, statement.params);
       if (res) {
-        console.log("res: ", res.rows);
         results.push(res.rows[0]);
       }
     })
@@ -60,3 +59,13 @@ export const addActiveUserIdInReq = (req, res, next) => {
     return res.status(403).send('Something went wrong retrieving user id.');
   }
 }
+
+export const sortResultsByCreatedDate = (results, desc = true) => {
+  const sortedResults = [...results];
+  sortedResults.sort(function(a,b){
+    return desc 
+      ? new Date(b.createdAt) - new Date(a.createdAt)
+      : new Date(a.createdAt) - new Date(b.createdAt);
+  });
+  return sortedResults;
+} 

@@ -9,3 +9,9 @@ export const FriendStatus = {
     ACCEPTED: '3',
     BLOCKED: '4'
 }
+
+export const PostType = {
+    PROFILE_PIC: 1,
+    STATUS: 2,
+    MULTIMEDIA: 3,
+}

@@ -7,14 +7,28 @@ import authRouter from './routes/auth.js';
 import cookieParser from 'cookie-parser';
 import { authenticate } from './validators/authenticate.js';
 import friendsRouter from './routes/friends.js';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import postsRouter from './routes/posts.js';
+import bodyParser from 'body-parser';
 // import WebSocket, {WebSocketServer} from 'ws';
 
 dotenv.config();
 
 const app = express();
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+// // Middleware to parse JSON bodies
+// app.use(express.json());
+// // Middleware for parsing form-data bodies
+// app.use(express.urlencoded({ extended: true }));
+
+// for parsing application/json
+app.use(bodyParser.json()); 
+
+// for parsing application/xwww-
+app.use(bodyParser.urlencoded({ extended: true })); 
+//form-urlencoded
+
 // Use the cookie-parser middleware
 app.use(cookieParser());
 
@@ -22,12 +36,20 @@ connectToMongoDB();
 
 app.use('/auth', authRouter);
 
+// Serve static files from the "uploads" directory
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+app.use('/uploads', express.static(join(__dirname, 'uploads')));
+
 // apply authenticate jwt token middleware
 app.use(authenticate);
+
 // all the routes after authenticate use will use this middleware
 app.use('/users', usersRouter);
 app.use('/friends', friendsRouter);
 app.use('/messages', messagesRouter);
+app.use('/posts', postsRouter);
 
 const port = process.env.SERVER_PORT;
 const server = app.listen(port, () => {
