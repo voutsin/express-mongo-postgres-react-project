@@ -47,9 +47,6 @@ export const findFeedsForUser = async (friendsIds, pageSize, skip) => {
           .skip(skip)
           .limit(pageSize);
         
-        console.log('feeds: ', feeds)
-        console.log('totalRecords: ', totalRecords)
-
         return {
             totalRecords,
             feeds,

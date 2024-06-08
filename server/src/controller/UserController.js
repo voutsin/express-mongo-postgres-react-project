@@ -1,10 +1,14 @@
-import { FriendStatus } from "../common/enums.js";
+import { FriendStatus, PostType } from "../common/enums.js";
 import { getActiveUser } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
 import { findAllFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship } from "../db/queries/friendsQueries.js";
-import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, searchUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
+import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
 import { friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
 import { validationResult } from 'express-validator';
+import { unlink } from 'fs';
+import { createNewPostSQL } from '../db/queries/postsQueries.js';
+import { postReqDtoToPost, postToResDto } from '../mapper/postMapper.js';
+import { insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
 
 const findAll = async (req, res) => {
     try {
@@ -279,6 +283,13 @@ const editProfilePic = async (req, res) => {
     // Handle validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      // If there are validation errors, respond with errors and delete the uploaded file
+      if (req.file) {
+        // Optionally, delete the uploaded file if validation fails
+        unlink(req.file.path, (err) => {
+          if (err) console.error('Failed to delete file:', err);
+        });
+      }
       return res.status(400).json({ errors: errors.array() });
     }
 
@@ -295,10 +306,26 @@ const editProfilePic = async (req, res) => {
     const params = [activeUser.id, profilePicPath]
     const results = await postgresQuery(updateProfilePic, params)
     
-    // TODO: add post here
+    // add user post about new profile pic
+    const finalBody = {
+        userId: parseInt(activeUser.id),
+        content: `New Profile picture for user ${activeUser.username}`,
+        postType: PostType.PROFILE_PIC,
+        mediaUrl: profilePicPath,
+    }
+
+    const postParams = Object.values(postReqDtoToPost(finalBody));
+    const postResult = await postgresQuery(createNewPostSQL, postParams);
+
+    // add post to feed
+    const newFeed = await insertNewFeedForPost(postResult.rows[0], parseInt(activeUser.id));
 
     if (results) {
-      res.json(results.rows.map(result => userToResDto(result)));
+      res.json(results.rows.map(result => ({
+        user: userToResDto(result),
+        post: postToResDto(postResult.rows[0]),
+        feed: newFeed,
+      })));
       res.status(200);
     }
   } catch(e) {

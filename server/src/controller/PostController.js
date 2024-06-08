@@ -89,7 +89,7 @@ const addNewPost = async (req, res) => {
         const result = await postgresQuery(createNewPostSQL, params);
 
         // add to feed
-        insertNewFeedForPost(result.rows[0], req.userId);
+        await insertNewFeedForPost(result.rows[0], req.userId);
 
         res.json(result.rows.map(row => postToResDto(row)));
     } catch (e) {
