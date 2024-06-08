@@ -33,6 +33,8 @@ services:
   mongo:
     image: mongo
     container_name: ${MONGO_HOST}
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB}
     restart: always
     env_file: .env
     ports:

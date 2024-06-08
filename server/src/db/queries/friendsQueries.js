@@ -3,6 +3,10 @@ import { FriendStatus } from "../../common/enums.js";
 // FIND
 export const findAllFriendshipsByUserId = `SELECT * FROM friends WHERE user_id = $1;`;
 export const findFriendshipByIds = `SELECT * FROM friends WHERE user_id = $1 AND friend_id = $2;`;
+export const findAllActiveFriendshipsByUserId = 
+    `SELECT f.* FROM friends AS f 
+    JOIN users AS u ON u.id = f.friend_id AND active = 1 
+    WHERE f.user_id = $1;`;
 
 // INSERT 
 export const insertNewFriendshipRequest = 

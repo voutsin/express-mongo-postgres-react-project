@@ -86,17 +86,3 @@ export const updatePostValidations = async req => {
         message: errorMessage,
     };
 }
-
-export const findUserFeedValidations = [
-    param('id')
-      .exists().withMessage('User id is required')
-      .notEmpty().withMessage('User id cannot be empty')
-      .custom(async (id, { req }) => {
-        if (!(await usernameExists(id, 'id'))) {
-            throw new Error('User id does not exist');
-        }
-        if (!userIsTheCurrent(req, id, 'id')) {
-            throw new Error('Cannot access posts feed for this user.');
-        }
-      }),
-]

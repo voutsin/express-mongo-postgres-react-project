@@ -1,12 +1,11 @@
 import { validationResult } from 'express-validator';
 import { unlink, access, constants } from 'fs';
-import { join } from 'path';
 import { postgresQuery } from '../db/postgres.js';
 import { createNewPostSQL, deletePostSQL, findAllPostsByUserIdSQL, findAllPostsSQL, findPostByIdSQL, updatePostSQL } from '../db/queries/postsQueries.js';
 import { postReqDtoToPost, postToResDto, updatePostReqDtoToPost } from '../mapper/postMapper.js';
 import { PostType } from '../common/enums.js';
 import { addNewPostValidations, updatePostValidations } from '../validators/postValidator.js';
-import { sortResultsByCreatedDate } from '../common/utils.js';
+import { deleteFeedByPostId, insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
 
 const findAllPosts = async (req, res) => {
     try {
@@ -88,6 +87,10 @@ const addNewPost = async (req, res) => {
 
         const params = Object.values(postReqDtoToPost(finalBody));
         const result = await postgresQuery(createNewPostSQL, params);
+
+        // add to feed
+        insertNewFeedForPost(result.rows[0], req.userId);
+
         res.json(result.rows.map(row => postToResDto(row)));
     } catch (e) {
         console.error(e);
@@ -145,11 +148,21 @@ const deletePost = async (req, res) => {
         const result = await postgresQuery(deletePostSQL, params);
 
         if (result) {
+            const post = result.rows[0];
+
+            // TODO: delete comments by postId
+
+            // TODO: delete reactions by postId
+
+
+            // delete from feed
+            await deleteFeedByPostId(post.id);
+            
             // delete files associated with the post if present
             const deletedPost = result.rows[0];
             const filePath = deletedPost.media_url;
 
-            access(filePath, constants.F_OK, (err) => {
+            filePath && access(filePath, constants.F_OK, (err) => {
                 if (err) {
                   return res.status(404).send('File not found');
                 }
@@ -169,46 +182,6 @@ const deletePost = async (req, res) => {
     }
 }
 
-const findUserPostFeed = async (req, res) => {
-    try {
-        // check validations
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-        }
-
-        const params = Object.values(req.params);
-        let results = [];
-
-        // add posts
-        const postsQuery = await postgresQuery(findAllPostsByUserIdSQL, params);
-        const posts = postsQuery.rows.map(row => postToResDto(row));
-
-        // add comments
-        const comments = [];
-        
-
-        // add reactions
-        const reactions = [];
-
-        results = [
-            ...results,
-            ...posts,
-            ...comments,
-            ...reactions,
-        ];
-
-        // sort by created_at column
-        const sortedResults = sortResultsByCreatedDate(results);
-
-        // return sorted
-        res.json(sortedResults);
-    } catch (e) {
-        console.error(e);
-        res.status(500).send('Internal Server Error: ', e);
-    }
-}
-
 export default {
     findAllPosts,
     findPostById,
@@ -216,5 +189,4 @@ export default {
     addNewPost,
     updatePost,
     deletePost,
-    findUserPostFeed,
 }

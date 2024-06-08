@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.7",
+    "@types/underscore": "^1.11.15",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
@@ -40,6 +41,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemon": "^3.1.1",
     "pg": "^8.11.5",
+    "underscore": "^1.13.6",
     "ws": "^8.17.0"
   },
   "dependencies": {

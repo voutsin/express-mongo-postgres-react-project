@@ -15,3 +15,9 @@ export const PostType = {
     STATUS: 2,
     MULTIMEDIA: 3,
 }
+
+export const FeedTypes = {
+    POST: 1,
+    COMMENT: 2,
+    REACTION: 3,
+}
