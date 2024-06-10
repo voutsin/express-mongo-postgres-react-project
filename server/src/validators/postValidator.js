@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { param } from 'express-validator';
 import { userIsFriend, userIsTheCurrent, usernameExists } from './commonMethods.js';
 import { getActiveUser } from '../common/utils.js';
 import { postgresQuery } from '../db/postgres.js';

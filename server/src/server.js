@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 import postsRouter from './routes/posts.js';
 import bodyParser from 'body-parser';
 import feedsRouter from './routes/feeds.js';
+import commentsRouter from './routes/comments.js';
 // import WebSocket, {WebSocketServer} from 'ws';
 
 dotenv.config();
@@ -52,6 +53,7 @@ app.use('/friends', friendsRouter);
 app.use('/messages', messagesRouter);
 app.use('/posts', postsRouter);
 app.use('/feed', feedsRouter);
+app.use('/comments', commentsRouter);
 
 const port = process.env.SERVER_PORT;
 const server = app.listen(port, () => {

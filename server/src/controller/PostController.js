@@ -2,7 +2,7 @@ import { validationResult } from 'express-validator';
 import { unlink, access, constants } from 'fs';
 import { postgresQuery } from '../db/postgres.js';
 import { createNewPostSQL, deletePostSQL, findAllPostsByUserIdSQL, findAllPostsSQL, findPostByIdSQL, updatePostSQL } from '../db/queries/postsQueries.js';
-import { postReqDtoToPost, postToResDto, updatePostReqDtoToPost } from '../mapper/postMapper.js';
+import { detailedPostToResDto, postReqDtoToPost, postToResDto, updatePostReqDtoToPost } from '../mapper/postMapper.js';
 import { PostType } from '../common/enums.js';
 import { addNewPostValidations, updatePostValidations } from '../validators/postValidator.js';
 import { deleteFeedByPostId, insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
@@ -31,7 +31,7 @@ const findPostById = async (req, res) => {
         }
         const params = Object.values(req.params);
         const result = await postgresQuery(findPostByIdSQL, params);
-        res.json(result.rows.map(row => postToResDto(row)));
+        res.json( await Promise.all(result.rows.map(async row => await detailedPostToResDto(row))));
     } catch (e) {
         console.error(e);
         res.status(500).send('Internal Server Error: ', e);
