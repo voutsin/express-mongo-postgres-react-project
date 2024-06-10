@@ -86,6 +86,8 @@ const deleteComment = async (req, res) => {
         if (!results) {
             throw new Error('Error deleting comment.')
         }
+        
+        // TODO: delete reactions
 
         const lastComment = results.rows[0];
         // delete from feed

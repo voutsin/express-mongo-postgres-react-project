@@ -24,3 +24,4 @@ export const deleteCommentSQL =
       AND id <> (SELECT id FROM Deleted) 
     ORDER BY created_at DESC 
     LIMIT 1;`;
+export const deleteCommentsByPostId = `DELETE FROM comments WHERE post_id = $1;`;

@@ -38,9 +38,11 @@ export const userIsFriend = async (req, userId) => {
     return activeFriendships && activeFriendships.length > 0;
 }
 
-export const canAccessPost = async (activeUserId, postId) => {
+export const canAccessPost = async (activeUserId, postId, postUserId) => {
     const postResult = await postgresQuery(userCanAccessPostSQL, [activeUserId, postId]);
-    return postResult && postResult.rows.length > 0 ? postResult.rows[0] : false;
+    const isFriendPost = postResult && postResult.rows.length > 0;
+    const isActiveUserPost = parseInt(activeUserId) === parseInt(postUserId);
+    return isFriendPost || isActiveUserPost;
 }
 
 export const postExists = async postId => {

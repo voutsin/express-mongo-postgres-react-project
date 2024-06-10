@@ -18,7 +18,7 @@ export const commentToResDto = comment => {
 export const detailedCommentToResDto = async comment => {
     const userResults = await postgresQuery(findUserById, [comment.user_id]);
     const postResults = await postgresQuery(findPostByIdSQL, [comment.post_id]);
-    // add reactions
+    // TODO: add reactions
     // const reactionResults = await postgresQuery('', [comment.id]);
     return {
         id: comment.id,
@@ -26,6 +26,7 @@ export const detailedCommentToResDto = async comment => {
         createdAt: comment.created_at,
         post: postResults ? await detailedPostToResDto(postResults.rows[0]) || null : null,
         user: userResults ? userToResDto(userResults.rows[0]) || null : null,
+        // TODO:
         // reactions: reactionResults ? userToResDto(reactionResults.rows) || [] : [],
     }
 }
@@ -33,7 +34,7 @@ export const detailedCommentToResDto = async comment => {
 // for post
 export const commentToResDtoForPost = async comment => {
     const userResults = await postgresQuery(findUserById, [comment.user_id]);
-    // add reactions
+    // TODO: add reactions
     // const reactionResults = await postgresQuery('', [comment.id]);
     return {
         id: comment.id,
@@ -41,6 +42,7 @@ export const commentToResDtoForPost = async comment => {
         createdAt: comment.created_at,
         postId: comment.post_id,
         user: userResults ? userToResDto(userResults.rows[0]) || null : null,
+        // TODO:
         // reactions: reactionResults ? userToResDto(reactionResults.rows) || [] : [],
     }
 }

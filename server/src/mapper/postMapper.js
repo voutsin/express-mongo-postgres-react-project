@@ -19,6 +19,7 @@ export const postToResDto = post => {
 export const detailedPostToResDto = async post => {
     const userResults = await postgresQuery(findUserById, [post.user_id]);
     const commentResults = await postgresQuery(findCommentsByPostId, [post.id]);
+    // TODO:
     // const reactionResults = await postgresQuery(findUserById, [post.user_id]);
 
     return {
@@ -29,6 +30,7 @@ export const detailedPostToResDto = async post => {
         createdAt: post.created_at,
         postType: post.post_type,
         comments:  await Promise.all(commentResults.rows.map(async comment => await commentToResDtoForPost(comment))),
+        // TODO:
         // reactions: reactionResults.rows,
     }
 }

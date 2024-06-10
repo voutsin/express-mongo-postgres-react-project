@@ -7,10 +7,11 @@ export const addNewCommentValidations = [
       .exists().withMessage('Post id is required')
       .notEmpty().withMessage('Post id cannot be empty')
       .custom(async (postId, { req }) => {
-        if (!(await postExists(postId))) {
+        const post = await postExists(postId);
+        if (!post) {
             throw new Error('Cannot find post with this id.');
         }
-        if (!(await canAccessPost(req.userId, postId))) {
+        if (!(await canAccessPost(req.userId, postId, post.user_id))) {
             throw new Error('Cannot access post. You must be friends with user.');
         }
       }),

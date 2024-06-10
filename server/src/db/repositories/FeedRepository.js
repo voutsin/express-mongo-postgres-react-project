@@ -24,6 +24,7 @@ export const insertNewFeedForPost = async (post, userId) => {
 
 export const deleteFeedByPostId = async postId => {
     try {
+        // with postId in content -> will be deleted posts, comments, reactions feeds
         const result = await Feed.deleteMany({ 'content.postId': postId });
         // Check how many feeds were deleted
         if (result.deletedCount === 0) {
@@ -131,6 +132,8 @@ export const updateCommentFeed = async comment => {
 
 export const deleteCommentFeed = async (previousComment, oldCommentId) => {
     try {
+        // TODO: delete reactions feeds for this comment
+
         if (previousComment) {
             const {
                 id,

@@ -6,6 +6,7 @@ import { detailedPostToResDto, postReqDtoToPost, postToResDto, updatePostReqDtoT
 import { PostType } from '../common/enums.js';
 import { addNewPostValidations, updatePostValidations } from '../validators/postValidator.js';
 import { deleteFeedByPostId, insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
+import { deleteCommentsByPostId } from '../db/queries/commentsQueries.js';
 
 const findAllPosts = async (req, res) => {
     try {
@@ -145,21 +146,22 @@ const deletePost = async (req, res) => {
         }
 
         const params = Object.values(req.params);
+
+        // delete comments by postId
+        await postgresQuery(deleteCommentsByPostId, [req.params.id]);
+
+        // TODO: delete reactions by postId
+
+        // delete post
         const result = await postgresQuery(deletePostSQL, params);
 
         if (result) {
-            const post = result.rows[0];
-
-            // TODO: delete comments by postId
-
-            // TODO: delete reactions by postId
-
+            const deletedPost = result.rows[0];
 
             // delete from feed
-            await deleteFeedByPostId(post.id);
+            await deleteFeedByPostId(deletedPost.id);
             
             // delete files associated with the post if present
-            const deletedPost = result.rows[0];
             const filePath = deletedPost.media_url;
 
             filePath && access(filePath, constants.F_OK, (err) => {
