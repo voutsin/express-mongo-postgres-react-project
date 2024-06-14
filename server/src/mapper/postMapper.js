@@ -1,4 +1,4 @@
-import { findDetailedLists, findReactions, findUsers, mapComments, mapPosts } from "./utils.js";
+import { findDetailedLists } from "./utils.js";
 
 export const postToResDto = post => {
     return {
@@ -37,8 +37,4 @@ export const updatePostReqDtoToPost = req => {
         media_url: req.mediaUrl,
         post_type: parseInt(req.postType),
     }
-}
-
-export const postForCommentResDto = (post, users) => {
-    
 }

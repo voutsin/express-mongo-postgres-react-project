@@ -1,5 +1,5 @@
 import { param } from 'express-validator';
-import { userIsTheCurrent, usernameExists } from './commonMethods.js';
+import { postExists, userIsTheCurrent, usernameExists } from './commonMethods.js';
 import { getActiveUser } from '../common/utils.js';
 import { postgresQuery } from '../db/postgres.js';
 import { findPostByIdSQL } from '../db/queries/postsQueries.js';
@@ -8,7 +8,12 @@ import { PostType } from '../common/enums.js';
 export const findPostValidations = [
   param('id')
     .exists().withMessage('Post id is required')
-    .notEmpty().withMessage('Post id cannot be empty'),
+    .notEmpty().withMessage('Post id cannot be empty')
+    .custom(async id => {
+        if (!(await postExists(id))) {
+            throw new Error('Post does not exist');
+        }
+    }),
 ]
 
 export const findUserPostsValidations = [

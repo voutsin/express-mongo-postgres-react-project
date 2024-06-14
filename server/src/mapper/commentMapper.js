@@ -1,9 +1,4 @@
-import { postgresQuery } from "../db/postgres.js"
-import { findPostByIdSQL } from "../db/queries/postsQueries.js";
-import { findUserById } from "../db/queries/userQueries.js";
-import { userToResDto } from "./userMapper.js";
-import { uniq } from 'underscore';
-import { findDetailedLists, findReactions, findUsers, mapComments, mapPosts } from "./utils.js";
+import { findDetailedLists } from "./utils.js";
 
 export const commentToResDto = comment => {
     return {
@@ -32,6 +27,7 @@ export const detailedCommentToResDto = async comment => {
         user: users.find(user => user.id === comment.user_id) || null,
         // add reactions
         reactions: reactions.filter(reaction => reaction.commentId === comment.id),
+        // TODO: replies
     }
 }
 

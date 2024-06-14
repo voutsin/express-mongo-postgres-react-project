@@ -59,13 +59,8 @@ export const viewCommentVlidations = [
       .notEmpty().withMessage('Comment id cannot be empty')
       .custom(async (id, { req }) => {
         const comment = await commentExists(id);
-
         if (!comment) {
             throw new Error('Cannot find comment with this id.');
         }
       }),
-]
-
-const commentPostUserIsFriend = async (req, comment) => {
-    
-}
+];

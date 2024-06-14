@@ -1,10 +1,10 @@
 import { FriendStatus } from '../common/enums.js';
 import { getActiveUser } from '../common/utils.js';
 import { postgresQuery } from '../db/postgres.js';
-import { findCommentByIdSQL } from '../db/queries/commentsQueries.js';
+import { findCommentByIdAndActiveUserSQL } from '../db/queries/commentsQueries.js';
 import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
-import { findPostByIdSQL, userCanAccessPostSQL } from '../db/queries/postsQueries.js';
-import { findReactionByIdSQL } from '../db/queries/reactionsQueries.js';
+import { findPostByIdAndActiveUserSQL, userCanAccessPostSQL } from '../db/queries/postsQueries.js';
+import { findReactionByIdAndActiveUserSQL } from '../db/queries/reactionsQueries.js';
 import { findByEmail, findByUserName, findUserById } from '../db/queries/userQueries.js';
 
 export const emailExists = async email => {
@@ -47,16 +47,16 @@ export const canAccessPost = async (activeUserId, postId, postUserId) => {
 }
 
 export const postExists = async postId => {
-    const postResult = await postgresQuery(findPostByIdSQL, [postId]);
+    const postResult = await postgresQuery(findPostByIdAndActiveUserSQL, [postId]);
     return postResult && postResult.rows.length > 0 ? postResult.rows[0] : false;
 }
 
 export const commentExists = async commentId => {
-    const commentResult = await postgresQuery(findCommentByIdSQL, [commentId]);
+    const commentResult = await postgresQuery(findCommentByIdAndActiveUserSQL, [commentId]);
     return commentResult && commentResult.rows.length > 0 ? commentResult.rows[0] : false;
 }
 
 export const reactionExists = async reactionId => {
-    const reactionResult = await postgresQuery(findReactionByIdSQL, [reactionId]);
+    const reactionResult = await postgresQuery(findReactionByIdAndActiveUserSQL, [reactionId]);
     return reactionResult && reactionResult.rows.length > 0 ? reactionResult.rows[0] : false;
 }

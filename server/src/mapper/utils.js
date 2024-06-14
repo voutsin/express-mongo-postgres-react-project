@@ -67,6 +67,7 @@ export const mapComments = (commentResults = [], users = [], reactions = []) => 
             ...com,
             user: users.find(user => user.id === com.userId),
             reactions: reactions.filter(reaction => reaction.commentId === com.id),
+            // TODO: replies
         }));
 }
 

@@ -3,8 +3,8 @@ export const findAllUsersSQL = 'SELECT * FROM users;';
 export const findByUserNameAndPassword = 'SELECT * FROM users WHERE username = $1 AND password_hash = $2;';
 export const findByEmail = 'SELECT * FROM users WHERE email = $1;';
 export const findOtherUsersByEmail = 'SELECT * FROM users WHERE email = $1 AND username <> $2;';
-export const findByUserName = 'SELECT * FROM users WHERE username = $1;';
-export const findUserById = 'SELECT * FROM users WHERE id = $1;';
+export const findByUserName = 'SELECT * FROM users WHERE username = $1 AND active = 1;';
+export const findUserById = 'SELECT * FROM users WHERE id = $1 AND active = 1;';
 export const findUsersInIds = userIds => `SELECT * FROM users WHERE id IN (${userIds});`;
 export const searchUser = 
     `SELECT * FROM users 

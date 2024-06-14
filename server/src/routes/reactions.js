@@ -1,7 +1,7 @@
 import express from "express";
 import ReactionController from "../controller/ReactionController.js";
 import { addActiveUserIdInReq, fetchReactionMiddleware } from "../common/utils.js";
-import { addNewReactionValidations, deleteReactionValidations, updateReactionValidations } from "../validators/reactionValidator.js";
+import { addNewReactionValidations, deleteReactionValidations, updateReactionValidations, viewReactionValidations } from "../validators/reactionValidator.js";
 
 const reactionsRouter = express.Router();
 
@@ -18,6 +18,6 @@ reactionsRouter.put('/edit', addActiveUserIdInReq, updateReactionValidations, Re
 reactionsRouter.delete('/:id?', addActiveUserIdInReq, deleteReactionValidations, ReactionController.deleteReaction);
 
 // view reaction - for notification
-reactionsRouter.get('/:id?', addActiveUserIdInReq, ReactionController.viewReaction);
+reactionsRouter.get('/:id?', addActiveUserIdInReq, viewReactionValidations, ReactionController.viewReaction);
 
 export default reactionsRouter;

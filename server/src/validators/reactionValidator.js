@@ -75,3 +75,15 @@ export const deleteReactionValidations = [
         }
       }),
 ]
+
+export const viewReactionValidations = [
+  param('id')
+    .exists().withMessage('Reaction id is required')
+    .notEmpty().withMessage('Reaction id cannot be empty')
+    .custom(async id => {
+      const reaction = await reactionExists(id);
+      if (!reaction) {
+          throw new Error('Cannot find reaction with this id.');
+      }
+    }),
+]
