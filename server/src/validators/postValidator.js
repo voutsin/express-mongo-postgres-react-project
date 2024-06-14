@@ -1,5 +1,5 @@
 import { param } from 'express-validator';
-import { userIsFriend, userIsTheCurrent, usernameExists } from './commonMethods.js';
+import { userIsTheCurrent, usernameExists } from './commonMethods.js';
 import { getActiveUser } from '../common/utils.js';
 import { postgresQuery } from '../db/postgres.js';
 import { findPostByIdSQL } from '../db/queries/postsQueries.js';
@@ -15,12 +15,9 @@ export const findUserPostsValidations = [
     param('id')
       .exists().withMessage('User id is required')
       .notEmpty().withMessage('User id cannot be empty')
-      .custom(async (id, { req }) => {
+      .custom(async id => {
         if (!(await usernameExists(id, 'id'))) {
             throw new Error('User id does not exist');
-        }
-        if (!userIsTheCurrent(req, id, 'id') && !(await userIsFriend(req))) {
-            throw new Error('Cannot access posts of this user.');
         }
       }),
 ]

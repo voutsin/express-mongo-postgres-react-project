@@ -4,6 +4,7 @@ import { postgresQuery } from '../db/postgres.js';
 import { findCommentByIdSQL } from '../db/queries/commentsQueries.js';
 import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
 import { findPostByIdSQL, userCanAccessPostSQL } from '../db/queries/postsQueries.js';
+import { findReactionByIdSQL } from '../db/queries/reactionsQueries.js';
 import { findByEmail, findByUserName, findUserById } from '../db/queries/userQueries.js';
 
 export const emailExists = async email => {
@@ -53,4 +54,9 @@ export const postExists = async postId => {
 export const commentExists = async commentId => {
     const commentResult = await postgresQuery(findCommentByIdSQL, [commentId]);
     return commentResult && commentResult.rows.length > 0 ? commentResult.rows[0] : false;
+}
+
+export const reactionExists = async reactionId => {
+    const reactionResult = await postgresQuery(findReactionByIdSQL, [reactionId]);
+    return reactionResult && reactionResult.rows.length > 0 ? reactionResult.rows[0] : false;
 }

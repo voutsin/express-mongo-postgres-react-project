@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 import { postgresQuery } from '../db/postgres.js';
+import { finReactionByPostIdOrCommentIdSQL } from '../db/queries/reactionsQueries.js';
 
 dotenv.config();
 
@@ -59,6 +60,22 @@ export const addActiveUserIdInReq = (req, res, next) => {
     return res.status(403).send('Something went wrong retrieving user id.');
   }
 }
+
+export const fetchReactionMiddleware = async (req, res, next) => {
+  try {
+    const params = [
+      req.body.postId,
+      req.body.commentId || -1,
+      req.userId
+    ]
+    const reactionRes = await postgresQuery(finReactionByPostIdOrCommentIdSQL, params);
+    req.postReaction = reactionRes && reactionRes.rows.filter(row => row.post_id != null && row.comment_id == null).find(() => true) || null;
+    req.commentReaction = reactionRes && reactionRes.rows.filter(row => row.post_id != null && row.comment_id != null).find(() => true) || null;
+    next();
+  } catch (error) {
+    return res.status(500).json({ message: 'Error fetching reaction' });
+  }
+};
 
 export const sortResultsByCreatedDate = (results, desc = true) => {
   const sortedResults = [...results];

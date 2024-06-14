@@ -2,7 +2,7 @@
 // FIND
 export const findAllCommentsByUserId = `SELECT * FROM comments WHERE user_id = $1;`;
 export const findCommentByIdSQL = `SELECT * FROM comments WHERE id = $1;`;
-export const findCommentsInIds = `SELECT * FROM comments WHERE id IN ($1);`;
+export const findCommentsInIds = commentIds => `SELECT * FROM comments WHERE id IN (${commentIds});`;
 export const findCommentsByPostId = `SELECT * FROM comments WHERE post_id = $1;`;
 
 // INSERT 

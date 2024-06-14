@@ -68,7 +68,7 @@ export const insertOrUpdateCommentFeed = async comment => {
 
     try {
         // find if feed already exists for user and postId with type comment
-        const query = { userId: Number(user_id), 'content.postId': Number(post_id), type: Number(FeedTypes.COMMENT) };
+        const query = { userId: Number(user_id), 'content.postId': Number(post_id), 'content.commentId': Number(id), type: Number(FeedTypes.COMMENT) };
         const alreadyFeed = await Feed.find(query);
 
         // new feed
@@ -111,7 +111,7 @@ export const updateCommentFeed = async comment => {
     } = comment;
 
     try {
-        const query = { userId: Number(user_id), 'content.postId': Number(post_id), type: Number(FeedTypes.COMMENT) };
+        const query = { userId: Number(user_id), 'content.postId': Number(post_id), 'content.commentId': Number(id), type: Number(FeedTypes.COMMENT) };
         const feed = {
             userId: parseInt(user_id), 
             type: FeedTypes.COMMENT, 
@@ -132,7 +132,8 @@ export const updateCommentFeed = async comment => {
 
 export const deleteCommentFeed = async (previousComment, oldCommentId) => {
     try {
-        // TODO: delete reactions feeds for this comment
+        // delete reactions feeds for this comment
+        await deleteCommentReactionFeed(oldCommentId);
 
         if (previousComment) {
             const {
@@ -141,7 +142,7 @@ export const deleteCommentFeed = async (previousComment, oldCommentId) => {
                 post_id
             } = previousComment;
 
-            const query = { userId: Number(user_id), 'content.postId': Number(post_id), type: Number(FeedTypes.COMMENT) };
+            const query = { userId: Number(user_id), 'content.postId': Number(post_id), 'content.commentId': Number(id), type: Number(FeedTypes.COMMENT) };
             const feed = {
                 userId: parseInt(user_id), 
                 type: FeedTypes.COMMENT, 
@@ -165,6 +166,92 @@ export const deleteCommentFeed = async (previousComment, oldCommentId) => {
 
             return deleted;
         }
+    } catch (e) {
+        console.log("Update comment to Feed error: ", e);
+        throw new Error(e);
+    }
+}
+
+export const insertNewFeedForReaction = async reaction => {
+    try {
+        const {
+            id, user_id, post_id, comment_id
+        } = reaction;
+
+        const insert = { 
+            userId: parseInt(user_id), 
+            type: FeedTypes.REACTION, 
+            content: { 
+                postId: parseInt(post_id),
+                commentId: comment_id,
+                reactionId: parseInt(id),
+            }
+        };
+        // Create a new feed entry
+        const newFeed = new Feed(insert);
+        // Save the entry to the database
+        const savedFeed = await newFeed.save();
+        return savedFeed;
+    } catch (e) {
+        console.log("Insert to Feed error: ", e);
+        throw new Error(e);
+    }
+}
+
+export const updateReactionFeed = async reaction => {
+    const {
+        id, user_id, post_id, comment_id
+    } = reaction;
+
+    try {
+        const query = { userId: Number(user_id), 'content.postId': Number(post_id), 'content.reactionId': Number(id), type: Number(FeedTypes.REACTION) };
+        const feed = {
+            userId: parseInt(user_id), 
+            type: FeedTypes.REACTION, 
+            content: { postId: parseInt(post_id), commentId: comment_id, reactionId: id },
+            timestamp: new Date(),
+        }
+        // update feed
+        const update = await Feed.updateOne(query, feed);
+        if (update.modifiedCount === 0) {
+            throw new Error('No feed updated')
+        }
+        return feed;
+    } catch (e) {
+        console.log("Update comment to Feed error: ", e);
+        throw new Error(e);
+    }
+}
+
+export const deleteReactionFeed = async reaction => {
+    const {
+        id, user_id, post_id
+    } = reaction;
+
+    try {
+        const query = { userId: Number(user_id), 'content.postId': Number(post_id), 'content.reactionId': Number(id), type: Number(FeedTypes.REACTION) };
+        // delete feed
+        const deleted = await Feed.deleteOne(query);
+        if (deleted.deletedCount === 0) {
+            throw new Error('No feeds found to delete for the given reaction');
+        }
+        return deleted;
+    } catch (e) {
+        console.log("Update comment to Feed error: ", e);
+        throw new Error(e);
+    }
+}
+
+export const deleteCommentReactionFeed = async commentId => {
+    try {
+        // all reactions with comment id
+        const query = { 'content.commentId': Number(commentId), type: Number(FeedTypes.REACTION) };
+        // delete feed
+        const deleted = await Feed.deleteMany(query);
+        if (deleted.deletedCount === 0) {
+            throw new Error('No feeds found to delete for the given reaction');
+        }
+        return deleted;
     } catch (e) {
         console.log("Update comment to Feed error: ", e);
         throw new Error(e);

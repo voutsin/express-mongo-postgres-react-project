@@ -7,6 +7,7 @@ import { PostType } from '../common/enums.js';
 import { addNewPostValidations, updatePostValidations } from '../validators/postValidator.js';
 import { deleteFeedByPostId, insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
 import { deleteCommentsByPostId } from '../db/queries/commentsQueries.js';
+import { deleteReactionsByPostIdSQL } from '../db/queries/reactionsQueries.js';
 
 const findAllPosts = async (req, res) => {
     try {
@@ -49,7 +50,7 @@ const findAllUserPosts = async (req, res) => {
 
         const params = Object.values(req.params);
         const result = await postgresQuery(findAllPostsByUserIdSQL, params);
-        res.json(result.rows.map(row => postToResDto(row)));
+        res.json( await Promise.all(result.rows.map(async row => await detailedPostToResDto(row))));
     } catch (e) {
         console.error(e);
         res.status(500).send('Internal Server Error: ', e);
@@ -147,10 +148,11 @@ const deletePost = async (req, res) => {
 
         const params = Object.values(req.params);
 
+        // delete reactions by postId
+        await postgresQuery(deleteReactionsByPostIdSQL, [req.params.id]);
+
         // delete comments by postId
         await postgresQuery(deleteCommentsByPostId, [req.params.id]);
-
-        // TODO: delete reactions by postId
 
         // delete post
         const result = await postgresQuery(deletePostSQL, params);

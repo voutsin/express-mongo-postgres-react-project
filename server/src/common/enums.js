@@ -21,3 +21,11 @@ export const FeedTypes = {
     COMMENT: 2,
     REACTION: 3,
 }
+
+export const ReactionType = {
+    LIKE: 1,
+    LOVE: 2,
+    LAUGH: 3,
+    WOW: 4,
+    CRY: 5,
+}

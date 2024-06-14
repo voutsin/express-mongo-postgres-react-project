@@ -3,7 +3,7 @@ import { postgresQuery } from '../db/postgres.js';
 import { commentToResDto, detailedCommentToResDto, reqDtoToComment } from '../mapper/commentMapper.js';
 import { addNewCommentSQL, deleteCommentSQL, findCommentByIdSQL, updateCommentSQL } from '../db/queries/commentsQueries.js';
 import { deleteCommentFeed, insertOrUpdateCommentFeed, updateCommentFeed } from '../db/repositories/FeedRepository.js';
-import { result } from 'underscore';
+import { deleteReactionsByCommentIdSQL } from '../db/queries/reactionsQueries.js';
 
 const findAllComments = async (req, res) => {
     try {
@@ -80,14 +80,15 @@ const deleteComment = async (req, res) => {
           return res.status(400).json({ errors: errors.array() });
         }
 
+        // delete reactions
+        await postgresQuery(deleteReactionsByCommentIdSQL, [req.params.id]);
+
         // delete from comments table and return the last comment from user
         const results = await postgresQuery(deleteCommentSQL, [req.params.id]);
 
         if (!results) {
             throw new Error('Error deleting comment.')
         }
-        
-        // TODO: delete reactions
 
         const lastComment = results.rows[0];
         // delete from feed

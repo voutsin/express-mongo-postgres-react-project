@@ -1,8 +1,4 @@
-import { postgresQuery } from "../db/postgres.js";
-import { findCommentsByPostId } from "../db/queries/commentsQueries.js";
-import { findUserById } from "../db/queries/userQueries.js";
-import { commentToResDtoForPost } from "./commentMapper.js";
-import { userToResDto } from "./userMapper.js";
+import { findDetailedLists, findReactions, findUsers, mapComments, mapPosts } from "./utils.js";
 
 export const postToResDto = post => {
     return {
@@ -15,24 +11,14 @@ export const postToResDto = post => {
     }
 }
 
-// for feed 
+// for feed or view
 export const detailedPostToResDto = async post => {
-    const userResults = await postgresQuery(findUserById, [post.user_id]);
-    const commentResults = await postgresQuery(findCommentsByPostId, [post.id]);
-    // TODO:
-    // const reactionResults = await postgresQuery(findUserById, [post.user_id]);
+    const lists = await findDetailedLists(post.id);
+    const {
+        posts
+    } = lists;
 
-    return {
-        id: post.id,
-        user: userResults ? userToResDto(userResults.rows[0]) || null : null,
-        content: post.content,
-        mediaUrl: post.media_url,
-        createdAt: post.created_at,
-        postType: post.post_type,
-        comments:  await Promise.all(commentResults.rows.map(async comment => await commentToResDtoForPost(comment))),
-        // TODO:
-        // reactions: reactionResults.rows,
-    }
+    return posts.find(p => p.id === post.id) || null;
 }
 
 export const postReqDtoToPost = req => {
@@ -51,4 +37,8 @@ export const updatePostReqDtoToPost = req => {
         media_url: req.mediaUrl,
         post_type: parseInt(req.postType),
     }
+}
+
+export const postForCommentResDto = (post, users) => {
+    
 }

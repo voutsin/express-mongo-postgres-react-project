@@ -12,7 +12,7 @@ postsRouter.get('/', PostController.findAllPosts);
 // find single post by id
 postsRouter.get('/:id?', findPostValidations, PostController.findPostById);
 
-// find all posts of a friend or active user
+// find all posts of a user
 postsRouter.get('/user/:id?', findUserPostsValidations, PostController.findAllUserPosts);
 
 // add new post

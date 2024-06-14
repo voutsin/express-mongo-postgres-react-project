@@ -9,7 +9,7 @@ const ContentSchema = new mongoose.Schema({
     commentId: {
         type: Number,
     },
-    reationId: {
+    reactionId: {
         type: Number,
     }
 });

@@ -1,5 +1,5 @@
 import { body, param } from 'express-validator';
-import { canAccessPost, commentExists, postExists, userIsFriend } from './commonMethods.js';
+import { canAccessPost, commentExists, postExists } from './commonMethods.js';
 
 
 export const addNewCommentValidations = [
@@ -59,14 +59,9 @@ export const viewCommentVlidations = [
       .notEmpty().withMessage('Comment id cannot be empty')
       .custom(async (id, { req }) => {
         const comment = await commentExists(id);
-        const commentUserIsAFriend = await userIsFriend(req, comment.user_id);
-        const postUserIsAFriend = await userIsFriend(req, comment.user_id);
 
         if (!comment) {
             throw new Error('Cannot find comment with this id.');
-        }
-        if (!commentUserIsAFriend && comment.user_id !== parseInt(req.userId)) {
-            throw new Error('Cannot access comment.');
         }
       }),
 ]
