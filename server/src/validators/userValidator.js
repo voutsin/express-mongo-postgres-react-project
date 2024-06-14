@@ -123,7 +123,12 @@ export const blockFriendValidations = [
 export const findUserByIdValidations = [
   param('id')
     .exists().withMessage('User id is required')
-    .notEmpty().withMessage('User id cannot be empty'),
+    .notEmpty().withMessage('User id cannot be empty')
+    .custom(async id => {
+      if (!(await usernameExists(id, 'id'))) {
+          throw new Error('User ID does not exist');
+      }
+    }),
 ]
 
 export const searchUserValidations = [

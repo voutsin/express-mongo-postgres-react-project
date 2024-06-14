@@ -1,5 +1,7 @@
 import bcrypt from 'bcrypt';
-import { FriendStatus, getEnumByValue } from '../common/enums.js';
+import { uniq } from 'underscore';
+import { postgresQuery } from '../db/postgres.js';
+import { findUsersInIds } from '../db/queries/userQueries.js';
 
 export const newUserReqDtoToUser = async req => {
     const saltRounds = 10;
@@ -41,7 +43,29 @@ export const userToResDto = user => {
 
 export const friendToResDto = friendship => {
     return {
-        ...friendship,
-        status: getEnumByValue(FriendStatus, friendship.status),
+        userId: friendship.user_id,
+        friendId: friendship.friend_id,
+        createdAt: friendship.created_at,
+        status: friendship.status,
     }
+}
+
+export const detailedFriendToResDto = async friendships => {
+    const friendIds = friendships.map(friend => friend.friend_id);
+    const userId = friendships.map(friend => friend.user_id).find(() => true);
+    const userParams = uniq([
+        ...friendIds,
+        userId
+    ]);
+    const userResults = await postgresQuery(findUsersInIds(userParams.toString()));
+    const users = userResults ? userResults.rows.map(user => userToResDto(user)) : [];
+    return {
+        friends: friendships.map(friendship => ({
+            user: friendship.user_id,
+            friend: users.find(user => user.id === friendship.friend_id),
+            createdAt: friendship.created_at,
+            status: friendship.status,
+        })),
+        user: users.find(user => user.id === userId)
+    };
 }

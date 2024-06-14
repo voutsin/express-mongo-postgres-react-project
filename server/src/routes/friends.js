@@ -1,11 +1,11 @@
 import express from "express";
 import UserController from "../controller/UserController.js";
-import { requestFriendValidations, acceptFriendValidations, deleteFriendValidations, blockFriendValidations } from "../validators/userValidator.js";
+import { requestFriendValidations, acceptFriendValidations, deleteFriendValidations, blockFriendValidations, findUserByIdValidations } from "../validators/userValidator.js";
 
 const friendsRouter = express.Router();
 
 // find friends
-friendsRouter.get('/:id', UserController.findAllFriendsOfUser);
+friendsRouter.get('/:id', findUserByIdValidations, UserController.findAllFriendsOfUser);
 
 // request friendship
 friendsRouter.post('/request/:friendId', requestFriendValidations, UserController.requestFriendship);

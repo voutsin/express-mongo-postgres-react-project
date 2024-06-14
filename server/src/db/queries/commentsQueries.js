@@ -2,7 +2,7 @@
 // FIND
 export const findAllCommentsByUserId = `SELECT * FROM comments WHERE user_id = $1;`;
 export const findCommentByIdSQL = `SELECT * FROM comments WHERE id = $1;`;
-export const findCommentByIdAndActiveUserSQL = `SELECT * FROM comments AS c JOIN users AS u ON u.id = c.user_id AND u.active = 1 WHERE id = $1;`;
+export const findCommentByIdAndActiveUserSQL = `SELECT c.* FROM comments AS c JOIN users AS u ON u.id = c.user_id AND u.active = 1 WHERE c.id = $1;`;
 export const findCommentsInIds = commentIds => `SELECT * FROM comments WHERE id IN (${commentIds});`;
 export const findCommentsByPostId = `SELECT * FROM comments WHERE post_id = $1;`;
 

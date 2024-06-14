@@ -14,6 +14,7 @@ import bodyParser from 'body-parser';
 import feedsRouter from './routes/feeds.js';
 import commentsRouter from './routes/comments.js';
 import reactionsRouter from './routes/reactions.js';
+import searchRouter from './routes/search.js';
 // import WebSocket, {WebSocketServer} from 'ws';
 
 dotenv.config();
@@ -56,6 +57,7 @@ app.use('/posts', postsRouter);
 app.use('/feed', feedsRouter);
 app.use('/comments', commentsRouter);
 app.use('/reactions', reactionsRouter);
+app.use('/search', searchRouter);
 
 const port = process.env.SERVER_PORT;
 const server = app.listen(port, () => {

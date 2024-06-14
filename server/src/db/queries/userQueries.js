@@ -6,9 +6,9 @@ export const findOtherUsersByEmail = 'SELECT * FROM users WHERE email = $1 AND u
 export const findByUserName = 'SELECT * FROM users WHERE username = $1 AND active = 1;';
 export const findUserById = 'SELECT * FROM users WHERE id = $1 AND active = 1;';
 export const findUsersInIds = userIds => `SELECT * FROM users WHERE id IN (${userIds});`;
-export const searchUser = 
+export const searchUserSQL = text =>
     `SELECT * FROM users 
-    WHERE (username ILIKE '%$1%' OR email ILIKE '%$1%' OR displayed_name ILIKE '%$1%') AND active = 1;`;
+    WHERE (username ILIKE '%${text}%' OR email ILIKE '%${text}%' OR displayed_name ILIKE '%${text}%') AND active = 1;`;
 
 // INSERT
 export const insertNewUser = `INSERT INTO users (

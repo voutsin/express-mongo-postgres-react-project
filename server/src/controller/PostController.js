@@ -40,6 +40,7 @@ const findPostById = async (req, res) => {
     }
 }
 
+// TODO: add pages to endpoint
 const findAllUserPosts = async (req, res) => {
     try {
         // check validations

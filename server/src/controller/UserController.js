@@ -1,9 +1,9 @@
 import { FriendStatus, PostType } from "../common/enums.js";
 import { getActiveUser } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
-import { findAllFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship } from "../db/queries/friendsQueries.js";
+import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship } from "../db/queries/friendsQueries.js";
 import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
-import { friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
+import { detailedFriendToResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
 import { validationResult } from 'express-validator';
 import { unlink } from 'fs';
 import { createNewPostSQL } from '../db/queries/postsQueries.js';
@@ -105,8 +105,9 @@ const findAllFriendsOfUser = async (req, res) => {
       return res.status(400).json({ errors: [error] });
     } 
     const params = Object.values(req.params);
-    const result = await postgresQuery(findAllFriendshipsByUserId, params);
-    res.json(result.rows.map(result => friendToResDto(result)));
+    const result = await postgresQuery(findAllActiveFriendshipsByUserId, params);
+    const resposne = await detailedFriendToResDto(result.rows);
+    res.json(resposne);
   } catch (e) {
     console.error(e);
     res.status(500).send('Internal Server Error: ', e);
@@ -258,6 +259,7 @@ const deactivateProfile = async (req, res) => {
   }
 }
 
+// TODO: check if needed as endpoint
 const searchUserByCriteria = async (req, res) => {
   try {
     // Handle validation errors

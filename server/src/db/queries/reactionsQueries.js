@@ -1,7 +1,7 @@
 // FIND
 export const findAllReactionsSQL = `SELECT * FROM reactions;`;
 export const findReactionByIdSQL = `SELECT * FROM reactions WHERE id = $1;`;
-export const findReactionByIdAndActiveUserSQL = `SELECT * FROM reactions AS r JOIN users AS u ON u.id = r.user_id AND u.active = 1 WHERE id = $1;`;
+export const findReactionByIdAndActiveUserSQL = `SELECT r.* FROM reactions AS r JOIN users AS u ON u.id = r.user_id AND u.active = 1 WHERE r.id = $1;`;
 export const finReactionByPostIdOrCommentIdSQL = `SELECT * FROM reactions WHERE user_id = $3 AND ((post_id = $1 AND comment_id IS NULL) OR (post_id = $1 AND comment_id = $2));`;
 export const findReactionByCommentIdSQL = `SELECT * FROM reactions WHERE comment_id = $1;`;
 export const findReactionByPostIdsOnlySQL = `SELECT * FROM reactions WHERE post_id IN ($1) AND comment_id IS NULL;`;
