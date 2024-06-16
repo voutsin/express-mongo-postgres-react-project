@@ -49,16 +49,18 @@ CREATE TABLE comments (
     post_id INTEGER REFERENCES posts(id),
     user_id INTEGER REFERENCES users(id),
     content TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_reply INT DEFAULT 0,
+    reply_comment_id INTEGER
 );
 
-CREATE TABLE replies (
-    id SERIAL PRIMARY KEY,
-    comment_id INTEGER REFERENCES comments(id),
-    user_id INTEGER REFERENCES users(id),
-    content TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- CREATE TABLE replies (
+--     id SERIAL PRIMARY KEY,
+--     comment_id INTEGER REFERENCES comments(id),
+--     user_id INTEGER REFERENCES users(id),
+--     content TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 CREATE TABLE reactions (
     id SERIAL PRIMARY KEY,

@@ -63,19 +63,20 @@ export const insertOrUpdateCommentFeed = async comment => {
         id,
         user_id,
         post_id,
-        created_at
+        created_at,
+        is_reply
     } = comment;
 
     try {
         // find if feed already exists for user and postId with type comment
-        const query = { userId: Number(user_id), 'content.postId': Number(post_id), 'content.commentId': Number(id), type: Number(FeedTypes.COMMENT) };
+        const query = { userId: Number(user_id), 'content.postId': Number(post_id), type: Number(FeedTypes.COMMENT) };
         const alreadyFeed = await Feed.find(query);
 
         // new feed
         const feed = { 
             userId: parseInt(user_id), 
             type: FeedTypes.COMMENT, 
-            content: { postId: parseInt(post_id), commentId: id },
+            content: { postId: parseInt(post_id), commentId: id, isReply: Boolean(is_reply)  },
             timestamp: created_at,
         };
 
@@ -142,7 +143,9 @@ export const deleteCommentFeed = async (previousComment, oldCommentId) => {
                 post_id
             } = previousComment;
 
-            const query = { userId: Number(user_id), 'content.postId': Number(post_id), 'content.commentId': Number(id), type: Number(FeedTypes.COMMENT) };
+            // find feed with old comment id
+            const query = { userId: Number(user_id), 'content.postId': Number(post_id), 'content.commentId': Number(oldCommentId), type: Number(FeedTypes.COMMENT) };
+            // update feed with new comment id
             const feed = {
                 userId: parseInt(user_id), 
                 type: FeedTypes.COMMENT, 
@@ -248,9 +251,6 @@ export const deleteCommentReactionFeed = async commentId => {
         const query = { 'content.commentId': Number(commentId), type: Number(FeedTypes.REACTION) };
         // delete feed
         const deleted = await Feed.deleteMany(query);
-        if (deleted.deletedCount === 0) {
-            throw new Error('No feeds found to delete for the given reaction');
-        }
         return deleted;
     } catch (e) {
         console.log("Update comment to Feed error: ", e);

@@ -11,7 +11,8 @@ export const findDetailedLists = async (postId) => {
     const postResults = await postgresQuery(findPostByIdSQL, [postId]);
     const allPosts = [...postResults.rows];
     const commentParams = uniq(allPosts.map(post => post.id)).toString();
-    const commentResults = commentParams.length > 0 ? await postgresQuery(`SELECT * FROM comments WHERE post_id IN (${commentParams});`) : {rows: []};
+    const commentResults = commentParams.length > 0 ? await postgresQuery(`SELECT * FROM comments WHERE post_id IN (${commentParams});`) : {rows: []}; // TODO: join with replies to get all comment replies
+    // TODO: maybe map replies here...
     const allComments = [...commentResults.rows];
     const reactionResults = await findReactions(allPosts, allComments);
     const userResults = await findUsers(allPosts, allComments, reactionResults.rows);
@@ -70,6 +71,8 @@ export const mapComments = (commentResults = [], users = [], reactions = []) => 
             // TODO: replies
         }));
 }
+
+// TODO: map replies -> get all replies of comment and fill info (reaction etc)
 
 export const mapPosts = (postResults = [], users = [], comments = [], reactions = []) => {
     return postResults ? postResults

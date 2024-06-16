@@ -11,22 +11,21 @@ export const feedToResDto = async feeds => {
     // isolate ids for each group
     const activeFriendsIds = uniq(feeds.filter(feed => feed.userId != null).map(feed => feed.userId));
     const postIds = uniq(feeds.filter(feed => feed.content.postId != null).map(feed => feed.content.postId));
-    // const commentsIds = feeds.filter(feed => feed.content.commentId != null).map(feed => feed.content.commentId);
     const reactionsIds = feeds.filter(feed => feed.content.reactionId != null).map(feed => feed.content.reactionId);
+    // TODO: replies
 
     // get info from db 
     const activeUserResults = activeFriendsIds.length > 0 ? await postgresQuery(findUsersInIds(activeFriendsIds.toString())) : null;
     const postResults = postIds.length > 0 ? await postgresQuery(findAllPostsForFeedSQL(postIds.toString())) : null;
-    // const commentResults = commentsIds.length > 0 ? await postgresQuery(findCommentsInIds(commentsIds.toString())) : null;
     const reactionResults = reactionsIds.length > 0 ? await postgresQuery(findReactionsInIds(reactionsIds.toString())) : null;
+    // TODO: replies
 
     // map results into res dtos
     const users = activeUserResults ? activeUserResults.rows.map(user => userToResDto(user)) : [];
     const posts = postResults ? postResults.rows.map(post => postToResDto(post)) : [];
-    // const comments = commentResults ? commentResults.rows.map(post => commentToResDto(post)) : [];
     const reactions = reactionResults ? reactionResults.rows.map(post => reactionToResDto(post)) : [];
+    // TODO: replies
 
-    debugger;
     const mappedPosts = await Promise.all(posts.map(async post => await detailedPostToResDto(post)));
 
     // return feed with information rfom each group
@@ -39,6 +38,7 @@ export const feedToResDto = async feeds => {
             post: relatedPost,
             comment: relatedPost ? relatedPost.comments.find(comment => comment.id === feed.content.commentId) : null,
             reaction: reactions.find(reaction => reaction.id === feed.content.reactionId),
+            // TODO: replies
         }
     });
 }

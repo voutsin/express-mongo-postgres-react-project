@@ -11,6 +11,10 @@ const ContentSchema = new mongoose.Schema({
     },
     reactionId: {
         type: Number,
+    },
+    isReply: {
+      type: Boolean,
+      default: false
     }
 });
 
