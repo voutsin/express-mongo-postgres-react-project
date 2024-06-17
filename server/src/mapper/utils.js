@@ -130,15 +130,21 @@ export const calculateComments = comments => {
     return commentNumber;
 }
 
-export const expandComments = singleComments => {
-    const replies = [];
-    singleComments.forEach(comment => {
-        if (comment.replies && comment.replies.length > 0) {
-            replies.push(...comment.replies);
+export const findDeepComment = (comments, id) => {
+    let comment = null;
+    comments.forEach(com => {
+        if (com.id === id) {
+            comment = com;
+            return;
+        } 
+        
+        if (com.replies && com.replies.length > 0) {
+            const foundComment = com.replies.find(c => c.id === id);
+            if (foundComment) {
+                comment = foundComment;
+                return;
+            }
         }
     });
-    return [
-        ...singleComments,
-        ...replies,
-    ]
+    return comment;
 }

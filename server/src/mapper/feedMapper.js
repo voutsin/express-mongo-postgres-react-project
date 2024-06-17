@@ -6,7 +6,7 @@ import { userToResDto } from "./userMapper.js";
 import { detailedPostToResDto, postToResDto } from "./postMapper.js";
 import { findReactionsInIds } from "../db/queries/reactionsQueries.js";
 import { reactionToResDto } from "./reactionMapper.js";
-import { expandComments } from "./utils.js";
+import { findDeepComment } from "./utils.js";
 
 export const feedToResDto = async feeds => {
     // isolate ids for each group
@@ -29,8 +29,7 @@ export const feedToResDto = async feeds => {
     // return feed with information rfom each group
     return feeds.map(feed => {
         const relatedPost = mappedPosts.find(post => post.id === feed.content.postId);
-        const allComments = expandComments(relatedPost.comments);
-        const comment = relatedPost ? allComments.find(comment => comment.id === feed.content.commentId) : null;
+        const comment = relatedPost ? findDeepComment(relatedPost.comments, feed.content.commentId) : null;
 
         return {
             type: feed.type,
