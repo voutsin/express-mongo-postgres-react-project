@@ -29,7 +29,6 @@ export const detailedCommentToResDto = async comment => {
         user: users.find(user => user.id === comment.user_id) || null,
         // add reactions
         reactions: reactions.filter(reaction => reaction.commentId === comment.id),
-        // TODO: replies
     }
 }
 
