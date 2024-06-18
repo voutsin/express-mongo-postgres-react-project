@@ -64,3 +64,24 @@ export const viewCommentVlidations = [
         }
       }),
 ];
+
+export const addNewReplyValidations = [
+  body('commentId')
+    .exists().withMessage('Comment id is required')
+    .notEmpty().withMessage('Comment id cannot be empty')
+    .custom(async (commentId, { req }) => {
+      const comment = await commentExists(commentId);
+      if (!comment) {
+          throw new Error('Comment does not exist');
+      }
+      if (Boolean(comment.is_reply)) {
+          throw new Error('Comment is already a reply.');
+      }
+      if (parseInt(req.userId) === parseInt(comment.user_id)) {
+        throw new Error('Cannot reply to your own comment ');
+      }
+    }),
+  body('content')
+    .exists().withMessage('Reply content is ewquired')
+    .notEmpty().withMessage('Reply content cannot be empty'),
+];

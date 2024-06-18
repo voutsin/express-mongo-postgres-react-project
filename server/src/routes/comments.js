@@ -1,6 +1,6 @@
 import express from "express";
 import CommentController from "../controller/CommentController.js";
-import { addNewCommentValidations, deleteCommentValidations, updateCommentValidations, viewCommentVlidations } from "../validators/commentsValidator.js";
+import { addNewCommentValidations, addNewReplyValidations, deleteCommentValidations, updateCommentValidations, viewCommentVlidations } from "../validators/commentsValidator.js";
 import { addActiveUserIdInReq } from "../common/utils.js";
 
 const commentsRouter = express.Router();
@@ -20,5 +20,7 @@ commentsRouter.put('/edit',  addActiveUserIdInReq, updateCommentValidations, Com
 // view detailed comment - for view from notifications
 commentsRouter.get('/:id?',  addActiveUserIdInReq, viewCommentVlidations, CommentController.viewDetailedComment);
 
+// add reply to comment
+commentsRouter.post('/reply/addNew', addActiveUserIdInReq, addNewReplyValidations, CommentController.addReply);
 
 export default commentsRouter;

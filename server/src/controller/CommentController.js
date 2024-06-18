@@ -1,7 +1,7 @@
 import { validationResult } from 'express-validator';
 import { postgresQuery } from '../db/postgres.js';
-import { commentToResDto, detailedCommentToResDto, reqDtoToComment } from '../mapper/commentMapper.js';
-import { addNewCommentSQL, deleteCommentSQL, findCommentByIdSQL, updateCommentSQL } from '../db/queries/commentsQueries.js';
+import { commentToResDto, detailedCommentToResDto, replyReqDtoToComment, reqDtoToComment } from '../mapper/commentMapper.js';
+import { addNewCommentSQL, deleteCommentSQL, findCommentByIdSQL, insertNewReplySQL, updateCommentSQL } from '../db/queries/commentsQueries.js';
 import { deleteCommentFeed, insertOrUpdateCommentFeed, updateCommentFeed } from '../db/repositories/FeedRepository.js';
 import { deleteReactionsByCommentIdSQL } from '../db/queries/reactionsQueries.js';
 
@@ -124,10 +124,48 @@ const viewDetailedComment = async (req, res) => {
     } 
 }
 
+const addReply = async (req, res) => {
+    try {
+        // Handle validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
+
+        const commentResult = await postgresQuery(findCommentByIdSQL, [req.body.commentId]);
+        const referenceComment = commentResult.rows[0];
+
+        const finalBody = {
+            ...req.body,
+            userId: req.userId,
+            postId: referenceComment.post_id,
+        }
+        const params = Object.values(replyReqDtoToComment(finalBody));
+        const result = await postgresQuery(insertNewReplySQL, params)
+
+        if(!result) {
+            throw new Error('Something went wrong');
+        }
+
+        // add or update feed for reply comment
+        const replyComment = {
+            ...result.rows[0],
+        }
+        await insertOrUpdateCommentFeed(replyComment, true);
+
+        res.status(200);
+        res.json(commentToResDto(result.rows[0]));
+    } catch(e) {
+        console.log(e);
+        res.status(500).send('Internal Server Error: ', e);
+    }
+}
+
 export default {
     findAllComments,
     addNewComment,
     updateComment,
     deleteComment,
     viewDetailedComment,
+    addReply,
 }

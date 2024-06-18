@@ -6,7 +6,7 @@ export const reactionToResDto = reaction => {
         userId: reaction.user_id,
         postId: reaction.post_id,
         commentId: reaction.comment_id,
-        reactionType: reaction.reaction_type,
+        reactionType: parseInt(reaction.reaction_type),
         createdAt: reaction.created_at,
     }
 }
@@ -31,7 +31,7 @@ export const detailedReactioToResDto = async reaction => {
         user: users.find(user => user.id === reaction.user_id),
         post: posts.find(post => post.id === reaction.post_id),
         comment: reaction.comment_id ? comments.find(comment => comment.id === reaction.comment_id) : null,
-        reactionType: reaction.reaction_type,
+        reactionType: parseInt(reaction.reaction_type),
         createdAt: reaction.created_at,
     }
 }

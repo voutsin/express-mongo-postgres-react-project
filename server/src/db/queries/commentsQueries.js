@@ -8,6 +8,7 @@ export const findCommentsByPostId = `SELECT * FROM comments WHERE post_id = $1;`
 
 // INSERT 
 export const addNewCommentSQL = `INSERT INTO comments (post_id, user_id, content) VALUES ($1, $2, $3) RETURNING *;`;
+export const insertNewReplySQL = `INSERT INTO comments (post_id, user_id, content, is_reply, reply_comment_id) VALUES ($1, $2, $3, $4, $5) RETURNING *;`;
 
 // UPDATE
 export const updateCommentSQL = `UPDATE comments SET content = $1 WHERE id = $2 RETURNING *;`;
