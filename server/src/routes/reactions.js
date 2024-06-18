@@ -5,7 +5,7 @@ import { addNewReactionValidations, deleteReactionValidations, updateReactionVal
 
 const reactionsRouter = express.Router();
 
-// find all users
+// find all reactions
 reactionsRouter.get('/', addActiveUserIdInReq, ReactionController.findAllReactions);
 
 // add new reaction

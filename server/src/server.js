@@ -15,16 +15,20 @@ import feedsRouter from './routes/feeds.js';
 import commentsRouter from './routes/comments.js';
 import reactionsRouter from './routes/reactions.js';
 import searchRouter from './routes/search.js';
+import cors from 'cors';
 // import WebSocket, {WebSocketServer} from 'ws';
 
 dotenv.config();
 
 const app = express();
 
-// // Middleware to parse JSON bodies
-// app.use(express.json());
-// // Middleware for parsing form-data bodies
-// app.use(express.urlencoded({ extended: true }));
+// Use cors middleware
+app.use(cors({
+  origin: (origin, callback) => {
+    callback(null, origin); // Allow all origins
+  },
+  credentials: true
+}));
 
 // for parsing application/json
 app.use(bodyParser.json()); 
