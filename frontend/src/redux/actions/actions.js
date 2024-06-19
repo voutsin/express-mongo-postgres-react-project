@@ -30,3 +30,22 @@ export const setUserTokens = response => {
         }
     }
 }
+
+export const registerUser = data => ({
+    type: ActionTypes.REGISTER_USER,
+    payload: data
+});
+
+export const clearData = stateValues => ({
+    type: ActionTypes.CLEAR_DATA,
+    payload: stateValues
+});
+
+export const notify = (message, type) => ({
+    type: ActionTypes.NOTIFY,
+    payload: {message, type}
+});
+
+export const clearNotify = () => ({
+    type: ActionTypes.CLEAR_NOTIFY,
+});

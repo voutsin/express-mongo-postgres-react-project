@@ -18,7 +18,6 @@ const Menu = props => {
                     <button id="home" onClick={() => handleClick(ROUTES.BASE)}>Home</button>
                 }
                 <button id="logout" onClick={() => handleClick(ROUTES.LOGIN)}>Logout</button>
-                <button id="logout" onClick={() => handleClick(ROUTES.REGISTER)}>Register</button>
             </div>
         </React.Fragment>
     )
@@ -27,10 +26,6 @@ const Menu = props => {
 const mapStateToProps = (state) => ({
     auth: state.auth,
 });
-
-// const mapDispatchToProps = (dispatch) => ({
-//     logout: data => dispatch(setUserTokens(data)),
-// });
 
 export default connect(
     mapStateToProps,

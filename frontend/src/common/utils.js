@@ -32,3 +32,19 @@ export const isObjectEmpty = (objectName) => {
       objectName.constructor === Object
     );
 };
+
+export const checkRequiredFields = (data, fieldsArray) => {
+    let isValid = true;
+    fieldsArray && data && 
+    fieldsArray.forEach(field => {
+        if (data[field] == null || data[field] === '') {
+            isValid = false;
+        }
+    });
+
+    return isValid;
+}
+
+export const findKey = (obj, value) => {
+    return Object.keys(obj).find(key => obj[key] === value) || null;
+}

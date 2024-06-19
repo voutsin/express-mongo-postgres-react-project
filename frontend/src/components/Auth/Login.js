@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Form, Input } from "../../structure/Form";
 import { removeEmptyFields } from "../../common/utils";
 import { login, logout } from "../../redux/actions/actions";
+import ROUTES from "../../config/routes";
 
 const Login = props => {
     const [formData, setFormData] = useState(null);
@@ -44,11 +45,15 @@ const Login = props => {
         return !dataOk;
     }
 
+    const handleRegister = () => {
+        navigate(ROUTES.REGISTER.path)
+    }
+
     return (
         <React.Fragment>
             <div>
                 <h4>Login to our Social Media platform</h4>
-                <div>
+                <div className={'login-wrapper'}>
                     <p>Login Form</p>
                     <Form data={formData} onChange={handleChange} className={'login-form'}>
                         <Input
@@ -66,6 +71,9 @@ const Login = props => {
                     </Form>
                     <Button onClick={handleSubmit} className={'login-btn'} disabled={checkSubmit()}>
                         Login
+                    </Button>
+                    <Button onClick={handleRegister} className={'register-btn'}>
+                        Sign Up
                     </Button>
                 </div>
             </div>

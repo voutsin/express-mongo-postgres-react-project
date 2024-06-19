@@ -1,5 +1,9 @@
 import { ApiTypes } from "../common/enums";
 
+const ApiRoutesNames = {
+    REGISTER_USER: 'REGISTER_USER'
+}
+
 const AUTH = '/auth';
 const UPLOADS = '/uploads';
 const USERS = '/users';
@@ -26,9 +30,10 @@ export const AUTH_ROUTES = {
         route: `${AUTH}/logout`,
         type: ApiTypes.POST,
     },
-    REGISTER: {
+    REGISTER_USER: {
         route: `${AUTH}/register`,
         type: ApiTypes.POST,
+        name: ApiRoutesNames.REGISTER_USER
     },
     VERIFY: {
         route: `${AUTH}/verify`,

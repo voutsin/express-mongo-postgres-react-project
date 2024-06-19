@@ -19,7 +19,7 @@ export const insertNewUser = `INSERT INTO users (
     profile_pic,
     displayed_name,
     description
-) VALUES ($1, $2, $3, $4, $5, $6, $7);`;
+) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;`;
 
 // UPDATE
 export const updateUserSQL = `UPDATE users SET 

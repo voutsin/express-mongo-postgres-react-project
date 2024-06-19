@@ -1,11 +1,12 @@
 import { FriendStatus, PostType } from "../common/enums.js";
-import { getActiveUser } from "../common/utils.js";
+import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, getActiveUser } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
 import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship } from "../db/queries/friendsQueries.js";
 import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
 import { detailedFriendToResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
 import { validationResult } from 'express-validator';
 import { unlink } from 'fs';
+import jwt from 'jsonwebtoken';
 import { createNewPostSQL } from '../db/queries/postsQueries.js';
 import { postReqDtoToPost, postToResDto } from '../mapper/postMapper.js';
 import { insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
@@ -22,18 +23,29 @@ const findAll = async (req, res) => {
 
 const registerNewUser = async (req, res) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    
-    const finalBody = await newUserReqDtoToUser(req.body);
-    const params = Object.values(finalBody);
-    const result = await postgresQuery(insertNewUser, params);
-    if (result) {
-      res.json(userToResDto(finalBody));
-      res.status(200);
+      // check validations
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const finalBody = await newUserReqDtoToUser(req.body);
+      const params = Object.values(finalBody);
+      const result = await postgresQuery(insertNewUser, params);
+      if (result) {
+        const user = result.rows[0];
+        const authUser = {
+          userId: user.id,
+          username: user.username,
+        }
+
+        const accessToken = jwt.sign(authUser, SECRET_KEY, { expiresIn: ACCESS_TOKEN_EXPIRE_TIME });
+        const refreshToken = jwt.sign(authUser, SECRET_KEY, { expiresIn: REFRESH_TOKEN_EXPIRE_TIME });
+
+        res.cookie(ACCESS_TOKEN_COOKIE, accessToken);
+        res.cookie(REFRESH_TOKEN_COOKIE, refreshToken);
+        res.json(userToResDto(user));
+        res.status(200);
     }
   } catch (e) {
     console.error(e);

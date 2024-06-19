@@ -16,15 +16,10 @@ export const authReducer = (state = defaultState, action) => {
             };
         case ActionTypes.LOGOUT:
             return defaultState;
-        case ActionTypes.SET_ERROR:
-            return {
-                ...state,
-                error: action.payload.error.response
-            }
         default:
             return state;
     }
 }
 
 //SELECTORS
-export const selectUserState = (state) => state;
+export const selectAuthState = (state) => state;
