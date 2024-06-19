@@ -23,7 +23,7 @@ const findAll = async (req, res) => {
 
 const registerNewUser = async (req, res) => {
   try {
-      // check validations
+      // Handle validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });

@@ -24,3 +24,15 @@ export const request = payload => {
         withCredentials: true // Ensure cookies are included in the request
     });
 }
+
+export const multiPartRequest = payload => {
+  const { routeObj, data } = payload
+  const { route, type } = routeObj;
+
+  return type(`${BASE_URL}${route}`, data, {
+      headers: {
+        "Content-Type": 'multipart/form-data',
+      },
+      withCredentials: true // Ensure cookies are included in the request
+  });
+}

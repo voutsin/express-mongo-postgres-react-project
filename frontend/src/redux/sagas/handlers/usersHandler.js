@@ -1,7 +1,7 @@
 import { call, put } from "redux-saga/effects";
 import { notify, setError } from "../../actions/actions";
-import { request } from "../requests/authReqs";
-import { AUTH_ROUTES } from "../../../config/apiRoutes";
+import { multiPartRequest, request } from "../requests/authReqs";
+import { AUTH_ROUTES, USERS_ROUTES } from "../../../config/apiRoutes";
 import ActionTypes from "../../actions/actionTypes";
 import { NotifyTypes } from "../../../common/enums";
 
@@ -10,13 +10,22 @@ export function* handleUserRegistration(action) {
     try {
         const payload = {
             routeObj: AUTH_ROUTES.REGISTER_USER,
-            data: action.payload,
+            data: {...action.payload.finalBody, profilePictureUrl: null},
             params: false
         };
-        const response = yield call(request, payload);
-        const {data} = response;
+        yield call(request, payload);
+
+        const fd = new FormData();
+        fd.append('profile_pic', action.payload.file)
+        const picPayload = {
+            routeObj: USERS_ROUTES.EDIT_PROF_PIC,
+            data: fd,
+            params: false
+        };
+        const response = yield call(multiPartRequest, picPayload);
+        const { data } = response;
         const updatedPayload = {
-            data: data,
+            data: data[0] && data[0].user,
             apiSuccess: true,
             apiRouteName: AUTH_ROUTES.REGISTER_USER.name,
         }

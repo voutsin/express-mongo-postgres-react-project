@@ -19,7 +19,7 @@ export const Form = props => {
         <form data={data} onSubmit={onSubmit} className={className} onChange={handleChange}>
             {React.Children.map(children, child => {
                 // Clone the child element with the additional prop
-                return React.cloneElement(child, { formData: data, onChange: handleChange });
+                return React.cloneElement(child, { formData: data, onFormChange: handleChange });
             })}
         </form>
     )
@@ -31,17 +31,20 @@ export const Input = props => {
         className,
         formData,
         name,
-        type
+        type,
+        onFormChange,
+        onChange,
     } = props;
 
     const parsedProps = {
         ...props,
         className: className || 'form-input',
+        onChange: onChange || onFormChange
     }
 
     if (type !== 'file') {
         parsedProps.value = formData ? formData[name] : '';
-    }   
+    }
 
     return (
         <React.Fragment>

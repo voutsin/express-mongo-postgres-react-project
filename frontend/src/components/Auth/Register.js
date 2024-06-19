@@ -20,6 +20,7 @@ const intitialData = {
 
 const Register = props => {
     const [formData, setFormData] = useState(intitialData);
+    const [file, setFile] = useState(null);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -34,7 +35,7 @@ const Register = props => {
             setFormData(intitialData);
             navigate(ROUTES.BASE.path);
         }
-    }, [props, navigate])
+    }, [props, navigate]);
 
     const handleSubmit = () => {
         const finalBody = removeEmptyFields(formData);
@@ -43,7 +44,7 @@ const Register = props => {
             props.notify('Passwords does not match!', NotifyTypes.ERROR);
         } else {
             props.clearData();
-            props.registerUser(finalBody);
+            props.registerUser({finalBody, file});
         }
     }
 
@@ -66,6 +67,11 @@ const Register = props => {
             ...formData,
             [name]: value
         })
+    }
+
+    const handleFileChange = (event) => {
+        const fileInput = event.target.files[0];
+        setFile(fileInput);
     }
 
     return (
@@ -110,6 +116,7 @@ const Register = props => {
                             label='Description'
                         />
                         <Input
+                            onChange={handleFileChange}
                             type="file" 
                             name="profilePictureUrl"
                             label='Profile Picture'
