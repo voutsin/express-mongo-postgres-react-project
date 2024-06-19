@@ -13,6 +13,9 @@ export const authenticate = (req, res, next) => {
   try {
     // decode ACCESS TOKEN
     jwt.verify(accessToken, SECRET_KEY);
+    res
+        .cookie(REFRESH_TOKEN_COOKIE, refreshToken)
+        .cookie(ACCESS_TOKEN_COOKIE, accessToken);
     next();
   } catch (error) {
     // check for refresh token
@@ -34,9 +37,10 @@ export const authenticate = (req, res, next) => {
 
       const accessToken = jwt.sign(authUser, SECRET_KEY, { expiresIn: ACCESS_TOKEN_EXPIRE_TIME });
       
+      req.authUser = authUser;
       res
-        .cookie(REFRESH_TOKEN_COOKIE, refreshToken, { httpOnly: true, sameSite: 'strict' })
-        .cookie(ACCESS_TOKEN_COOKIE, accessToken, { httpOnly: true, sameSite: 'strict' });
+        .cookie(REFRESH_TOKEN_COOKIE, refreshToken)
+        .cookie(ACCESS_TOKEN_COOKIE, accessToken);
         next();
     });
   }

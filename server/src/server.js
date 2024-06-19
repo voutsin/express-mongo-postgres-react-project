@@ -27,7 +27,7 @@ app.use(cors({
   origin: (origin, callback) => {
     callback(null, origin); // Allow all origins
   },
-  credentials: true
+  credentials: true // Allow credentials (cookies, authorization headers, etc.)
 }));
 
 // for parsing application/json

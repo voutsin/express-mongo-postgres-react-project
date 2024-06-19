@@ -1,11 +1,38 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import ROUTES from '../config/routes';
+import { useNavigate } from 'react-router-dom';
 
 const Menu = props => {
-    return (
+    const loginOk = props.auth && props.auth.authSuccess;
+    const navigate = useNavigate();
+
+    const handleClick = route => {
+        route && navigate(route.path);
+    }
+
+    return(
         <React.Fragment>
-            Menu
+            <div className="nav">
+                {loginOk && 
+                    <button id="home" onClick={() => handleClick(ROUTES.BASE)}>Home</button>
+                }
+                <button id="logout" onClick={() => handleClick(ROUTES.LOGIN)}>Logout</button>
+                <button id="logout" onClick={() => handleClick(ROUTES.REGISTER)}>Register</button>
+            </div>
         </React.Fragment>
     )
 }
 
-export default Menu;
+const mapStateToProps = (state) => ({
+    auth: state.auth,
+});
+
+// const mapDispatchToProps = (dispatch) => ({
+//     logout: data => dispatch(setUserTokens(data)),
+// });
+
+export default connect(
+    mapStateToProps,
+    null
+)(Menu);

@@ -6,11 +6,21 @@ export const request = payload => {
 
     const bodyData = params ? null : data;
 
+    if (params) {
+        return type(`${BASE_URL}${route}`, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            params: params ? data : null,
+            withCredentials: true // Ensure cookies are included in the request
+        });
+    }
+
     return type(`${BASE_URL}${route}`, bodyData, {
-        "headers": {
-            "Content-Type": "application/json",
+        headers: {
+          "Content-Type": "application/json",
         },
-        params: params ? data : null,
-        withCredentials: true // Include cookies in requests
+        params: null,
+        withCredentials: true // Ensure cookies are included in the request
     });
 }

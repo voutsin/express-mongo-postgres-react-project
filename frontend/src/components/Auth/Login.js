@@ -1,19 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { connect } from 'react-redux';
-import { Navigate } from "react-router-dom";
+import { connect, useDispatch } from 'react-redux';
+import { useNavigate } from "react-router-dom";
 import { Button, Form, Input } from "../../structure/Form";
 import { removeEmptyFields } from "../../common/utils";
-import { login } from "../../redux/actions/actions";
+import { login, logout } from "../../redux/actions/actions";
 
 const Login = props => {
     const [formData, setFormData] = useState(null);
-    const [authSuccess, setAuthSuccess] = useState(false);
+    const [logginOut, setLoggingOut] = useState(true);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        if (props.auth && props.auth.authSuccess) {
-            setAuthSuccess(props.auth.authSuccess);
+        // Dispatch the logout action when the component mounts
+        try {
+            dispatch(logout());
+        } finally {
+            setLoggingOut(false);
         }
-    }, [props]);
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (props.auth && props.auth.authSuccess && !logginOut) {
+            navigate('/');
+        }
+    }, [props, navigate, logginOut]);
 
     const handleChange = (name, value) => {
         setFormData({
@@ -33,9 +44,7 @@ const Login = props => {
         return !dataOk;
     }
 
-    return authSuccess 
-    ? <Navigate to="/"/>
-    : (
+    return (
         <React.Fragment>
             <div>
                 <h4>Login to our Social Media platform</h4>
@@ -70,6 +79,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     login: credentials => dispatch(login(credentials)),
+    logout: () => dispatch(logout()),
 });
 
 export default connect(

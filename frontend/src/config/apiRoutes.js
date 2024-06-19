@@ -30,6 +30,10 @@ export const AUTH_ROUTES = {
         route: `${AUTH}/register`,
         type: ApiTypes.POST,
     },
+    VERIFY: {
+        route: `${AUTH}/verify`,
+        type: ApiTypes.GET,
+    },
 }
 
 export const UPLOAD_ROUTES = {

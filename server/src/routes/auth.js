@@ -6,6 +6,8 @@ import { findByUserName } from "../db/queries/userQueries.js";
 import UserController from "../controller/UserController.js";
 import { registerUserValidations } from "../validators/authValidator.js";
 import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY } from "../common/utils.js";
+import { authenticate } from "../validators/authenticate.js";
+import { validationResult } from "express-validator";
 
 const authRouter = express.Router();
 
@@ -81,9 +83,25 @@ authRouter.post('/refresh', (req, res) => {
     }
 });
 
+// Route to verify the authentication
+authRouter.get('/verify', authenticate, (req, res) => {
+    try {
+        // Handle validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.json({ success: false, errors: errors.array() });
+        }
+
+        res.json({ authUser: req.authUser, success: true });
+    } catch (e) {
+        console.log("errors:", e)
+        res.status(500).send(e);
+    }
+  });
+
 authRouter.post('/logout', async (req, res, next) => {
-    res.clearCookie(ACCESS_TOKEN_COOKIE, { httpOnly: true, secure: true, sameSite: 'Strict' });
-    res.clearCookie(REFRESH_TOKEN_COOKIE, { httpOnly: true, secure: true, sameSite: 'Strict' });
+    res.clearCookie(ACCESS_TOKEN_COOKIE);
+    res.clearCookie(REFRESH_TOKEN_COOKIE);
     res.status(200).send('Logout successful');
 });
 

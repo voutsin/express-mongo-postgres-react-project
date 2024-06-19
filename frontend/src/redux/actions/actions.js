@@ -9,6 +9,10 @@ export const logout = () => ({
     type: ActionTypes.LOGOUT
 });
 
+export const verifyUser = () => ({
+    type: ActionTypes.VERIFY
+});
+
 export const setError = (error) => {
     return {
         type: ActionTypes.SET_ERROR,
@@ -18,7 +22,7 @@ export const setError = (error) => {
     }
 }
 
-export const setUserTokens = (response) => {
+export const setUserTokens = response => {
     return {
         type: ActionTypes.SET_USER_TOKENS,
         payload: {

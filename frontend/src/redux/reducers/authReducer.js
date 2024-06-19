@@ -12,38 +12,14 @@ export const authReducer = (state = defaultState, action) => {
                 ...state,
                 ...userData.data,
                 authSuccess: userData.success,
+                error: null,
             };
         case ActionTypes.LOGOUT:
+            return defaultState;
+        case ActionTypes.SET_ERROR:
             return {
                 ...state,
-                auth: null,
-            };
-        case ActionTypes.SET_ERROR:
-            const status = action.payload.error.response && action.payload.error.response.status;
-            switch (status) {
-                case 403:
-                    return {
-                        ...state,
-                        error: {
-                            message: "Δεν βρέθηκε χρήστης με αυτά τα στοιχεία.",
-                            status,
-                            display: true
-                        }
-                    }
-                case 500:
-                    return {
-                        ...state,
-                        error: {
-                            message: "Ο χρήστης με αυτό το username υπάρχει ήδη στο σύστημα.",
-                            status,
-                            display:true
-                        }
-                    }
-                default:
-                    return {
-                        ...state,
-                        error: action.payload.error.response
-                    }
+                error: action.payload.error.response
             }
         default:
             return state;
@@ -51,4 +27,4 @@ export const authReducer = (state = defaultState, action) => {
 }
 
 //SELECTORS
-export const selectUserState = (state) => state.auth;
+export const selectUserState = (state) => state;
