@@ -49,3 +49,8 @@ export const notify = (message, type) => ({
 export const clearNotify = () => ({
     type: ActionTypes.CLEAR_NOTIFY,
 });
+
+export const setApiData = data => ({
+    type: ActionTypes.SET_API_DATA,
+    payload: data
+})

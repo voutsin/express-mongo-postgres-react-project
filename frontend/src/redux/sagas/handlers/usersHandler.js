@@ -1,9 +1,7 @@
 import { call, put } from "redux-saga/effects";
-import { notify, setError } from "../../actions/actions";
+import { setApiData, setError } from "../../actions/actions";
 import { multiPartRequest, request } from "../requests/authReqs";
 import { AUTH_ROUTES, USERS_ROUTES } from "../../../config/apiRoutes";
-import ActionTypes from "../../actions/actionTypes";
-import { NotifyTypes } from "../../../common/enums";
 
 
 export function* handleUserRegistration(action) {
@@ -13,30 +11,37 @@ export function* handleUserRegistration(action) {
             data: {...action.payload.finalBody, profilePictureUrl: null},
             params: false
         };
-        yield call(request, payload);
+        const userResponse = yield call(request, payload);
+        let updatedPayload = {}
 
-        const fd = new FormData();
-        fd.append('profile_pic', action.payload.file)
-        const picPayload = {
-            routeObj: USERS_ROUTES.EDIT_PROF_PIC,
-            data: fd,
-            params: false
-        };
-        const response = yield call(multiPartRequest, picPayload);
-        const { data } = response;
-        const updatedPayload = {
-            data: data[0] && data[0].user,
-            apiSuccess: true,
-            apiRouteName: AUTH_ROUTES.REGISTER_USER.name,
+        if (userResponse.data) {
+            updatedPayload = {
+                data: userResponse.data,
+                apiSuccess: true,
+                apiRouteName: AUTH_ROUTES.REGISTER_USER.name,
+            }
+
+            if (action.payload.file != null) {
+                const fd = new FormData();
+                fd.append('profile_pic', action.payload.file)
+                const picPayload = {
+                    routeObj: USERS_ROUTES.EDIT_PROF_PIC,
+                    data: fd,
+                    params: false
+                };
+                const fileResponse = yield call(multiPartRequest, picPayload);
+
+                if (fileResponse.data) {
+                    updatedPayload = {
+                        ...updatedPayload,
+                        data: fileResponse.data[0] && fileResponse.data[0].user,
+                    }
+                }
+            }
         }
-        yield put({ 
-            type: ActionTypes.REGISTER_USER_RESPONSE, 
-            payload: updatedPayload 
-        });
+    
+        yield put(setApiData(updatedPayload));
     } catch (error) {
         yield put(setError(error));
-        const errors = error.response.data.errors;
-        const errorMessage = errors.map(err => err.msg).join(', <br/>');
-        yield put(notify(errorMessage, NotifyTypes.ERROR));
     }
 }

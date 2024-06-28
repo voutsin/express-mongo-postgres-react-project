@@ -91,6 +91,10 @@ export const sortResultsByCreatedDate = (results, desc = true) => {
 } 
 
 export const getThumbnailUrl = (id, originalUrl) => {
+  if (originalUrl == null) {
+    return null;
+  }
+  
   const path = originalUrl.split('/');
 
   // get directory

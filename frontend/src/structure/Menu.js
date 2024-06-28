@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { ROUTES, PUBLIC_ROUTES } from '../config/routes';
 import { useNavigate } from 'react-router-dom';
@@ -7,8 +7,10 @@ import { MdLogout, MdSearch, MdChat, MdNotifications, MdFace } from 'react-icons
 import { BASE_URL } from '../config/apiRoutes';
 import { ClassNames } from '../styles/classes';
 import NexGenLogoSVG from '../styles/images/logo';
+import { removeEmptyFields } from '../common/utils';
 
 const Menu = props => {
+    const [inputs, setInputs] = useState({});
     const loginOk = props.auth && props.auth.authSuccess;
     const navigate = useNavigate();
 
@@ -18,6 +20,20 @@ const Menu = props => {
 
     const handleOpenNotifications = () => {
 
+    }
+
+    const handleSearch = route => {
+        const finalBody = removeEmptyFields(inputs);
+        if(finalBody != null && finalBody.searchText != null && route) {
+            navigate(route.path, { state: { searchText: finalBody.searchText } })
+        }
+    }
+
+    const handleChange = (name, value) => {
+        setInputs({
+            ...inputs,
+            [name]: value,
+        })
     }
 
     const profilePicUrl = props.auth && props.auth.profilePictureThumb;
@@ -31,8 +47,8 @@ const Menu = props => {
                 </div>
                 <div className={`${ClassNames.NAV_SECTION} ${ClassNames.NAV_SEARCH}`}>
                     <div className={`${ClassNames.NAV_ITEM}`}>
-                        <Input type={'text'} />
-                        <button id="search" onClick={() => handleClick(ROUTES.SEARCH)}><MdSearch/></button>
+                        <Input type="text" name='searchText' onChange={handleChange} formData={inputs} />
+                        <button id="search" onClick={() => handleSearch(ROUTES.SEARCH)}><MdSearch/></button>
                     </div>
                 </div>
                  

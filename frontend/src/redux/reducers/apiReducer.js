@@ -1,3 +1,5 @@
+import { NotifyTypes } from "../../common/enums";
+import { isObjectEmpty } from "../../common/utils";
 import ActionTypes from "../actions/actionTypes";
 
 
@@ -18,8 +20,18 @@ export const apiReducer = (state = defaultState, action) => {
             })
             return updatedState;
         case ActionTypes.SET_ERROR:
+            const { error } = action.payload;
+            if (!error || isObjectEmpty(error)) {
+                return {...state}
+            }
+            const errors = error.response.data.errors || error.response.data.error;
+            const errorMessage = Array.isArray(errors) ? errors.map(err => err.msg).join(', <br/>') : errors;
             return {
-                error: action.payload.error.response
+                error: error.response,
+                notify: {
+                    type: NotifyTypes.ERROR,
+                    message: errorMessage,
+                },
             }
         case ActionTypes.NOTIFY:
             return {
@@ -31,15 +43,21 @@ export const apiReducer = (state = defaultState, action) => {
                 ...state,
                 notify: null,
             }
-        case ActionTypes.REGISTER_USER_RESPONSE:
-            const apiRouteName = action.payload.apiRouteName;
-            return {
-                ...state,
-                [apiRouteName]: {
-                    data: action.payload.data,
-                    success: action.payload.apiSuccess,
-                },
+        case ActionTypes.SET_API_DATA:
+            const {apiRouteName, apiSuccess, data} = action.payload;
+
+            if (apiSuccess) {
+                return {
+                    ...state,
+                    [apiRouteName]: {
+                        data: data,
+                        success: apiSuccess,
+                    },
+                }
+            } else {
+                return {...state};
             }
+            
         default:
             return state;
     }

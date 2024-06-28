@@ -17,6 +17,8 @@ code {
   --text-light-body-color: #808080;
   --text-contrast-color: #ffffff;
   --input-text-color: #9b9a9a;
+  --error-color: #cd4444;
+  --success-color: #179517;
 
   --steps: 17;
   --background: #1d1f20;
@@ -72,6 +74,14 @@ input:-internal-autofill-selected {color:var(--text-light-body-color)!important;
 @-webkit-keyframes animatetop {from {top:-300px; opacity:0} to {top:0; opacity:1}}
 @keyframes animatetop {from {top:-300px; opacity:0}to {top:0; opacity:1}}
 
+/** NOTFICATION */
+.notification-wrapper {opacity: 0;position: fixed;top: 10px;right: 10px;z-index:0;width: 100%;max-width: 450px;background: var(--body-color);padding: 10px;border-radius: var(--btn-border-radius);box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);transition:opacity 0.3s ease;}
+.notification-wrapper > div {position:relative;padding-left: 10px;min-height: 25px;display: flex;flex-direction: column;align-items: flex-start;justify-content: center;}
+.notification-wrapper .modal-close-btn {position:absolute;top:0;right:0;}
+.notification-wrapper.error, .error .modal-close-btn {background: var(--error-color);color:var(--text-contrast-color);}
+.notification-wrapper.success, .success .modal-close-btn {background: var(--success-color);color:var(--text-contrast-color);}
+.notification-wrapper.active {opacity:1;z-index: 2000;}
+
 /* MENU */
 .nav {display: flex;flex-direction: row;justify-content: space-between;background:var(--body-color-light);padding:5px 10px;box-shadow:0px 1px 10px 0px #8080806b;position: fixed;top: 0;left: 0;right: 0;}
 .nav-section {display: flex;flex-direction: row;justify-content: space-between;align-items: center;height: 50px;}
@@ -120,3 +130,8 @@ input:-internal-autofill-selected {color:var(--text-light-body-color)!important;
 .typing::after {content: "|";position: absolute;right: 0;width: 100%;color: var(--text-body-color);background: var(--trird-color);animation: typing 4s steps(var(--steps)) forwards, caret 1s infinite;}
 @keyframes typing {to { width: 0 }}
 @keyframes caret {50% { color: transparent }}
+
+/** LOADING BUTTON */
+.ldn-btn.loading {color: transparent !important;min-height: 1.6rem;pointer-events: none;position: relative;}
+.ldn-btn.loading::after {animation: loadingBtn 500ms infinite linear;border: .2rem solid var(--text-light-body-color);border-radius: .8rem;border-right-color: transparent;border-top-color: transparent;content: "";display: block;height: 1.2rem;left: 50%;margin-left: -.8rem;margin-top: -.8rem;position: absolute;top: 50%;width: 1.2rem;}
+@keyframes loadingBtn {0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);}}

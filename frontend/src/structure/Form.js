@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { ClassNames } from "../styles/classes";
-import Loader from "./Loader";
 
 export const Form = props => {
     const {
@@ -39,6 +38,7 @@ export const Input = props => {
     } = props;
 
     const handleChange = (event) => {
+        console.log("handle change")
         const name = event.target.name;
         const value = event.target.value;
         onChange(name, value);
@@ -49,20 +49,20 @@ export const Input = props => {
         className: className || 'form-input',
         value: (formData && formData[name]) ? formData[name] : '',
         onChange: (event) => {
-            if (onChange) handleChange(event); // Call external onChange if provided
-            if (onFormChange) onFormChange(event); // Call onFormChange if provided
+            if (onChange) {handleChange(event);} // Call external onChange if provided
+            if (onFormChange) {onFormChange(event);} // Call onFormChange if provided
         },
     }
 
     const filled = parsedProps.value && parsedProps.value.length > 0;
 
-    const inputLabel = `${label}${required ? ' *' : ''}`;
+    const inputLabel = `${label || ''}${required ? ' *' : ''}`;
 
     return (
         <React.Fragment>
             <label className={ClassNames.INPUT} >
                 <span className={`${ClassNames.INPUT_SPAN} ${filled ? ClassNames.INPUT_FILLED : ''}`} >
-                    {inputLabel}
+                    {inputLabel || ''}
                 </span>
 	            <input {...parsedProps}/>
 	        </label>
@@ -118,9 +118,6 @@ export const InputFile = props => {
      // Clean up when the component unmounts
     useEffect(() => {
       return () => {
-        fileInput.removeEventListener('cancel');
-        fileInput.removeEventListener('change');
-
         // Remove the element from the DOM
         if (fileInput.parentNode) {
           fileInput.parentNode.removeChild(fileInput);
@@ -138,14 +135,13 @@ export const InputFile = props => {
 
     return (
         <React.Fragment>
-            {loading ? <Loader/> : null}
             <label className={`${ClassNames.INPUT} ${ClassNames.FILE_INPUT}`} >
                 <span className={`${ClassNames.INPUT_SPAN} ${file ? ClassNames.INPUT_FILLED : ''}`} >
                     {inputLabel}
                 </span>
                 <span className={ClassNames.FILE_INPUT_NAME}> {file ? file.name : ''} </span>
                 <div className={ClassNames.FILE_INPUT_BTNS}>
-                    <button onClick={chooseFile} disabled={loading} className={ClassNames.STANDARD_BTN}>BROWSE</button>
+                    <button onClick={chooseFile} disabled={loading} className={`${ClassNames.STANDARD_BTN} ldn-btn ${loading ? 'loading' : ''}`}>BROWSE</button>
                 </div>
 	        </label>
         </React.Fragment>
@@ -153,13 +149,56 @@ export const InputFile = props => {
 }
 
 export const Button = props => {
+    const {
+        className,
+        extraClass
+    } = props;
+
     const parsedProps = {
         ...props,
-        className: props.className || 'standard-btn',
+        className: className || ClassNames.STANDARD_BTN,
     }
 
     if (props.extraClass) {
-        parsedProps.className += ' ' + props.extraClass;
+        parsedProps.className += ' ' + extraClass;
+    }
+
+    return (
+        <React.Fragment>
+            <button {...parsedProps}/>
+        </React.Fragment>
+    )
+}
+
+export const LoadingButton = props => {
+    const [loading, setLoading] = useState(false);
+
+    const {
+        onClick,
+        className,
+        extraClass,
+        apiCallName,
+    } = props;
+
+    useEffect(() => {
+        if (props[apiCallName]) {
+            setLoading(false);
+        }
+    }, [props, apiCallName]);
+
+    const handleClick = event => {
+        setLoading(true);
+        onClick(event);
+    }
+
+    const parsedProps = {
+        ...props,
+        onClick: handleClick,
+        className: `${(className || ClassNames.STANDARD_BTN)} ${ClassNames.LOADING_BTN} ${loading ? 'loading' : ''}` ,
+    }
+
+    if (props.extraClass) {
+        parsedProps.className += ' ' + extraClass;
     }
 
     return (

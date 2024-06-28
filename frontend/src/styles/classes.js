@@ -1,12 +1,12 @@
 export const ClassNames = {
     INPUT: 'input-wrapper',
     FILE_INPUT: 'file-input',
-    // FILE_INPUT_WRAPPER: 'file-input-wrapper',
     INPUT_SPAN: 'input-span',
     INPUT_FILLED: 'input-filled',
     FILE_INPUT_BTNS: 'file-input-btns',
     FILE_INPUT_NAME: 'file-input-name',
     STANDARD_BTN: 'standard-btn',
+    LOADING_BTN: 'ldn-btn',
     MODAL_WRAPPER: 'modal-wrapper',
     MODAL_CLOSE: 'modal-close',
     MODAL_CLOSE_BTN: 'modal-close-btn',
@@ -34,4 +34,6 @@ export const ClassNames = {
     // register
     REGISTER_WRAPPER: 'register-wrapper',
     REGISTER_FORM: 'register-form',
+    // notification
+    NOTIFICATION_WRAPPER: 'notification-wrapper',
 }

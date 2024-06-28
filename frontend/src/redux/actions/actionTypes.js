@@ -9,6 +9,7 @@ const ActionTypes = {
     CLEAR_DATA: 'clearData',
     NOTIFY: 'notify',
     CLEAR_NOTIFY: 'clearNotify',
+    SET_API_DATA: 'setApiData',
 }
 
 export default ActionTypes;
