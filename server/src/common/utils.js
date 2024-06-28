@@ -11,6 +11,9 @@ export const SECRET_KEY = process.env.TOKEN_SECRET;
 export const ACCESS_TOKEN_COOKIE = 'accessToken';
 export const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
+export const UPLOAD_DIR = 'uploads';
+export const THUMBNAIL_PREFIX = 'profile_pic_thumbnail_';
+
 export const getActiveUser = req => {
   const accessToken = req.cookies[ACCESS_TOKEN_COOKIE];
   const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE];
@@ -86,3 +89,23 @@ export const sortResultsByCreatedDate = (results, desc = true) => {
   });
   return sortedResults;
 } 
+
+export const getThumbnailUrl = (id, originalUrl) => {
+  const path = originalUrl.split('/');
+
+  // get directory
+  let uploadPath = '';
+  path.forEach((p, index) => {
+    const lastElementIndex = path.length - 1;
+    if (index !== lastElementIndex) {
+      uploadPath += `${p}/`;
+    }
+  });
+
+  // get suffix
+  const picName = path[path.length - 1];
+  const splittedName = picName.split('.');
+  const suffix = splittedName[splittedName.length - 1];
+  
+  return `${uploadPath}${THUMBNAIL_PREFIX}${id}.${suffix}`;
+}

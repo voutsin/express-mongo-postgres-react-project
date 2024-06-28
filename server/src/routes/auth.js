@@ -2,12 +2,13 @@ import express from "express";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { postgresQuery } from "../db/postgres.js";
-import { findByUserName } from "../db/queries/userQueries.js";
+import { findByUserName, findUserById } from "../db/queries/userQueries.js";
 import UserController from "../controller/UserController.js";
 import { registerUserValidations } from "../validators/authValidator.js";
-import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY } from "../common/utils.js";
+import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, getActiveUser } from "../common/utils.js";
 import { authenticate } from "../validators/authenticate.js";
 import { validationResult } from "express-validator";
+import { userToResDto } from "../mapper/userMapper.js";
 
 const authRouter = express.Router();
 
@@ -32,7 +33,7 @@ authRouter.post('/login', async (req, res, next) => {
         error: "invalid login",
       });
     }
-
+    
     const authUser = {
         userId: user.id,
         username: user.username,
@@ -46,10 +47,7 @@ authRouter.post('/login', async (req, res, next) => {
     res.status(200)
         .json({
             success: true,
-            data: {
-                userId: user.id,
-                email: user.email,
-            },
+            data: userToResDto(user),
         });
 });
 
@@ -84,7 +82,7 @@ authRouter.post('/refresh', (req, res) => {
 });
 
 // Route to verify the authentication
-authRouter.get('/verify', authenticate, (req, res) => {
+authRouter.get('/verify', authenticate, async (req, res) => {
     try {
         // Handle validation errors
         const errors = validationResult(req);
@@ -92,7 +90,11 @@ authRouter.get('/verify', authenticate, (req, res) => {
           return res.json({ success: false, errors: errors.array() });
         }
 
-        res.json({ authUser: req.authUser, success: true });
+        const authUser = getActiveUser(req);
+
+        const userResults = await postgresQuery(findUserById, [authUser.id])
+
+        res.json({ authUser: userToResDto(userResults.rows[0]), success: true });
     } catch (e) {
         console.log("errors:", e)
         res.status(500).send(e);

@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { uniq } from 'underscore';
 import { postgresQuery } from '../db/postgres.js';
 import { findUsersInIds } from '../db/queries/userQueries.js';
+import { getThumbnailUrl } from '../common/utils.js';
 
 export const newUserReqDtoToUser = async req => {
     const saltRounds = 10;
@@ -35,6 +36,7 @@ export const userToResDto = user => {
         email: user.email,
         createAt: user.created_at,
         profilePictureUrl: user.profile_pic,
+        profilePictureThumb: getThumbnailUrl(user.id, user.profile_pic),
         name: user.displayed_name,
         description: user.description,
         active: Boolean(user.active),

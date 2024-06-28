@@ -2,8 +2,9 @@ import { useLocation, Navigate, Outlet } from "react-router-dom"
 import React, { useEffect, useState } from "react";
 import { connect } from 'react-redux';
 import Menu from "../structure/Menu";
-import { setUserTokens, verifyUser } from "../redux/actions/actions";
-import { isObjectEmpty } from "../common/utils";
+import { verifyUser } from "../redux/actions/actions";
+import { getDeepProp, isObjectEmpty } from "../common/utils";
+import Loader from "../structure/Loader";
 
 const RequireAuth = props => {
     const location = useLocation();
@@ -30,8 +31,11 @@ const RequireAuth = props => {
     const loginOk = props.auth && props.auth.authSuccess;
 
     if (loading) {
-        // Show a loading indicator or placeholder while verification is in progress
-        return <div>Loading...</div>;
+        const errorStatus = getDeepProp(props, 'api.error.status');
+        if (!errorStatus) {
+            // Show a loading indicator or placeholder while verification is in progress
+            return <Loader/>;
+        }
     }
 
     return (
@@ -48,10 +52,10 @@ const RequireAuth = props => {
 
 const mapStateToProps = (state) => ({
     auth: state.auth,
+    api: state.api,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    setUserTokens: data => dispatch(setUserTokens(data)),
     verifyUser: () => dispatch(verifyUser()),
 });
 

@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { connect, useDispatch } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 import { clearData, logout, notify, registerUser } from "../../redux/actions/actions";
-import { Button, Form, Input } from "../../structure/Form";
+import { Button, Form, Input, InputFile } from "../../structure/Form";
 import { checkRequiredFields, removeEmptyFields } from '../../common/utils.js'
 import { selectApiState } from "../../redux/reducers/apiReducer.js";
 import { AUTH_ROUTES } from "../../config/apiRoutes.js";
 import { NotifyTypes } from "../../common/enums.js";
-import ROUTES from '../../config/routes.js'
+import { ROUTES } from '../../config/routes.js'
+import { ClassNames } from "../../styles/classes.js";
 
 const intitialData = {
     username: '',
@@ -69,17 +70,16 @@ const Register = props => {
         })
     }
 
-    const handleFileChange = (event) => {
-        const fileInput = event.target.files[0];
-        setFile(fileInput);
+    const handleFileChange = (name, file) => {
+        setFile(file);
     }
 
     return (
         <React.Fragment>
-            <div>
-                <h4>Register New User</h4>
-                <div className={'login-wrapper'}>
-                    <Form data={formData} onChange={handleChange} className={'login-form'}>
+            <div className={ClassNames.REGISTER_WRAPPER}>
+                <h4>Get Started...</h4>
+                <div className={ClassNames.REGISTER_FORM}>
+                    <Form data={formData} onChange={handleChange} >
                         <Input
                             type="text" 
                             name="username"
@@ -115,16 +115,17 @@ const Register = props => {
                             name="description"
                             label='Description'
                         />
-                        <Input
+                        <InputFile
                             onChange={handleFileChange}
-                            type="file" 
                             name="profilePictureUrl"
                             label='Profile Picture'
                         />
                     </Form>
-                    <Button onClick={handleSubmit} className={'login-btn'} disabled={checkSubmit()}>
-                        Login
-                    </Button>
+                    <div className={ClassNames.LOGIN_BTNS}>
+                        <Button onClick={handleSubmit} extraClass={ClassNames.LOGIN_BTN} disabled={checkSubmit()}>
+                            REGISTER
+                        </Button>
+                    </div>
                 </div>
             </div>
         </React.Fragment>

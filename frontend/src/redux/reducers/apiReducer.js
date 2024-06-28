@@ -19,7 +19,6 @@ export const apiReducer = (state = defaultState, action) => {
             return updatedState;
         case ActionTypes.SET_ERROR:
             return {
-                ...state,
                 error: action.payload.error.response
             }
         case ActionTypes.NOTIFY:

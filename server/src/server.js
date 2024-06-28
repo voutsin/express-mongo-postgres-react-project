@@ -16,6 +16,7 @@ import commentsRouter from './routes/comments.js';
 import reactionsRouter from './routes/reactions.js';
 import searchRouter from './routes/search.js';
 import cors from 'cors';
+import { access, constants } from 'fs';
 // import WebSocket, {WebSocketServer} from 'ws';
 
 dotenv.config();
@@ -48,7 +49,23 @@ app.use('/auth', authRouter);
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-app.use('/uploads', express.static(join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(join(__dirname, 'uploads')));
+
+app.get('/uploads/:userId/:filename', (req, res) => {
+  const { userId, filename } = req.params;
+  const filepath = join(__dirname, '..', 'uploads', userId, filename);
+
+  // Check if the file exists
+  access(filepath, constants.F_OK, (err) => {
+      if (err) {
+          // Send a 404 response if the file is not found
+          return res.status(404).json({ message: 'File not found' });
+      }
+
+      // Send the file if it exists
+      res.sendFile(filepath);
+  });
+});
 
 // apply authenticate jwt token middleware
 app.use(authenticate);

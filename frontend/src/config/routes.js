@@ -1,12 +1,11 @@
 import Home from "../structure/Home";
 import Login from "../components/Auth/Login"
 import Register from "../components/Auth/Register";
+import ChatPage from "../components/Chat/ChatPage";
+import UserProfile from "../components/Profile/UserProfile";
+import SearchPage from "../components/Search/SearchPage";
 
-const ROUTES = {
-    BASE: {
-        path: '/',
-        component: Home
-    },
+export const PUBLIC_ROUTES = {
     LOGIN: {
         path: '/login',
         component: Login
@@ -16,5 +15,21 @@ const ROUTES = {
         component: Register
     },
 }
-
-export default ROUTES;
+export const ROUTES = {
+    BASE: {
+        path: '/',
+        component: Home
+    },
+    SEARCH: {
+        path: '/search',
+        component: SearchPage
+    },
+    PROFILE: {
+        path: '/profile',
+        component: UserProfile
+    },
+    CHAT: {
+        path: '/chat',
+        component: ChatPage
+    },
+}

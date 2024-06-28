@@ -49,10 +49,6 @@ export const UPLOAD_ROUTES = {
 }
 
 export const USERS_ROUTES = {
-    FIND_ALL: {
-        route: `${USERS}/`,
-        type: ApiTypes.GET,
-    },
     SEARCH_ACTIVE: {
         route: `${USERS}/search/:text`,
         type: ApiTypes.GET,

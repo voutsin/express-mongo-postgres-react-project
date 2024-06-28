@@ -1,7 +1,7 @@
 import express from "express";
 import UserController from "../controller/UserController.js";
 import { findUserByIdValidations, searchUserValidations, updateUserValidations } from "../validators/userValidator.js";
-import uploadMiddleware from "../middleware/uploadMiddleware.js";
+import { createThumbnail, uploadMiddleware } from "../middleware/uploadMiddleware.js";
 import { addActiveUserIdInReq } from "../common/utils.js";
 
 const usersRouter = express.Router();
@@ -19,7 +19,7 @@ usersRouter.get('/:id?', findUserByIdValidations, UserController.findByUserId);
 usersRouter.put('/edit', updateUserValidations, UserController.updateUser);
 
 // add profile pic
-usersRouter.put('/edit/profilePic', addActiveUserIdInReq, uploadMiddleware.single('profile_pic'), UserController.editProfilePic);
+usersRouter.put('/edit/profilePic', addActiveUserIdInReq, uploadMiddleware.single('profile_pic'), createThumbnail, UserController.editProfilePic);
 
 // deactivate profile
 usersRouter.put('/deactivate', UserController.deactivateProfile);

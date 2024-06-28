@@ -18,8 +18,10 @@ export const getDeepProp = (obj, path) => {
     const splittedPath = path.split('.');
     let target = obj;
     splittedPath.forEach(part => {
-        if (target[part]) {
+        if (target && target[part]) {
             target = target[part];
+        } else {
+            target = null;
         }
     });
     return target;

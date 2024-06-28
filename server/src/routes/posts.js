@@ -1,7 +1,7 @@
 import express from "express";
 import PostController from "../controller/PostController.js";
 import { deletePostValidations, findPostValidations, findUserPostsValidations } from "../validators/postValidator.js";
-import uploadMiddleware from "../middleware/uploadMiddleware.js";
+import { uploadMiddleware } from "../middleware/uploadMiddleware.js";
 import { addActiveUserIdInReq } from "../common/utils.js";
 
 const postsRouter = express.Router();

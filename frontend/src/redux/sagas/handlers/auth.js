@@ -1,7 +1,7 @@
 import { call, put } from "redux-saga/effects";
 import Cookies from 'js-cookie';
 import { request } from "../requests/authReqs";
-import { logout, setError, setUserTokens } from "../../actions/actions";
+import { clearData, logout, setError, setUserTokens } from "../../actions/actions";
 import { AUTH_ROUTES } from "../../../config/apiRoutes";
 import { getDeepProp } from "../../../common/utils";
 
@@ -16,6 +16,7 @@ export function* handleUserLogin(action) {
         const {data} = response;
 
         yield put(setUserTokens(data));
+        yield put(clearData());
     } catch (error) {
         yield put(logout());
         yield put(setError(error));
@@ -59,6 +60,8 @@ export function* handleUserLogout(action) {
         
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
+
+        yield put(clearData());
     } catch (error) {
         yield put(setError(error));
     }

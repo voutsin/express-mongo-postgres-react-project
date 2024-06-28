@@ -4,11 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { Button, Form, Input } from "../../structure/Form";
 import { removeEmptyFields } from "../../common/utils";
 import { login, logout } from "../../redux/actions/actions";
-import ROUTES from "../../config/routes";
+import CirclesStyled from "../../styles/circles";
+import { ClassNames } from "../../styles/classes";
+import Modal from "../../structure/Modal";
+import Register from "./Register";
 
 const Login = props => {
     const [formData, setFormData] = useState(null);
     const [logginOut, setLoggingOut] = useState(true);
+    const [openModal, setOpenModal] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -45,38 +49,55 @@ const Login = props => {
         return !dataOk;
     }
 
-    const handleRegister = () => {
-        navigate(ROUTES.REGISTER.path)
-    }
+    const handleRegister = () => setOpenModal(true);
+    const handleModalClose = () => setOpenModal(false);
+
+    const registerModal = (
+        <Modal
+            handleClose={handleModalClose}
+            flag={openModal}
+        >
+            <Register/>
+        </Modal>
+    )
 
     return (
         <React.Fragment>
-            <div>
-                <h4>Login to our Social Media platform</h4>
-                <div className={'login-wrapper'}>
-                    <p>Login Form</p>
-                    <Form data={formData} onChange={handleChange} className={'login-form'}>
-                        <Input
-                            type="text" 
-                            name="username"
-                            label='Username'
-                            required={true}
-                        />
-                        <Input
-                            type="text" 
-                            name="password"
-                            label='Password'
-                            required={true}
-                        />
-                    </Form>
-                    <Button onClick={handleSubmit} className={'login-btn'} disabled={checkSubmit()}>
-                        Login
-                    </Button>
-                    <Button onClick={handleRegister} className={'register-btn'}>
-                        Sign Up
-                    </Button>
+            <div className={ClassNames.LOGIN_PAGE}>
+                <CirclesStyled login={true}/>
+                <div className={ClassNames.LOGIN_WRAPPER}>
+                    <h4 className={ClassNames.LOGIN_TYPING}>
+                        Welcome to Nex<span>Gen</span>
+                    </h4>
+                    <div className={ClassNames.LOGIN_FORM}>
+                        <h4>Login or Register</h4>
+                        <Form data={formData} onChange={handleChange}>
+                            <Input
+                                type="text" 
+                                name="username"
+                                label='Username'
+                                required={true}
+                            />
+                            <Input
+                                type="password" 
+                                name="password"
+                                label='Password'
+                                required={true}
+                            />
+                        </Form>
+                        <div className={ClassNames.LOGIN_BTNS}>
+                            <Button onClick={handleSubmit} extraClass={ClassNames.LOGIN_BTN} disabled={checkSubmit()}>
+                                Login
+                            </Button>
+                            <span>OR</span>
+                            <Button onClick={handleRegister} className={ClassNames.LOGIN_REGISTER_BTN}>
+                                Create New Profile
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {openModal && registerModal}
         </React.Fragment>
     )
 }
