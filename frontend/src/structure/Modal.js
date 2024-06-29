@@ -1,6 +1,6 @@
 import React from "react";
 import { ClassNames } from "../styles/classes";
-import { Button } from "./Form";
+import { Button } from "./Form/Form.js";
 import { MdClose } from "react-icons/md";
 
 const Modal = props => {

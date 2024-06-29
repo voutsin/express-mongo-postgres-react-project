@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { connect } from 'react-redux';
 import { clearNotify } from "../redux/actions/actions";
 import { selectApiState } from "../redux/reducers/apiReducer";
-import { Button } from "./Form";
+import { Button } from "./Form/Form.js";
 import { isObjectEmpty } from "../common/utils";
 import { MdClose } from "react-icons/md";
 import { ClassNames } from "../styles/classes";

@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { ROUTES, PUBLIC_ROUTES } from '../config/routes';
 import { useNavigate } from 'react-router-dom';
-import { Input } from './Form';
 import { MdLogout, MdSearch, MdChat, MdNotifications, MdFace } from 'react-icons/md';
 import { BASE_URL } from '../config/apiRoutes';
 import { ClassNames } from '../styles/classes';
 import NexGenLogoSVG from '../styles/images/logo';
 import { removeEmptyFields } from '../common/utils';
+import TextInput from './Form/TextInput';
 
 const Menu = props => {
     const [inputs, setInputs] = useState({});
@@ -47,7 +47,7 @@ const Menu = props => {
                 </div>
                 <div className={`${ClassNames.NAV_SECTION} ${ClassNames.NAV_SEARCH}`}>
                     <div className={`${ClassNames.NAV_ITEM}`}>
-                        <Input type="text" name='searchText' onChange={handleChange} formData={inputs} />
+                        <TextInput type="text" name='searchText' onChange={handleChange} formData={inputs} />
                         <button id="search" onClick={() => handleSearch(ROUTES.SEARCH)}><MdSearch/></button>
                     </div>
                 </div>

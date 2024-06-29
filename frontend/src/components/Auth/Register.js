@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { connect, useDispatch } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 import { clearData, logout, notify, registerUser } from "../../redux/actions/actions";
-import { Button, Form, Input, InputFile } from "../../structure/Form";
+import { Button, Form } from "../../structure/Form/Form.js";
 import { checkRequiredFields, removeEmptyFields } from '../../common/utils.js'
 import { selectApiState } from "../../redux/reducers/apiReducer.js";
 import { AUTH_ROUTES } from "../../config/apiRoutes.js";
@@ -10,6 +10,8 @@ import { NotifyTypes } from "../../common/enums.js";
 import { ROUTES } from '../../config/routes.js'
 import { ClassNames } from "../../styles/classes.js";
 import DateInput from "../../structure/Form/DateInput.js";
+import TextInput from "../../structure/Form/TextInput.js";
+import FileInput from "../../structure/Form/FileInput.js";
 
 const intitialData = {
     username: '',
@@ -82,31 +84,31 @@ const Register = props => {
                 <h4>Get Started...</h4>
                 <div className={ClassNames.REGISTER_FORM}>
                     <Form data={formData} onChange={handleChange} >
-                        <Input
+                        <TextInput
                             type="text" 
                             name="username"
                             label='Username'
                             required={true}
                         />
-                        <Input
+                        <TextInput
                             type="email" 
                             name="email"
                             label='Email'
                             required={true}
                         />
-                        <Input
+                        <TextInput
                             type="password" 
                             name="password"
                             label='Password'
                             required={true}
                         />
-                        <Input
+                        <TextInput
                             type="password" 
                             name="confirmPassword"
                             label='Confirm Password'
                             required={true}
                         />
-                        <Input
+                        <TextInput
                             type="text" 
                             name="name"
                             label='Displayed Name'
@@ -116,13 +118,13 @@ const Register = props => {
                             name="birthDate"
                             label='Date of Birth'
                         />
-                        <Input
+                        <TextInput
                             type="textarea" 
                             name="description"
                             label='Description'
                             height={100}
                         />
-                        <InputFile
+                        <FileInput
                             onChange={handleFileChange}
                             name="profilePictureUrl"
                             label='Profile Picture'

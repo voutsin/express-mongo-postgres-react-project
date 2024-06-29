@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { connect, useDispatch } from 'react-redux';
 import { useNavigate } from "react-router-dom";
-import { Button, Form, Input } from "../../structure/Form";
+import { Button, Form } from "../../structure/Form/Form.js";
 import { removeEmptyFields } from "../../common/utils";
 import { login, logout } from "../../redux/actions/actions";
 import CirclesStyled from "../../styles/circles";
 import { ClassNames } from "../../styles/classes";
 import Modal from "../../structure/Modal";
 import Register from "./Register";
+import TextInput from "../../structure/Form/TextInput";
 
 const Login = props => {
     const [formData, setFormData] = useState(null);
@@ -72,13 +73,13 @@ const Login = props => {
                     <div className={ClassNames.LOGIN_FORM}>
                         <h4>Login or Register</h4>
                         <Form data={formData} onChange={handleChange}>
-                            <Input
+                            <TextInput
                                 type="text" 
                                 name="username"
                                 label='Username'
                                 required={true}
                             />
-                            <Input
+                            <TextInput
                                 type="password" 
                                 name="password"
                                 label='Password'
