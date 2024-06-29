@@ -1,7 +1,8 @@
+import { buildUrl } from "../../../common/utils.js";
 import { BASE_URL } from "../../../config/apiRoutes.js";
 
 export const request = payload => {
-    const { routeObj, data, params } = payload
+    const { routeObj, data, params, pathVar } = payload
     const { route, type } = routeObj;
 
     const bodyData = params ? null : data;
@@ -14,6 +15,18 @@ export const request = payload => {
             params: params ? data : null,
             withCredentials: true // Ensure cookies are included in the request
         });
+    }
+
+    if (pathVar) {
+      const parsedUrl = buildUrl(`${BASE_URL}${route}`, bodyData);
+
+      return type(parsedUrl, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          params: null,
+          withCredentials: true // Ensure cookies are included in the request
+      });
     }
 
     return type(`${BASE_URL}${route}`, bodyData, {

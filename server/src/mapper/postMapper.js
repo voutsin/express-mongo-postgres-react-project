@@ -45,6 +45,7 @@ export const postToResDtoForSearch = async post => {
         'userprofpicurl',
         'userdisplayname',
         'userdesc',
+        'userBirthDate',
         'useractive'
     ]
     const userPickedFields = pick(postInfo, userFields)
@@ -66,6 +67,7 @@ export const postToResDtoForSearch = async post => {
             profilePictureUrl: userPickedFields.userprofpicurl,
             name: userPickedFields.userdisplayname,
             description: userPickedFields.userdesc,
+            birthDate: userPickedFields.userBirthDate,
             active: Boolean(userPickedFields.useractive),
         },
         commentCount: parseInt(postInfo.commentcount),

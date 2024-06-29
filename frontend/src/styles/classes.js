@@ -1,18 +1,20 @@
 export const ClassNames = {
     INPUT: 'input-wrapper',
-    FILE_INPUT: 'file-input',
+    CUSTOM_INPUT: 'custom-input',
     INPUT_SPAN: 'input-span',
     INPUT_FILLED: 'input-filled',
-    FILE_INPUT_BTNS: 'file-input-btns',
-    FILE_INPUT_NAME: 'file-input-name',
+    CUSTOM_INPUT_BTNS: 'custom-input-btns',
+    CUSTOM_INPUT_NAME: 'custom-input-name',
     STANDARD_BTN: 'standard-btn',
     LOADING_BTN: 'ldn-btn',
+    INVISIBLE_BTN: 'invisible-btn',
     MODAL_WRAPPER: 'modal-wrapper',
     MODAL_CLOSE: 'modal-close',
     MODAL_CLOSE_BTN: 'modal-close-btn',
     MODAL_CONTENT: 'modal-content',
     MODAL_HEADER: 'modal-header',
     MODAL_BODY: 'modal-body',
+    THUMBNAIL_IMG: 'thumbnail-img',
     // menu
     NAV: 'nav',
     NAV_SECTION: 'nav-section',
@@ -36,4 +38,16 @@ export const ClassNames = {
     REGISTER_FORM: 'register-form',
     // notification
     NOTIFICATION_WRAPPER: 'notification-wrapper',
+    // sidebar
+    RIGHT_SIDEBAR_WRAPPER: 'right-sidebar',
+    // friends view
+    FRIENDS_VIEW: 'friends-view',
+    NO_FRIENDS: 'no-friends',
+    // birthdays view
+    BIRTHDAYS_VIEW: 'birthdays-view',
+    NO_BIRTHDAYS: 'no-birthdays',
+    BIRTHDAYS_DIV: 'birthdays-div',
+    BIRTHDAYS_DETAILS: 'birthdays-details', 
+    BIRTHDAYS_LIST: 'birthdays-list',
+    BIRTHDAY_ITEM: 'birthdays-item',
 }

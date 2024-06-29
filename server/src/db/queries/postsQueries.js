@@ -28,6 +28,7 @@ export const findPostDetailsSQL =
         u.profile_pic AS userProfPicUrl,
         u.displayed_name AS userDisplayName,
         u.description AS userDesc,
+        u.birth_date AS userBirthDate,
         u.active AS userActive, 
         (SELECT count(c.*) FROM comments AS c WHERE c.post_id = p.id) AS commentCount,
         (SELECT count(r.*) FROM reactions AS r WHERE r.post_id = p.id AND r.comment_id IS NULL) AS reactionCount

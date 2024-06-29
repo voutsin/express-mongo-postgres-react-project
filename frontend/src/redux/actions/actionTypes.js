@@ -10,6 +10,8 @@ const ActionTypes = {
     NOTIFY: 'notify',
     CLEAR_NOTIFY: 'clearNotify',
     SET_API_DATA: 'setApiData',
+    FIND_USER_FRIENDS: 'findUserFriends',
+    FIND_USER_FRIENDS_BIRTHDAYS: 'findUserFriendsBirthdays',
 }
 
 export default ActionTypes;

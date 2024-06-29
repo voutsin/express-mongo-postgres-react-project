@@ -1,9 +1,9 @@
 import { FriendStatus, PostType } from "../common/enums.js";
 import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, getActiveUser } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
-import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship } from "../db/queries/friendsQueries.js";
+import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship, findUserFrinedsBirthdays } from "../db/queries/friendsQueries.js";
 import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
-import { detailedFriendToResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
+import { detailedFriendToResDto, friendAndUserResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
 import { validationResult } from 'express-validator';
 import { unlink } from 'fs';
 import jwt from 'jsonwebtoken';
@@ -348,6 +348,19 @@ const editProfilePic = async (req, res) => {
   }
 }
 
+const findFriendsBirthdays = async (req, res) => {
+  try {
+    const results = await postgresQuery(findUserFrinedsBirthdays, [req.userId]);
+    if (results) {
+      res.json(results.rows.map(row => friendAndUserResDto(row)));
+      res.status(200);
+    }
+  } catch(e) {
+    console.log(e);
+    res.status(500).send('Internal Server Error: ', e);
+  }
+}
+
 export default {
     findAll,
     registerNewUser,
@@ -361,4 +374,5 @@ export default {
     deactivateProfile,
     searchUserByCriteria,
     editProfilePic,
+    findFriendsBirthdays,
 };

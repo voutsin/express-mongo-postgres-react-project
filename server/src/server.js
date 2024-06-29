@@ -43,13 +43,18 @@ app.use(cookieParser());
 
 connectToMongoDB();
 
+//An error handling middleware
+app.use(function (err, req, res, next) {
+  res.status(500);
+  res.send("Oops, something went wrong. ", err)
+});
+
 app.use('/auth', authRouter);
 
 // Serve static files from the "uploads" directory
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// app.use('/uploads', express.static(join(__dirname, 'uploads')));
 
 app.get('/uploads/:userId/:filename', (req, res) => {
   const { userId, filename } = req.params;

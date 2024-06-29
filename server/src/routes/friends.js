@@ -1,6 +1,7 @@
 import express from "express";
 import UserController from "../controller/UserController.js";
 import { requestFriendValidations, acceptFriendValidations, deleteFriendValidations, blockFriendValidations, findUserByIdValidations } from "../validators/userValidator.js";
+import { addActiveUserIdInReq } from "../common/utils.js";
 
 const friendsRouter = express.Router();
 
@@ -18,6 +19,9 @@ friendsRouter.delete('/delete/:friendId', deleteFriendValidations, UserControlle
 
 // block friend
 friendsRouter.put('/block/:friendId', blockFriendValidations, UserController.blockUser);
+
+// find frineds birthdays
+friendsRouter.get('/birthdays/get', addActiveUserIdInReq, UserController.findFriendsBirthdays);
 
 
 export default friendsRouter;

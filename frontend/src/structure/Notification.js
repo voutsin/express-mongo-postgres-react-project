@@ -15,7 +15,6 @@ const Notification = props => {
     const activeNotification = notification && !isObjectEmpty(notification);
 
     useEffect(() => {
-        console.log("notification: ", props.notification)
         if (activeNotification) {
             // after 10 seconds close notification
             setTimeout(() => {

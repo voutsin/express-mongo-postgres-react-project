@@ -9,6 +9,7 @@ import { AUTH_ROUTES } from "../../config/apiRoutes.js";
 import { NotifyTypes } from "../../common/enums.js";
 import { ROUTES } from '../../config/routes.js'
 import { ClassNames } from "../../styles/classes.js";
+import DateInput from "../../structure/Form/DateInput.js";
 
 const intitialData = {
     username: '',
@@ -17,6 +18,7 @@ const intitialData = {
     email: '',
     name: '',
     description: '',
+    birthDate: '',
 }
 
 const Register = props => {
@@ -110,10 +112,15 @@ const Register = props => {
                             label='Displayed Name'
                             required={true}
                         />
+                        <DateInput
+                            name="birthDate"
+                            label='Date of Birth'
+                        />
                         <Input
-                            type="text" 
+                            type="textarea" 
                             name="description"
                             label='Description'
+                            height={100}
                         />
                         <InputFile
                             onChange={handleFileChange}

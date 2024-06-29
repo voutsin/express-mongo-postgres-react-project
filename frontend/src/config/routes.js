@@ -1,7 +1,7 @@
-import Home from "../structure/Home";
 import Login from "../components/Auth/Login"
 import Register from "../components/Auth/Register";
 import ChatPage from "../components/Chat/ChatPage";
+import Home from "../components/Home/Home";
 import UserProfile from "../components/Profile/UserProfile";
 import SearchPage from "../components/Search/SearchPage";
 

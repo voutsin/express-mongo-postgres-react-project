@@ -32,13 +32,14 @@ export const Input = props => {
         className,
         formData,
         name,
+        type,
         onFormChange,
         onChange,
-        required
+        required,
+        height
     } = props;
 
     const handleChange = (event) => {
-        console.log("handle change")
         const name = event.target.name;
         const value = event.target.value;
         onChange(name, value);
@@ -58,13 +59,15 @@ export const Input = props => {
 
     const inputLabel = `${label || ''}${required ? ' *' : ''}`;
 
+    const styles = type === 'textarea' ? {height: height + 'px'} : {}
     return (
         <React.Fragment>
-            <label className={ClassNames.INPUT} >
+            <label className={`${ClassNames.INPUT} ${type === 'textarea' ? 'textarea' : ''}`} >
                 <span className={`${ClassNames.INPUT_SPAN} ${filled ? ClassNames.INPUT_FILLED : ''}`} >
                     {inputLabel || ''}
                 </span>
-	            <input {...parsedProps}/>
+	            {type === 'textarea' ? <textarea {...parsedProps} style={styles} /> 
+                : <input {...parsedProps}/>}
 	        </label>
         </React.Fragment>
     )
@@ -101,7 +104,7 @@ export const InputFile = props => {
         const elem = document.createElement('input');
         elem.type = 'file';
         elem.name = name;
-        elem.className = className || 'file-form-input';
+        elem.className = className || 'custom-form-input';
         elem.addEventListener('cancel', handleCancel);
         elem.addEventListener('change', (event) => {
             handleFileChange(event); 
@@ -135,12 +138,12 @@ export const InputFile = props => {
 
     return (
         <React.Fragment>
-            <label className={`${ClassNames.INPUT} ${ClassNames.FILE_INPUT}`} >
+            <label className={`${ClassNames.INPUT} ${ClassNames.CUSTOM_INPUT}`} >
                 <span className={`${ClassNames.INPUT_SPAN} ${file ? ClassNames.INPUT_FILLED : ''}`} >
                     {inputLabel}
                 </span>
-                <span className={ClassNames.FILE_INPUT_NAME}> {file ? file.name : ''} </span>
-                <div className={ClassNames.FILE_INPUT_BTNS}>
+                <span className={ClassNames.CUSTOM_INPUT_NAME}> {file ? file.name : ''} </span>
+                <div className={ClassNames.CUSTOM_INPUT_BTNS}>
                     <button onClick={chooseFile} disabled={loading} className={`${ClassNames.STANDARD_BTN} ldn-btn ${loading ? 'loading' : ''}`}>BROWSE</button>
                 </div>
 	        </label>

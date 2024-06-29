@@ -1,7 +1,7 @@
 import { call, put } from "redux-saga/effects";
 import { setApiData, setError } from "../../actions/actions";
 import { multiPartRequest, request } from "../requests/authReqs";
-import { AUTH_ROUTES, USERS_ROUTES } from "../../../config/apiRoutes";
+import { AUTH_ROUTES, FRIENDS_ROUTES, USERS_ROUTES } from "../../../config/apiRoutes";
 
 
 export function* handleUserRegistration(action) {
@@ -41,6 +41,47 @@ export function* handleUserRegistration(action) {
         }
     
         yield put(setApiData(updatedPayload));
+    } catch (error) {
+        yield put(setError(error));
+    }
+}
+
+export function* handleFindUserFriends(action) {
+    try {
+        const payload = {
+            routeObj: FRIENDS_ROUTES.FIND_USER_FRIENDS,
+            data: { id: action.payload },
+            pathVar: true
+        };
+        const response = yield call(request, payload);
+        const { data } = response;
+        
+        const reduxPayload = {
+            data: data,
+            apiSuccess: true,
+            apiRouteName: FRIENDS_ROUTES.FIND_USER_FRIENDS.name,
+        }
+        yield put(setApiData(reduxPayload));
+    } catch (error) {
+        yield put(setError(error));
+    }
+}
+
+export function* handleFindUserFriendsBirthdays() {
+    try {
+        const payload = {
+            routeObj: FRIENDS_ROUTES.FIND_USER_FRIENDS_BIRTHDAYS,
+            params: true
+        };
+        const response = yield call(request, payload);
+        const { data } = response;
+        
+        const reduxPayload = {
+            data: data,
+            apiSuccess: true,
+            apiRouteName: FRIENDS_ROUTES.FIND_USER_FRIENDS_BIRTHDAYS.name,
+        }
+        yield put(setApiData(reduxPayload));
     } catch (error) {
         yield put(setError(error));
     }

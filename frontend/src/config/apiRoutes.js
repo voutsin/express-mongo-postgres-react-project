@@ -1,7 +1,9 @@
 import { ApiTypes } from "../common/enums";
 
 const ApiRoutesNames = {
-    REGISTER_USER: 'REGISTER_USER'
+    REGISTER_USER: 'REGISTER_USER',
+    FIND_USER_FRIENDS: 'FIND_USER_FRIENDS',
+    FIND_USER_FRIENDS_BIRTHDAYS: 'FIND_USER_FRIENDS_BIRTHDAYS',
 }
 
 const AUTH = '/auth';
@@ -75,6 +77,12 @@ export const FRIENDS_ROUTES = {
     FIND_USER_FRIENDS: {
         route: `${FRIENDS}/:id`,
         type: ApiTypes.GET,
+        name: ApiRoutesNames.FIND_USER_FRIENDS
+    },
+    FIND_USER_FRIENDS_BIRTHDAYS: {
+        route: `${FRIENDS}/birthdays/get`,
+        type: ApiTypes.GET,
+        name: ApiRoutesNames.FIND_USER_FRIENDS_BIRTHDAYS
     },
     REQUEST_FRIENDSHIP: {
         route: `${FRIENDS}/request/:friendId`,

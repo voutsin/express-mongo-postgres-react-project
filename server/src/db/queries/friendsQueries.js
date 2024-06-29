@@ -6,6 +6,11 @@ export const findAllActiveFriendshipsByUserId =
     `SELECT f.* FROM friends AS f 
     JOIN users AS u ON u.id = f.friend_id AND active = 1 
     WHERE f.user_id = $1 AND f.status = '${FriendStatus.ACCEPTED}';`;
+export const findUserFrinedsBirthdays = 
+    `SELECT f.*, f.created_at as fr_created_at, u.* 
+    FROM friends AS f 
+    JOIN users AS u ON u.id = f.friend_id AND TO_CHAR(u.birth_date, 'MM-DD') = TO_CHAR(CURRENT_DATE, 'MM-DD') AND u.active = 1 
+    WHERE f.user_id = $1; `;
 
 // INSERT 
 export const insertNewFriendshipRequest = 

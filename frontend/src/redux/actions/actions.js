@@ -53,4 +53,13 @@ export const clearNotify = () => ({
 export const setApiData = data => ({
     type: ActionTypes.SET_API_DATA,
     payload: data
+});
+
+export const findUserFriends = id => ({
+    type: ActionTypes.FIND_USER_FRIENDS,
+    payload: id
+})
+
+export const findUserFriendsBirthdays = () => ({
+    type: ActionTypes.FIND_USER_FRIENDS_BIRTHDAYS,
 })

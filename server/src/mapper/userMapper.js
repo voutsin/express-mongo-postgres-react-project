@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { uniq } from 'underscore';
 import { postgresQuery } from '../db/postgres.js';
 import { findUsersInIds } from '../db/queries/userQueries.js';
-import { getThumbnailUrl } from '../common/utils.js';
+import { getThumbnailUrl, timestampToDate } from '../common/utils.js';
 
 export const newUserReqDtoToUser = async req => {
     const saltRounds = 10;
@@ -14,6 +14,7 @@ export const newUserReqDtoToUser = async req => {
         profile_pic: req.profilePictureUrl,
         displayed_name: req.name,
         description: req.description,
+        birth_date: req.birthDate,
     }
 }
 
@@ -26,6 +27,7 @@ export const updateUserReqDtoToUser = async req => {
         profile_pic: req.profilePictureUrl,
         displayed_name: req.name,
         description: req.description,
+        birth_date: req.birthDate,
     }
 }
 
@@ -39,6 +41,7 @@ export const userToResDto = user => {
         profilePictureThumb: getThumbnailUrl(user.id, user.profile_pic),
         name: user.displayed_name,
         description: user.description,
+        birthDate: user.birth_date,
         active: Boolean(user.active),
     }
 }
@@ -58,9 +61,14 @@ export const detailedFriendToResDto = async friendships => {
     const userParams = uniq([
         ...friendIds,
         userId
-    ]);
-    const userResults = await postgresQuery(findUsersInIds(userParams.toString()));
-    const users = userResults ? userResults.rows.map(user => userToResDto(user)) : [];
+    ].filter(p => p != null && p !== '')
+    );
+    let users = [];
+    
+    if (userParams.length > 0) {
+        const userResults = await postgresQuery(findUsersInIds(userParams.toString()));
+        users = userResults ? userResults.rows.map(user => userToResDto(user)) : [];
+    }
     return {
         friends: friendships.map(friendship => ({
             user: friendship.user_id,
@@ -71,3 +79,18 @@ export const detailedFriendToResDto = async friendships => {
         user: users.find(user => user.id === userId)
     };
 }
+
+export const friendAndUserResDto = result => ({
+    userId: result.user_id,
+    friendId: result.friend_id,
+    frienshipStatus: result.status,
+    friendsSince: timestampToDate(result.fr_created_at),
+    friendUsername: result.username,
+    friendEmail: result.email,
+    friendCreated: timestampToDate(result.created_at),
+    friendPicThumbnail: getThumbnailUrl(result.id, result.profile_pic),
+    friendName: result.displayed_name,
+    friendDescription: result.description,
+    friendActive: Boolean(result.active),
+    friendBirthDate: timestampToDate(result.birth_date),
+})

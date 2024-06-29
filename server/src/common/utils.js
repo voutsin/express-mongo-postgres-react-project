@@ -94,7 +94,7 @@ export const getThumbnailUrl = (id, originalUrl) => {
   if (originalUrl == null) {
     return null;
   }
-  
+
   const path = originalUrl.split('/');
 
   // get directory
@@ -112,4 +112,13 @@ export const getThumbnailUrl = (id, originalUrl) => {
   const suffix = splittedName[splittedName.length - 1];
   
   return `${uploadPath}${THUMBNAIL_PREFIX}${id}.${suffix}`;
+}
+
+export const timestampToDate = timestamp => {
+  if (timestamp == null) {
+    return null;
+  }
+  const date = new Date(timestamp);
+  // Format the date
+  return date.toLocaleDateString();
 }

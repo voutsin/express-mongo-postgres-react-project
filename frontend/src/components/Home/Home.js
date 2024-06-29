@@ -1,9 +1,10 @@
 import React from 'react';
+import RightSidebar from './RightSidebar';
 
 const Home = props => {
     return (
         <React.Fragment>
-            Home
+            <RightSidebar/>
         </React.Fragment>
     )
 }

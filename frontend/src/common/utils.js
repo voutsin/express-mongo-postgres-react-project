@@ -50,3 +50,8 @@ export const checkRequiredFields = (data, fieldsArray) => {
 export const findKey = (obj, value) => {
     return Object.keys(obj).find(key => obj[key] === value) || null;
 }
+
+// Function to replace dynamic segments in a URL
+export const buildUrl = (template, params) => {
+  return template.replace(/:([a-zA-Z]+)/g, (_, key) => params[key]);
+};
