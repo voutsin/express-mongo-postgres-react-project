@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ClassNames } from "../../styles/classes";
 
 const TextInput = props => {
+    const inputRef = useRef(null);
+
     const {
         label,
         className,
@@ -11,8 +13,15 @@ const TextInput = props => {
         onFormChange,
         onChange,
         required,
-        height
+        height,
+        inputFocus
     } = props;
+
+    useEffect(() => {
+        if (inputFocus) {
+            inputRef.current.focus();
+        }
+    }, [inputFocus])
 
     const handleChange = (event) => {
         const name = event.target.name;
@@ -29,6 +38,7 @@ const TextInput = props => {
             if (onFormChange) {onFormChange(event);} // Call onFormChange if provided
         },
     }
+    delete parsedProps.inputFocus;
 
     const filled = parsedProps.value && parsedProps.value.length > 0;
 
@@ -42,7 +52,7 @@ const TextInput = props => {
                     {inputLabel || ''}
                 </span>
 	            {type === 'textarea' ? <textarea {...parsedProps} style={styles} /> 
-                : <input {...parsedProps}/>}
+                : <input {...parsedProps} ref={inputRef}/>}
 	        </label>
         </React.Fragment>
     )

@@ -1,7 +1,8 @@
 import React from "react";
 import styled from 'styled-components';
 
-const Loader = () => {
+const Loader = props => {
+    const  { mini } = props;
 
     const StyledLoader = styled.div`
         .loader {position: fixed;top: 0;left: 0;width: 100vw;height: 100vh;display: flex;align-items: center;justify-content: center;z-index:1000;background: #5e63cd6e;}
@@ -13,13 +14,22 @@ const Loader = () => {
         @keyframes pulsB {0%, 50% { box-shadow: 0 0 0 0 #fff; opacity: 0; } 100% { box-shadow: 0 0 0 var(--loader-width) #fff; opacity: 1; }}
     `;
 
+    const StyledMiniLoader = styled.div`
+    `;
+
     return (
         <React.Fragment>
-            <StyledLoader>
+            {mini 
+            ? <StyledMiniLoader>
+                <div className="mini-loader">
+                    <div className="body"></div>
+                </div>
+            </StyledMiniLoader>
+            : <StyledLoader>
                 <div className="loader">
                     <div className="body"></div>
                 </div>
-            </StyledLoader>
+            </StyledLoader>}
         </React.Fragment>
     )
 }

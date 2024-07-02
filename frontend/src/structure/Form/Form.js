@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ClassNames } from "../../styles/classes";
+import { MdCheck } from "react-icons/md";
 
 export const Form = props => {
     const {
@@ -50,19 +51,22 @@ export const Button = props => {
 
 export const LoadingButton = props => {
     const [loading, setLoading] = useState(false);
+    const [callFlag, setCallFlag] = useState(false);
 
     const {
         onClick,
         className,
         extraClass,
-        apiCallName,
+        apiCall,
+        children,
     } = props;
 
     useEffect(() => {
-        if (props[apiCallName]) {
+        if (apiCall && loading) {
             setLoading(false);
+            setCallFlag(true);
         }
-    }, [props, apiCallName]);
+    }, [props, apiCall, loading]);
 
     const handleClick = event => {
         setLoading(true);
@@ -71,7 +75,7 @@ export const LoadingButton = props => {
 
     const parsedProps = {
         ...props,
-        onClick: handleClick,
+        onClick: callFlag ? null : handleClick,
         className: `${(className || ClassNames.STANDARD_BTN)} ${ClassNames.LOADING_BTN} ${loading ? 'loading' : ''}` ,
     }
 
@@ -81,7 +85,9 @@ export const LoadingButton = props => {
 
     return (
         <React.Fragment>
-            <button {...parsedProps}/>
+            <button {...parsedProps}>
+                {callFlag ? <MdCheck/> : children}
+            </button>
         </React.Fragment>
     )
 }

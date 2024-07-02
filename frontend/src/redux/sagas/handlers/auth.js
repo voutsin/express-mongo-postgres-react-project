@@ -7,8 +7,6 @@ import { getDeepProp } from "../../../common/utils";
 
 export function* handleUserLogin(action) {
     try {
-        // yield put(clearData());
-
         const payload = {
             routeObj: AUTH_ROUTES.LOGIN,
             data: action.payload,
@@ -66,5 +64,6 @@ export function* handleUserLogout(action) {
         yield put(clearData());
     } catch (error) {
         yield put(setError(error));
+        yield put(clearData());
     }
 }

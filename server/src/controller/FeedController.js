@@ -2,8 +2,9 @@ import { validationResult } from 'express-validator';
 import { postgresQuery } from '../db/postgres.js';
 import { getActiveUser } from '../common/utils.js';
 import { findAllActiveFriendshipsByUserId } from '../db/queries/friendsQueries.js';
-import { findFeedsForUser } from '../db/repositories/FeedRepository.js';
-import { feedToResDto } from '../mapper/feedMapper.js';
+import { findFeedsForUser, findFeedsGroupByPost } from '../db/repositories/FeedRepository.js';
+import { feedByPostResDto, feedToResDto } from '../mapper/feedMapper.js';
+import { uniq } from 'underscore';
 
 /**
  * This is the endpoint that the user uses to display his feed.
@@ -43,10 +44,15 @@ const findUserPostFeed = async (req, res) => {
             return res.status(200).send('No friends made yet. Consider adding some friends to see news!');
         }
         const friendsIds = friendsResults.rows.map(row => row.friend_id);
+        const userIds = uniq([
+            ...friendsIds,
+            parseInt(activeUser.id)
+        ]);
 
         // find feeds based on his friends actions
-        const feedsResults = await findFeedsForUser(friendsIds, pageSize, skip);
-        const feeds = await feedToResDto(feedsResults.feeds);
+        const feedsResults = await findFeedsGroupByPost(userIds, pageSize, skip);
+        // const feeds = await feedToResDto(feedsResults.feeds);
+        const feeds = await feedByPostResDto(feedsResults.feeds);
 
         // Return results and pagination metadata
         res.status(200).send({

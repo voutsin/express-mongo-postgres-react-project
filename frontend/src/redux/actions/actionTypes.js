@@ -12,6 +12,14 @@ const ActionTypes = {
     SET_API_DATA: 'setApiData',
     FIND_USER_FRIENDS: 'findUserFriends',
     FIND_USER_FRIENDS_BIRTHDAYS: 'findUserFriendsBirthdays',
+    GET_USER_FEED: 'getUserFeed',
+    GET_POST_REACTIONS: 'getPostReactions',
+    SEND_FRIEND_REQUEST: 'sendFriendRequest',
+    ADD_NEW_COMMENT: 'addNewComment',
+    ADD_NEW_REACTION: 'addNewReaction',
+    UPDATE_REACTION: 'updateReaction',
+    DELETE_REACTION: 'deleteReaction',
+    REFRESH_POST_DATA: 'refreshPostData',
 }
 
 export default ActionTypes;

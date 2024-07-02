@@ -11,6 +11,8 @@ import { ClassNames } from "../../styles/classes";
 const FriendsColumn = props => {
     const [friendsCallFlag, setFriendsCallFlag] = useState(false);
 
+    const { postLink, shareModal } = props;
+
     useEffect(() => {
         if (props.auth && props.auth.id && !friendsCallFlag) {
             props.findUserFriends(props.auth.id);
@@ -22,13 +24,16 @@ const FriendsColumn = props => {
 
     const handleUserClick = info => {
         // TODO: add chat window
+        if (postLink) {
+            // add link to chat message
+        }
         console.log("user: ", info)
     }
 
     return (
         <React.Fragment>
             <div className={ClassNames.FRIENDS_VIEW}>
-                <h4>Your Friends</h4>
+                <h4>{shareModal ? 'Send to a friend' : 'Your Friends'}</h4>
                 {friends && friends.length > 0 ? 
                     <div>
                         {friends && friends.map(friend => {

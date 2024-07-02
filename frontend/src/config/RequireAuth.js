@@ -34,7 +34,7 @@ const RequireAuth = props => {
         const errorStatus = getDeepProp(props, 'api.error.status');
         if (!errorStatus) {
             // Show a loading indicator or placeholder while verification is in progress
-            return <Loader/>;
+            return <Loader mini={true}/>;
         }
     }
 

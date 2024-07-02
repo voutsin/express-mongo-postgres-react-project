@@ -15,7 +15,7 @@ export const findDetailedLists = async (postId) => {
     const commentResults = commentParams.length > 0 ? await postgresQuery(`SELECT * FROM comments WHERE post_id IN (${commentParams});`) : {rows: []};
     const allComments = [...commentResults.rows];
     const reactionResults = await findReactions(allPosts, allComments);
-    const userResults = await findUsers(allPosts, allComments, reactionResults.rows);
+    const userResults = await findUsers(allPosts, allComments, reactionResults);
 
     // lists
     const users = userResults.map(user => userToResDto(user));

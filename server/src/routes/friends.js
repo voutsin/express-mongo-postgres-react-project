@@ -9,7 +9,7 @@ const friendsRouter = express.Router();
 friendsRouter.get('/:id', findUserByIdValidations, UserController.findAllFriendsOfUser);
 
 // request friendship
-friendsRouter.post('/request/:friendId', requestFriendValidations, UserController.requestFriendship);
+friendsRouter.post('/request', requestFriendValidations, UserController.requestFriendship);
 
 // accept friendship
 friendsRouter.put('/accept/:friendId', acceptFriendValidations, UserController.acceptFriendship);

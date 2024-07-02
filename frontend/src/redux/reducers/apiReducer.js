@@ -1,5 +1,6 @@
 import { NotifyTypes } from "../../common/enums";
 import { isObjectEmpty } from "../../common/utils";
+import { FEED_ROUTES } from "../../config/apiRoutes";
 import ActionTypes from "../actions/actionTypes";
 
 
@@ -27,6 +28,7 @@ export const apiReducer = (state = defaultState, action) => {
             const errors = error.response.data.errors || error.response.data.error;
             const errorMessage = Array.isArray(errors) ? errors.map(err => err.msg).join(', <br/>') : errors;
             return {
+                ...state,
                 error: error.response,
                 notify: {
                     type: NotifyTypes.ERROR,
@@ -57,7 +59,22 @@ export const apiReducer = (state = defaultState, action) => {
             } else {
                 return {...state};
             }
-            
+        case ActionTypes.REFRESH_POST_DATA:
+            const updatedPost = action.payload;
+            const feedData = state[FEED_ROUTES.GET_FEED.name] && state[FEED_ROUTES.GET_FEED.name].data;
+            // TODO: add posts data for user profile
+
+            feedData.feeds.forEach(feed => {
+                if (feed.post && feed.post.id === updatedPost.id) {
+                    feed.post = updatedPost;
+                }
+            })
+
+            return {
+                ...state,
+                [FEED_ROUTES.GET_FEED.name]: state[FEED_ROUTES.GET_FEED.name], // for feed posts
+                POST_DATA: updatedPost, // for single post
+            }
         default:
             return state;
     }
@@ -65,3 +82,10 @@ export const apiReducer = (state = defaultState, action) => {
 
 //SELECTORS
 export const selectApiState = (state, valueName) => (state.api && state.api[valueName]);
+export const selectPostsData = state => {
+    if (state.api[FEED_ROUTES.GET_FEED.name] && state.api[FEED_ROUTES.GET_FEED.name].data) {
+        return state.api[FEED_ROUTES.GET_FEED.name].data.feeds.map(f => f.post);
+    }
+
+    return [state.api.POST_DATA] || [];
+}

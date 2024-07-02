@@ -134,7 +134,7 @@ const requestFriendship = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const params = Object.values(req.params); // param 1 is request user id
+    const params = Object.values(req.body); // param 1 is request user id
     const activeUser = getActiveUser(req);
     params.push(activeUser ? activeUser.id : null); // param 2 is active user id
 

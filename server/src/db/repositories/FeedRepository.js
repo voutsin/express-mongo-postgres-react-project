@@ -58,6 +58,64 @@ export const findFeedsForUser = async (friendsIds, pageSize, skip) => {
     }
 }
 
+export const findFeedsGroupByPost = async (friendsIds, pageSize, skip) => {
+    try {
+        const feeds = await Feed.aggregate([
+            // query for select
+            {
+              $match: {
+                userId: { $in: friendsIds }
+              }
+            },
+            // group feeds into an array by post id
+            {
+              $group: {
+                _id: "$content.postId",
+                feeds: {
+                  $push: {
+                    userId: "$userId",
+                    type: "$type",
+                    content: "$content",
+                    timestamp: "$timestamp"
+                  }
+                },
+                count: { $sum: 1 }, // count the number of feeds per postId
+                maxTimestamp: { $max: "$timestamp" } // Find the latest timestamp in each group
+              }
+            },
+            // sort feeds array by timestamp descending
+            {
+              $project: {
+                feeds: {
+                  $sortArray: {
+                    input: "$feeds",
+                    sortBy: { timestamp: -1 } // Sort feeds within each postId group by timestamp descending
+                  }
+                },
+              }
+            },
+            // sort results by max timestamp descending
+            {
+              $sort: { maxTimestamp: -1 } // Sorting by timestamp
+            },
+            {
+              $skip: skip
+            },
+            {
+              $limit: pageSize
+            }
+        ]);
+
+        return {
+            totalRecords: feeds.length,
+            feeds,
+        }
+    } catch (e) {
+        console.log("Find Feeds error: ", e);
+        throw new Error(e);
+    }
+}
+
 export const insertOrUpdateCommentFeed = async comment => {
     const {
         id,

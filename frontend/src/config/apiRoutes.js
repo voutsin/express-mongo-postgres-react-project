@@ -4,6 +4,13 @@ const ApiRoutesNames = {
     REGISTER_USER: 'REGISTER_USER',
     FIND_USER_FRIENDS: 'FIND_USER_FRIENDS',
     FIND_USER_FRIENDS_BIRTHDAYS: 'FIND_USER_FRIENDS_BIRTHDAYS',
+    GET_FEED: 'GET_FEED',
+    VIEW_POST_REACTIONS: 'VIEW_POST_REACTIONS',
+    REQUEST_FRIENDSHIP: 'REQUEST_FRIENDSHIP',
+    ADD_NEW_COMMENT: 'ADD_NEW_COMMENT',
+    ADD_NEW_REACTION: 'ADD_NEW_REACTION',
+    UPDATE_REACTION: 'UPDATE_REACTION',
+    DELETE_REACTION: 'DELETE_REACTION',
 }
 
 const AUTH = '/auth';
@@ -85,8 +92,9 @@ export const FRIENDS_ROUTES = {
         name: ApiRoutesNames.FIND_USER_FRIENDS_BIRTHDAYS
     },
     REQUEST_FRIENDSHIP: {
-        route: `${FRIENDS}/request/:friendId`,
+        route: `${FRIENDS}/request`,
         type: ApiTypes.POST,
+        name: ApiRoutesNames.REQUEST_FRIENDSHIP
     },
     ACCEPT_FRIENDSHIP: {
         route: `${FRIENDS}/accept/:friendId`,
@@ -129,6 +137,7 @@ export const FEED_ROUTES = {
     GET_FEED: {
         route: `${FEED}/user`,
         type: ApiTypes.GET,
+        name: ApiRoutesNames.GET_FEED
     },
 }
 
@@ -144,6 +153,7 @@ export const COMMENTS_ROUTES = {
     ADD_NEW_COMMENT: {
         route: `${COMMENTS}/addNew`,
         type: ApiTypes.POST,
+        name: ApiRoutesNames.ADD_NEW_COMMENT
     },
     UPDATE_COMMENT: {
         route: `${COMMENTS}/edit`,
@@ -160,17 +170,25 @@ export const REACTIONS_ROUTES = {
         route: `${REACTIONS}/:id`,
         type: ApiTypes.GET,
     },
+    VIEW_POST_REACTIONS: {
+        route: `${REACTIONS}/post/:id`,
+        type: ApiTypes.GET,
+        name: ApiRoutesNames.VIEW_POST_REACTIONS
+    },
     ADD_NEW_REACTION: {
         route: `${REACTIONS}/addNew`,
         type: ApiTypes.POST,
+        name: ApiRoutesNames.ADD_NEW_REACTION
     },
     UPDATE_REACTION: {
         route: `${REACTIONS}/edit`,
         type: ApiTypes.PUT,
+        name: ApiRoutesNames.UPDATE_REACTION
     },
     DELETE_REACTION: {
         route: `${REACTIONS}/:id`,
         type: ApiTypes.DELETE,
+        name: ApiRoutesNames.DELETE_REACTION
     },
 }
 

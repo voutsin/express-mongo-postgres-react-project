@@ -39,7 +39,7 @@ export const updateUserValidations = [
 
 export const requestFriendValidations = [
   // check if username already exists
-  param('friendId')
+  body('friendId')
     .exists().withMessage('Friend ID is required')
     .notEmpty().withMessage('Friend ID cannot be empty')
     .custom(async (friendId, { req }) => {

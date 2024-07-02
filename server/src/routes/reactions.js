@@ -2,11 +2,12 @@ import express from "express";
 import ReactionController from "../controller/ReactionController.js";
 import { addActiveUserIdInReq, fetchReactionMiddleware } from "../common/utils.js";
 import { addNewReactionValidations, deleteReactionValidations, updateReactionValidations, viewReactionValidations } from "../validators/reactionValidator.js";
+import { findPostValidations } from "../validators/postValidator.js";
 
 const reactionsRouter = express.Router();
 
 // find all reactions
-reactionsRouter.get('/', addActiveUserIdInReq, ReactionController.findAllReactions);
+reactionsRouter.get('/post/:id?', addActiveUserIdInReq, findPostValidations, ReactionController.findAllPostReactions);
 
 // add new reaction
 reactionsRouter.post('/addNew', addActiveUserIdInReq, fetchReactionMiddleware, addNewReactionValidations, ReactionController.addNewReaction);

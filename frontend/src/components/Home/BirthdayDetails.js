@@ -1,7 +1,8 @@
 import React from "react";
 import { ClassNames } from "../../styles/classes";
-import { MdFace, MdSend } from "react-icons/md";
-import { BASE_URL } from "../../config/apiRoutes";
+import { MdSend } from "react-icons/md";
+import UserName from "../../structure/User/UserName";
+import UserImage from "../../structure/User/UserImage";
 
 const BirthdayDetails = props => {
 
@@ -16,26 +17,23 @@ const BirthdayDetails = props => {
     const itemsList = birthdayList && birthdayList.map(item => {
         const today = new Date();
         const birthDate = new Date(item.friendBirthDate);
-        const friendAge = today.getFullYear() - birthDate.getFullYear();;
+        const friendAge = today.getFullYear() - birthDate.getFullYear();
         const friendsSince = item.friendsSince;
 
         return (
-            <div className={ClassNames.BIRTHDAY_ITEM}>
-                <div className={ClassNames.THUMBNAIL_IMG}>
-                    {item.friendPicThumbnail ? 
-                        <img 
-                            src={`${BASE_URL}/${item.friendPicThumbnail}`} 
-                            alt={item.friendUsername}
-                        /> 
-                        : <MdFace/> 
-                    }
-                </div>
-                <div className="friend-info">
-                    <span className={'user-name'}>{item.friendName}</span>
+            <div className={ClassNames.USER_ITEM}>
+                <UserImage
+                    id={item.friendId}
+                    picUrl={item.friendPicThumbnail}
+                    username={item.friendUsername}
+                    className={ClassNames.THUMBNAIL_IMG}
+                />
+                <div className={ClassNames.USER_INFO}>
+                    <UserName name={item.friendName} id={item.friendId} />
                     <span className={'user-age'}>Age: {friendAge}</span>
                     <span className={'friends-time'}>Friends Since: {friendsSince}</span>
                 </div>
-                <button className="message-icon" onClick={() => handleMessageFriend(item)}><MdSend/></button>
+                <button className={ClassNames.MESSAGE_ICON} onClick={() => handleMessageFriend(item)}><MdSend/></button>
             </div>
         )
     })

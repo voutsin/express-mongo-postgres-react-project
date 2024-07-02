@@ -1,3 +1,4 @@
+import { userToResDto } from "./userMapper.js"
 import { findDetailedLists } from "./utils.js"
 
 export const reactionToResDto = reaction => {
@@ -31,6 +32,21 @@ export const detailedReactioToResDto = async reaction => {
         user: users.find(user => user.id === reaction.user_id),
         post: posts.find(post => post.id === reaction.post_id),
         comment: reaction.comment_id ? comments.find(comment => comment.id === reaction.comment_id) : null,
+        reactionType: parseInt(reaction.reaction_type),
+        createdAt: reaction.created_at,
+    }
+}
+
+export const reactionAndUserResDto = res => {
+    const reaction = res.result;
+    return {
+        id: reaction.id,
+        user: {
+            ...userToResDto(reaction.user),
+            isFriends: reaction.user.is_friends,
+        },
+        postId: reaction.post_id,
+        commentId: reaction.comment_id,
         reactionType: parseInt(reaction.reaction_type),
         createdAt: reaction.created_at,
     }
