@@ -4,7 +4,7 @@ import UserImage from "../../../structure/User/UserImage";
 import UserName from "../../../structure/User/UserName";
 import { Button, LoadingButton } from "../../../structure/Form/Form";
 import { ClassNames } from "../../../styles/classes";
-import { clearData, getPostReactions, sendFriendRequest } from "../../../redux/actions/actions";
+import { clearData, getCommentReactions, getPostReactions, sendFriendRequest } from "../../../redux/actions/actions";
 import { selectApiState } from "../../../redux/reducers/apiReducer";
 import { FRIENDS_ROUTES, REACTIONS_ROUTES } from "../../../config/apiRoutes";
 import { MdPersonAdd, MdSend } from "react-icons/md";
@@ -24,7 +24,16 @@ const ReactionsList = props => {
             setCallFlag(true)
         }
 
-        if (props.reactionsResponse && props.reactionsResponse.success && loading) {
+        if (props.commentId != null && !callFlag) {
+            props.getCommentReactions(props.commentId);
+            setCallFlag(true)
+        }
+
+        if (props.postReactionsResponse && props.postReactionsResponse.success && loading) {
+            setLoading(false)
+        }
+
+        if (props.commentReactionsResponse && props.commentReactionsResponse.success && loading) {
             setLoading(false)
         }
 
@@ -37,7 +46,11 @@ const ReactionsList = props => {
 
     useEffect(() => {
         return () => {
-            props.clearData([FRIENDS_ROUTES.REQUEST_FRIENDSHIP.name, REACTIONS_ROUTES.VIEW_POST_REACTIONS.name]);
+            props.clearData([
+                FRIENDS_ROUTES.REQUEST_FRIENDSHIP.name, 
+                REACTIONS_ROUTES.VIEW_POST_REACTIONS.name,
+                REACTIONS_ROUTES.VIEW_COMMENT_REACTIONS.name,
+            ]);
           };
     }, [])
 
@@ -45,7 +58,7 @@ const ReactionsList = props => {
         return <Loader mini={true} />
     }
 
-    const reactionList = getDeepProp(props, 'reactionsResponse.data')
+    const reactionList = getDeepProp(props, 'postReactionsResponse.data') || getDeepProp(props, 'commentReactionsResponse.data');
 
     const handleSendRequest = userId => {
         if (userId) {
@@ -71,6 +84,7 @@ const ReactionsList = props => {
                     <div className="reaction-list">
                         {reactionList.map(item => {
                             const user = item.user;
+                            const currentUser = auth && auth.id === user.id;
                             return (
                                 <div className={ClassNames.USER_ITEM}>
                                     <UserImage
@@ -82,16 +96,17 @@ const ReactionsList = props => {
                                     <span className={ClassNames.USER_INFO}>
                                         <UserName name={user.name} id={user.id}/>
                                     </span>
-                                    {auth && auth.id === user.id ? <span/>
-                                    : user.isFriends 
-                                        ? <Button onClick={() => handleOpenChat(user.id)} className={ClassNames.MESSAGE_ICON}><MdSend/></Button>
-                                        : <LoadingButton 
-                                            onClick={() => handleSendRequest(user.id)} 
-                                            className={ClassNames.MESSAGE_ICON}
-                                            apiCall={sendRequestCall}
-                                            >
-                                                <MdPersonAdd/>
-                                            </LoadingButton>}
+                                    {currentUser 
+                                        ? <span className={ClassNames.MESSAGE_ICON}></span>
+                                        : user.isFriends 
+                                            ? <Button onClick={() => handleOpenChat(user.id)} className={ClassNames.MESSAGE_ICON}><MdSend/></Button>
+                                            : <LoadingButton 
+                                                onClick={() => handleSendRequest(user.id)} 
+                                                className={ClassNames.MESSAGE_ICON}
+                                                apiCall={sendRequestCall}
+                                                >
+                                                    <MdPersonAdd/>
+                                                </LoadingButton>}
                                     
                                 </div>
                             )
@@ -106,12 +121,14 @@ const ReactionsList = props => {
 
 const mapStateToProps = (state) => ({
     auth: state.auth,
-    reactionsResponse: selectApiState(state, REACTIONS_ROUTES.VIEW_POST_REACTIONS.name),
+    postReactionsResponse: selectApiState(state, REACTIONS_ROUTES.VIEW_POST_REACTIONS.name),
+    commentReactionsResponse: selectApiState(state, REACTIONS_ROUTES.VIEW_COMMENT_REACTIONS.name),
     sendRequestResponse: selectApiState(state, FRIENDS_ROUTES.REQUEST_FRIENDSHIP.name),
 });
 
 const mapDispatchToProps = (dispatch) => ({
     getPostReactions: id => dispatch(getPostReactions(id)),
+    getCommentReactions: id => dispatch(getCommentReactions(id)),
     sendFriendRequest: id => dispatch(sendFriendRequest(id)),
     clearData: stateValues => dispatch(clearData(stateValues)),
 });

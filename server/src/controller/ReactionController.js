@@ -1,6 +1,6 @@
 import { validationResult } from 'express-validator';
-import { deleteReactoinByIdSQL, findReactionByIdSQL, findReactionByPostIdOnlySQL, insertNewReactionSQL, updateReactionSQL } from '../db/queries/reactionsQueries.js';
-import { detailedReactioToResDto, reactionAndUserResDto, reactionToResDto, reqDtoToReaction } from '../mapper/reactionMapper.js';
+import { deleteReactoinByIdSQL, findReactionByCommentIdOnlySQL, findReactionByIdSQL, findReactionByPostIdOnlySQL, insertNewReactionSQL, updateReactionSQL } from '../db/queries/reactionsQueries.js';
+import { detailedReactioToResDto, reactionAndUserResDto, reqDtoToReaction } from '../mapper/reactionMapper.js';
 import { postgresQuery } from '../db/postgres.js';
 import { deleteReactionFeed, insertNewFeedForReaction, updateReactionFeed } from '../db/repositories/FeedRepository.js';
 
@@ -13,6 +13,22 @@ const findAllPostReactions = async (req, res) => {
         }
         
         const reactions = await postgresQuery(findReactionByPostIdOnlySQL, [req.params.id, req.userId]);
+        res.json(reactions.rows.map(row => reactionAndUserResDto(row)));
+    } catch(e) {
+        console.log(e);
+        res.status(500).send('Internal Server Error: ', e);
+    }
+}
+
+const findAllCommentReactions = async (req, res) => {
+    try {
+        // Handle validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
+        
+        const reactions = await postgresQuery(findReactionByCommentIdOnlySQL, [req.params.id, req.userId]);
         res.json(reactions.rows.map(row => reactionAndUserResDto(row)));
     } catch(e) {
         console.log(e);
@@ -113,6 +129,7 @@ const viewReaction = async (req, res) => {
 
 export default {
     findAllPostReactions,
+    findAllCommentReactions,
     addNewReaction,
     updateReaction,
     deleteReaction,

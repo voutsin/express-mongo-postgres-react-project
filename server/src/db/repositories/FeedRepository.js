@@ -179,9 +179,6 @@ export const updateCommentFeed = async comment => {
         }
         // update feed
         const update = await Feed.updateOne(query, feed);
-        if (update.modifiedCount === 0) {
-            throw new Error('No feed updated')
-        }
         return feed;
     } catch (e) {
         console.log("Update comment to Feed error: ", e);
@@ -212,10 +209,7 @@ export const deleteCommentFeed = async (previousComment, oldCommentId) => {
             }
 
             // update feed
-            const update = await Feed.updateOne(query, feed);
-            if (update.modifiedCount === 0) {
-                throw new Error('No feed updated')
-            }
+            await Feed.updateOne(query, feed);
             return feed;
         } else {
             const query = { 'content.commentId': Number(oldCommentId), type: Number(FeedTypes.COMMENT) };

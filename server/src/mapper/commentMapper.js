@@ -1,3 +1,9 @@
+import { postgresQuery } from "../db/postgres.js";
+import { findCommentAndUserByIdSQL, findCommentRepliesSQL } from "../db/queries/commentsQueries.js";
+import { findReactionAndUserByCommentIdsSQL } from "../db/queries/reactionsQueries.js";
+import { findUserById } from "../db/queries/userQueries.js";
+import { reactionAndUserResDto } from "./reactionMapper.js";
+import { userToResDto } from "./userMapper.js";
 import { findDetailedLists } from "./utils.js";
 
 export const commentToResDto = comment => {
@@ -47,5 +53,32 @@ export const replyReqDtoToComment = req => {
         content: req.content, 
         is_reply: 1, 
         reply_comment_id: parseInt(req.commentId),
+    }
+}
+
+export const commentWithReplyToResDto = async comment => {
+    let reply = null;
+    const commentIds = [comment.id];
+    if (comment.reply_comment_id != null) {
+        const replyResults = await postgresQuery(findCommentAndUserByIdSQL, [comment.reply_comment_id]);
+        reply = replyResults ? replyResults.rows[0].result : null;
+        commentIds.push(reply.id);
+    }
+
+    const reactionResults = await postgresQuery(findReactionAndUserByCommentIdsSQL(commentIds.toString()));
+    const reactions = reactionResults ? reactionResults.rows.map(reaction => reactionAndUserResDto(reaction)) : [];
+
+    const userResult = await postgresQuery(findUserById, [comment.user_id]);
+    const user = userResult ? userToResDto(userResult.rows[0]) : null;
+
+    return {
+        ...commentToResDto(comment),
+        user: user,
+        replyComment: reply ? {
+            ...commentToResDto(reply),
+            user: userToResDto(reply.user),
+            reactions: reactions.filter(re => re.commentId === reply.id) || [],
+        } : null,
+        reactions: reactions.filter(re => re.commentId === comment.id) || [],
     }
 }

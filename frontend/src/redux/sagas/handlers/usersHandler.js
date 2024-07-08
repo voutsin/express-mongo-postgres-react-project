@@ -107,3 +107,24 @@ export function* handleSendFriendRequest(action) {
         yield put(setError(error));
     }
 }
+
+export function* handleBlockUser(action) {
+    try {
+        const payload = {
+            routeObj: FRIENDS_ROUTES.BLOCK_FRIEND,
+            data: { friendId: action.payload },
+            pathVar: true
+        };
+        const response = yield call(request, payload);
+        const { data } = response;
+        
+        const reduxPayload = {
+            data: data,
+            apiSuccess: true,
+            apiRouteName: FRIENDS_ROUTES.BLOCK_FRIEND.name,
+        }
+        yield put(setApiData(reduxPayload));
+    } catch (error) {
+        yield put(setError(error));
+    }
+}

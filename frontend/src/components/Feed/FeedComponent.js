@@ -13,16 +13,15 @@ const FeedComponent = props => {
     }
 
     const {
-        post, users, feeds
+        post, users, topFeed
     } = feed;
 
-    const user = users ? users[0] : {};
-    const firstFeed = feeds ? feeds[0] : {};
+    const user = topFeed ? topFeed.user : {};
 
     const {
         type,
         content
-    } = firstFeed;
+    } = topFeed;
 
     const headerText = (user, userSize, comment, type) => {
         const otherCount = userSize - 1;

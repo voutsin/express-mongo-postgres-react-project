@@ -3,10 +3,12 @@ import { findAllPostsForFeedSQL } from "../db/queries/postsQueries.js";
 import { findUsersInIds } from "../db/queries/userQueries.js";
 import { uniq } from 'underscore';
 import { userToResDto } from "./userMapper.js";
-import { detailedPostToResDto, postToResDto } from "./postMapper.js";
+import { detailedPostToResDto, postToResDto, postWithoutCommentsResDto } from "./postMapper.js";
 import { findReactionsInIds } from "../db/queries/reactionsQueries.js";
 import { reactionToResDto } from "./reactionMapper.js";
 import { findDeepComment } from "./utils.js";
+import { findCommentsInIds } from "../db/queries/commentsQueries.js";
+import { commentToResDto, commentWithReplyToResDto } from "./commentMapper.js";
 
 export const feedToResDto = async feeds => {
     // isolate ids for each group
@@ -61,9 +63,18 @@ export const feedByPostResDto = async feedRes => {
     const users = activeUserResults ? activeUserResults.rows.map(user => userToResDto(user)) : [];
     const posts = postResults ? postResults.rows.map(post => postToResDto(post)) : [];
 
-    const mappedPosts = await Promise.all(posts.map(async post => await detailedPostToResDto(post)));
+    const mappedPosts = await Promise.all(posts.map(async post => await postWithoutCommentsResDto(post)));
+
+    // select top feeds from feed grouping
+    const topFeeds = feedRes.map(f => findTopFeed(f.feeds));
+    // find comments details for these feeds
+    const commentIds = uniq(topFeeds.filter(tf => tf.content.commentId != null).map(tf => tf.content.commentId));
+    const commentsResults = commentIds.length > 0 ? await postgresQuery(findCommentsInIds(commentIds.toString())) : null;
+    const comments = commentsResults ? await Promise.all(commentsResults.rows.map(async c => await commentWithReplyToResDto(c))) : [];
 
     return feedRes.map(postFeed => {
+        const topFeed = postFeed.feeds[0];
+
         return {
             count: postFeed.count,
             feeds: postFeed.feeds.map(f => ({
@@ -74,8 +85,17 @@ export const feedByPostResDto = async feedRes => {
                     isReply: f.content.isReply
                 }
             })),
+            topFeed: {
+                ...topFeed,
+                user: users.find(u => u.id === topFeed.userId),
+                comment: topFeed.content.commentId ? comments.find(c => c.id === topFeed.content.commentId) : null,
+            },
             users: uniq(postFeed.feeds.map(f => f.userId)).map(userId => users.find(u => u.id === userId)).filter(user => user != null),
             post: mappedPosts.find(post => post.id === postFeed._id),
         }
     })
+}
+
+const findTopFeed = feeds => {
+    return feeds[0];
 }

@@ -1,10 +1,10 @@
 import { takeLatest } from 'redux-saga/effects';
 import ActionTypes from '../actions/actionTypes';
 import { handleUserLogin, handleUserLogout, handleUserVerification } from './handlers/auth';
-import { handleFindUserFriends, handleFindUserFriendsBirthdays, handleSendFriendRequest, handleUserRegistration } from './handlers/usersHandler';
+import { handleBlockUser, handleFindUserFriends, handleFindUserFriendsBirthdays, handleSendFriendRequest, handleUserRegistration } from './handlers/usersHandler';
 import { handleGetUserFeed } from './handlers/feedHandler';
-import { handleAddNewReaction, handleDeleteReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
-import { handleAddNewComment } from './handlers/commentHandler';
+import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
+import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleUpdateComment } from './handlers/commentHandler';
 
 /**
  * when the action is triggered the watcher will execute the handle function
@@ -24,10 +24,15 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.GET_POST_REACTIONS, handleGetPostReactions);
     // friends
     yield takeLatest(ActionTypes.SEND_FRIEND_REQUEST, handleSendFriendRequest);
+    yield takeLatest(ActionTypes.BLOCK_USER, handleBlockUser);
     // comments
     yield takeLatest(ActionTypes.ADD_NEW_COMMENT, handleAddNewComment);
+    yield takeLatest(ActionTypes.UPDATE_COMMENT, handleUpdateComment);
+    yield takeLatest(ActionTypes.DELETE_COMMENT, handleDeleteComment);
+    yield takeLatest(ActionTypes.ADD_NEW_REPLY, handleAddReplyComment);
     // reactions
     yield takeLatest(ActionTypes.ADD_NEW_REACTION, handleAddNewReaction);
     yield takeLatest(ActionTypes.UPDATE_REACTION, handleUpdateReaction);
     yield takeLatest(ActionTypes.DELETE_REACTION, handleDeleteReaction);
+    yield takeLatest(ActionTypes.GET_COMMENT_REACTIONS, handleGetCommentReaction);
 }

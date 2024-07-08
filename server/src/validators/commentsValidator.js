@@ -53,7 +53,7 @@ export const deleteCommentValidations = [
       }),
 ]
 
-export const viewCommentVlidations = [
+export const viewCommentValidations = [
     param('id')
       .exists().withMessage('Comment id is required')
       .notEmpty().withMessage('Comment id cannot be empty')
@@ -76,9 +76,6 @@ export const addNewReplyValidations = [
       }
       if (Boolean(comment.is_reply)) {
           throw new Error('Comment is already a reply.');
-      }
-      if (parseInt(req.userId) === parseInt(comment.user_id)) {
-        throw new Error('Cannot reply to your own comment ');
       }
     }),
   body('content')

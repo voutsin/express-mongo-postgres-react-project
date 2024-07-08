@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { omit } from 'underscore';
 import { BASE_URL } from "../config/apiRoutes";
 
 export const removeEmptyFields = (object = {}) => {
@@ -95,9 +96,12 @@ export const calculatePostAge = (timestamp) => {
     const reference = { 1: 'years', 2: 'months', 3: 'days', 4: 'hours', 5: 'minutes', 6: 'seconds' }
     const time = { 1: years, 2: months, 3: days, 4: hours, 5: minutes, 6: seconds };
 
-    let age = null;
+    let age = {
+        value: 'now',
+        key: null
+    };
     Object.keys(time).forEach(key => {
-        if (time[key] > 0 && age == null) {
+        if (time[key] > 0 && age.key == null) {
             age = {
                 value: time[key],
                 key: reference[key]
@@ -168,4 +172,58 @@ export const hideDivWhenClickingOutside = ref => {
 export const userHasReacted = (auth, obj) => {
     const reaction = auth && obj && obj.reactions.find(r => r.userId && r.userId === auth.id);
     return reaction;
+}
+
+export const getReplyParentComment = commentData => {
+    if (commentData.isReply) {
+        const reply = omit(commentData, 'replyComment');
+        const parentComment = commentData.replyComment;
+        return {
+            ...parentComment,
+            replies: parentComment.replies ? [
+                ...parentComment.replies,
+                reply
+            ] : [reply]
+        }
+    } else return commentData;
+}
+
+export const groupedComments = comments => 
+    comments.reduce((acc, comment) => {
+        const { postId } = comment;
+        if (!acc[postId]) {
+            acc[postId] = [];
+        }
+        acc[postId].push(comment);
+        return acc;
+    }, {});
+
+export const findCommentInCommentList = (comment, commentsList) => {
+    if (!comment || !commentsList) {
+        return null;
+    }
+
+    // Retrieve the comments for the given postId 
+    const postComments = commentsList[comment.postId];
+    if (!postComments) {
+        return null; // No comments for the given postId
+    }
+
+    const foundComment = comment.isReply
+        ? postComments.find(c => c.replies && c.replies.some(r => r.id === comment.id))
+        : postComments.find(c => c.id === comment.id);
+    
+    return foundComment || null;
+}
+
+export const areSameObejcts = (obj1, obj2) => {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+}
+
+export const findPostInPostList = (post, postsList) => {
+    if (!post || !postsList) {
+        return null;
+    }
+
+    return postsList.find(p => p.id === post.id) || null;
 }

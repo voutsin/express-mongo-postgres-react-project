@@ -1,7 +1,7 @@
 import { pick } from "underscore";
 import { postgresQuery } from "../db/postgres.js";
 import { findPostDetailsSQL } from "../db/queries/postsQueries.js";
-import { findDetailedLists } from "./utils.js";
+import { findDetailedLists, findFeedDetails } from "./utils.js";
 
 export const postToResDto = post => {
     return {
@@ -17,6 +17,15 @@ export const postToResDto = post => {
 // for feed or view
 export const detailedPostToResDto = async post => {
     const lists = await findDetailedLists(post.id);
+    const {
+        posts
+    } = lists;
+
+    return posts.find(p => p.id === post.id) || null;
+}
+
+export const postWithoutCommentsResDto = async post => {
+    const lists = await findFeedDetails(post.id);
     const {
         posts
     } = lists;

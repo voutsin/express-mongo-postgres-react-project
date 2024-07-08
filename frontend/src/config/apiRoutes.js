@@ -6,8 +6,13 @@ const ApiRoutesNames = {
     FIND_USER_FRIENDS_BIRTHDAYS: 'FIND_USER_FRIENDS_BIRTHDAYS',
     GET_FEED: 'GET_FEED',
     VIEW_POST_REACTIONS: 'VIEW_POST_REACTIONS',
+    VIEW_COMMENT_REACTIONS: 'VIEW_COMMENT_REACTIONS',
     REQUEST_FRIENDSHIP: 'REQUEST_FRIENDSHIP',
+    BLOCK_FRIEND: 'BLOCK_FRIEND',
     ADD_NEW_COMMENT: 'ADD_NEW_COMMENT',
+    UPDATE_COMMENT: 'UPDATE_COMMENT',
+    DELETE_COMMENT: 'DELETE_COMMENT',
+    REPLY: 'REPLY',
     ADD_NEW_REACTION: 'ADD_NEW_REACTION',
     UPDATE_REACTION: 'UPDATE_REACTION',
     DELETE_REACTION: 'DELETE_REACTION',
@@ -107,6 +112,7 @@ export const FRIENDS_ROUTES = {
     BLOCK_FRIEND: {
         route: `${FRIENDS}/block/:friendId`,
         type: ApiTypes.PUT,
+        name: ApiRoutesNames.BLOCK_FRIEND
     },
 }
 
@@ -147,8 +153,9 @@ export const COMMENTS_ROUTES = {
         type: ApiTypes.GET,
     },
     REPLY: {
-        route: `${COMMENTS}reply/addNew`,
+        route: `${COMMENTS}/reply/addNew`,
         type: ApiTypes.POST,
+        name: ApiRoutesNames.REPLY
     },
     ADD_NEW_COMMENT: {
         route: `${COMMENTS}/addNew`,
@@ -158,10 +165,12 @@ export const COMMENTS_ROUTES = {
     UPDATE_COMMENT: {
         route: `${COMMENTS}/edit`,
         type: ApiTypes.PUT,
+        name: ApiRoutesNames.UPDATE_COMMENT
     },
     DELETE_COMMENT: {
         route: `${COMMENTS}/:id`,
         type: ApiTypes.DELETE,
+        name: ApiRoutesNames.DELETE_COMMENT
     },
 }
 
@@ -174,6 +183,11 @@ export const REACTIONS_ROUTES = {
         route: `${REACTIONS}/post/:id`,
         type: ApiTypes.GET,
         name: ApiRoutesNames.VIEW_POST_REACTIONS
+    },
+    VIEW_COMMENT_REACTIONS: {
+        route: `${REACTIONS}/comment/:id`,
+        type: ApiTypes.GET,
+        name: ApiRoutesNames.VIEW_COMMENT_REACTIONS
     },
     ADD_NEW_REACTION: {
         route: `${REACTIONS}/addNew`,

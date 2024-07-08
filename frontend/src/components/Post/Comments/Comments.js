@@ -1,6 +1,7 @@
 import React from "react";
 import { ClassNames } from "../../../styles/classes";
-import AddComment from "./AddComment";
+import Comment from "./Comment";
+import CommentForm from "./CommentForm";
 
 const CommentsSection = props => {
 
@@ -11,11 +12,15 @@ const CommentsSection = props => {
             {post && post.comments && post.comments.length > 0 && 
                 <div className={ClassNames.COMMENTS_WRAPPER}>
                     <div className={ClassNames.COMMENTS_LIST}>
-
+                        {post.comments.map(comment => {
+                            return (
+                                <Comment post={post} comment={comment}/>
+                            )
+                        })}
                     </div>
                 </div>
             }
-            <AddComment post={post} commentRef={commentRef} inputFocus={inputFocus} />
+            <CommentForm post={post} commentRef={commentRef} inputFocus={inputFocus} />
         </React.Fragment>
     )
 }

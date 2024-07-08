@@ -8,7 +8,8 @@ import ReactionsSection from "./Reactions/Reactions";
 import PostButtons from "./PostButtons";
 import CommentsSection from "./Comments/Comments";
 import { connect } from "react-redux";
-import { selectPostsData } from "../../redux/reducers/apiReducer";
+import { selectPostsData, selectTopFeeds } from "../../redux/reducers/apiReducer";
+import FeedComment from "../Feed/FeedComment";
 
 const Post = props => {
     const commentRef = useRef(null);
@@ -16,11 +17,12 @@ const Post = props => {
     const [mediaHeight, setMediaHeight] = useState('100%');
     const [inputFocus, setInputFocus] = useState(false);
 
-    const {post, fullWidth, posts} = props;
+    const {post, fullWidth, posts, topFeeds} = props;
 
     if(post == null) {return null;}
 
     const foundPost = posts ? posts.find(p => p.id === post.id) : post;
+    const foundTopFeed = topFeeds ? topFeeds.find(f => f.content.postId === post.id) : null;
 
     const {
         user
@@ -51,6 +53,10 @@ const Post = props => {
             </div>
         </Modal>
     );
+
+    const feedComment = foundTopFeed && foundTopFeed.comment ? {
+        ...foundTopFeed.comment,
+    } : null;
 
     return (
         <React.Fragment>
@@ -86,6 +92,9 @@ const Post = props => {
                     <PostButtons post={foundPost} handleAddComment={handleToggleComment}/>
                 </div>
                 <div className={ClassNames.POST_COMMENT_SECTION}>
+                    {feedComment ? 
+                        <FeedComment post={foundPost} comment={feedComment}/>
+                    : null}
                     <CommentsSection post={foundPost} commentRef={commentRef} inputFocus={inputFocus} />
                 </div>
             </div>
@@ -96,6 +105,7 @@ const Post = props => {
 
 const mapStateToProps = state => ({
     posts: selectPostsData(state),
+    topFeeds: selectTopFeeds(state),
 })
 export default connect(
     mapStateToProps

@@ -225,3 +225,27 @@ input:-internal-autofill-selected, textarea:-internal-autofill-selected {color:v
 .tooltip-modal {width:max-content;position: absolute;background: var(--body-color);border-radius: 15px;left: 0;padding: 5px;min-height: 30px;opacity:0;visibility:hidden;box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);}
 .tooltip-modal.opened {opacity:1;visibility: visible;transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;}
 .post-btns {position: relative;}
+.comment-body {display: flex;flex-direction: row;justify-content: space-between;align-items: flex-start;margin-bottom: 12px;}
+.comment-body .comment {width: calc(100% - 100px);display: flex;flex-direction: column;align-items: flex-start;justify-content: flex-start;}
+.comment-body .comment-actions {width: 100%;display: flex;flex-direction: row;justify-content: flex-start;align-items: center;}
+.comment-body .message {width: max-content;min-width: 170px;background: var(--light-gray-color);display: flex;flex-direction: column;align-items: flex-start;justify-content: center;padding: 10px 15px;border-radius: 10px;}
+.comment-body .message .user-name {font-size: 13px;}
+.comment-body .actions {width: 50px;display: flex;align-items: flex-start;justify-content: flex-end;position: relative;}
+.comment-body .actions > button {font-size: 20px;color: var(--text-light-body-color);align-items: center;justify-content: center;display: none;}
+.comment-body .comment-actions > div {margin-right:3px;font-size: 12px;position: relative;}
+.comment-body .comment-actions button {background: transparent;border: none;font-weight: 500;display: flex;align-items: center;justify-content: center;}
+.comment-body .comment-actions button span {font-size: 12px;}
+.comment-body .comment-actions button:hover span {text-decoration:underline;}
+.comment-body .comment-actions .reaction-list span {margin-right:3px}
+.comment-body .comment-actions .reaction-list svg {font-size: 11px;}
+.comment-body .comment-actions .react > button > .icon {display:none;}
+.comment-body .comment-actions .age {padding-right: 6px;}
+.comment-body:hover .actions > button {display: flex;}
+.comments-list {margin-top: 20px;}
+.replies-wrapper {margin-left: 50px;}
+.replies-wrapper .thumbnail-img {width: 30px;height: 30px;font-size: 25px;}
+.replies-wrapper .thumbnail-img img {width: 30px;}
+.replies-wrapper .comment-body .comment {width: calc(100% - 90px);}
+.options {display: flex;flex-direction: row;align-items: center;justify-content: center;height: 30px;}
+.options button {background: transparent;border: none;border-radius: var(--btn-border-radius);height: 100%;}
+.options button:hover {background:var(--light-gray-color);}

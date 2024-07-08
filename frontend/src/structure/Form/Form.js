@@ -66,7 +66,7 @@ export const LoadingButton = props => {
             setLoading(false);
             setCallFlag(true);
         }
-    }, [props, apiCall, loading]);
+    }, [props, apiCall, loading, callFlag]);
 
     const handleClick = event => {
         setLoading(true);

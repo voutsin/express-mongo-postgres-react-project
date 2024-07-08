@@ -1,6 +1,6 @@
 import { validationResult } from 'express-validator';
 import { postgresQuery } from '../db/postgres.js';
-import { commentToResDto, detailedCommentToResDto, replyReqDtoToComment, reqDtoToComment } from '../mapper/commentMapper.js';
+import { commentToResDto, commentWithReplyToResDto, detailedCommentToResDto, replyReqDtoToComment, reqDtoToComment } from '../mapper/commentMapper.js';
 import { addNewCommentSQL, deleteCommentSQL, findCommentByIdSQL, insertNewReplySQL, updateCommentSQL } from '../db/queries/commentsQueries.js';
 import { deleteCommentFeed, insertOrUpdateCommentFeed, updateCommentFeed } from '../db/repositories/FeedRepository.js';
 import { deleteReactionsByCommentIdSQL } from '../db/queries/reactionsQueries.js';
@@ -39,7 +39,7 @@ const addNewComment = async (req, res) => {
         // add or update feed for comment
         await insertOrUpdateCommentFeed(result.rows[0]);
 
-        res.json(result.rows.map(row => commentToResDto(row)));
+        res.json(await commentWithReplyToResDto(result.rows[0]));
     } catch (e) {
         console.error(e);
         res.status(500).send('Internal Server Error: ', e);
@@ -65,7 +65,7 @@ const updateComment = async (req, res) => {
         // update feed for comment
         await updateCommentFeed(result.rows[0]);
 
-        res.json(result.rows.map(row => commentToResDto(row)));
+        res.json(await commentWithReplyToResDto(result.rows[0]));
     } catch (e) {
         console.error(e);
         res.status(500).send('Internal Server Error: ', e);
@@ -154,7 +154,7 @@ const addReply = async (req, res) => {
         await insertOrUpdateCommentFeed(replyComment, true);
 
         res.status(200);
-        res.json(commentToResDto(result.rows[0]));
+        res.json(await commentWithReplyToResDto(result.rows[0]));
     } catch(e) {
         console.log(e);
         res.status(500).send('Internal Server Error: ', e);

@@ -4,8 +4,6 @@ import { ClassNames } from "../../../styles/classes";
 import { Button } from "../../../structure/Form/Form";
 import { ReactionMapping, Reactions } from "../../../common/enums";
 import { addNewReaction, deleteReaction, updateReaction } from "../../../redux/actions/actions";
-import { selectApiState } from "../../../redux/reducers/apiReducer";
-import { REACTIONS_ROUTES } from "../../../config/apiRoutes";
 import { userHasReacted } from "../../../common/utils";
 
 const AddReaction = props => {
@@ -66,9 +64,6 @@ const AddReaction = props => {
 
 const mapStateToProps = state => ({
     auth: state.auth,
-    addNewReactionResponse: selectApiState(state, REACTIONS_ROUTES.ADD_NEW_REACTION.name),
-    updateReactionResponse: selectApiState(state, REACTIONS_ROUTES.ADD_NEW_REACTION.name),
-    deleteReactionResponse: selectApiState(state, REACTIONS_ROUTES.ADD_NEW_REACTION.name),
 })
 
 const mapDispatchToProps = dispatch => ({

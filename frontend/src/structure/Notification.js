@@ -31,7 +31,7 @@ const Notification = props => {
         <React.Fragment>
             <div className={`${ClassNames.NOTIFICATION_WRAPPER} ${activeNotification ? notification.type + ' active' : ''}`}>
                 <div>
-                    <span>{activeNotification && notification.message}</span>
+                    <span dangerouslySetInnerHTML={{ __html: activeNotification && notification.message }} />
                     <Button className={ClassNames.MODAL_CLOSE_BTN} onClick={handleClose}>
                         <MdClose/>
                     </Button>

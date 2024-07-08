@@ -31,6 +31,26 @@ export const findDetailedLists = async (postId) => {
     }
 }
 
+export const findFeedDetails = async postId => {
+    // queries
+    const postResults = await postgresQuery(findPostByIdSQL, [postId]);
+    const allPosts = [...postResults.rows];
+    const reactionResults = await findReactions(allPosts, []);
+    const userResults = await findUsers(allPosts, [], reactionResults);
+
+    // lists
+    const users = userResults.map(user => userToResDto(user));
+    const reactions = reactionResults.map(reaction => ({
+            ...reaction,
+            user: users.find(user => user.id === reaction.userId)
+        }));
+    const posts = mapPosts(allPosts, users, [], reactions);
+
+    return {
+        users, posts, reactions
+    }
+}
+
 export const findReactions = async (posts = [], comments = []) => {
     const postParams = uniq(posts.map(post => post.id)).toString();
     const postsReactionsRes = await postgresQuery(`SELECT * FROM reactions WHERE post_id IN (${postParams}) AND comment_id IS NULL;`);

@@ -30,6 +30,7 @@ export const findReactionByPostIdOnlySQL =
             )
         ),
         'post_id', r.post_id, 
+        'user_id', r.user_id, 
         'comment_id', r.comment_id, 
         'reaction_type', r.reaction_type, 
         'created_at', r.created_at 
@@ -37,6 +38,58 @@ export const findReactionByPostIdOnlySQL =
     FROM reactions AS r 
     JOIN users AS u ON u.id = r.user_id 
     WHERE r.post_id = $1 AND r.comment_id IS NULL;`;
+
+export const findReactionByCommentIdOnlySQL = 
+    `SELECT json_build_object(
+        'id', r.id,
+        'user', json_build_object(
+            'id', u.id,
+            'displayed_name', u.displayed_name,
+            'username', u.username,
+            'email', u.email,
+            'created_at', u.created_at, 
+            'profile_pic', u.profile_pic,
+            'description', u.description, 
+            'active', u.active, 
+            'is_friends', EXISTS (
+                SELECT 1 
+                FROM friends f 
+                WHERE ((f.user_id = $2 AND f.friend_id = u.id) 
+                   OR (f.user_id = u.id AND f.friend_id = $2)) AND f.status = '${FriendStatus.ACCEPTED}'
+            )
+        ),
+        'post_id', r.post_id, 
+        'user_id', r.user_id, 
+        'comment_id', r.comment_id, 
+        'reaction_type', r.reaction_type, 
+        'created_at', r.created_at 
+    ) AS result
+    FROM reactions AS r 
+    JOIN users AS u ON u.id = r.user_id 
+    WHERE r.comment_id = $1;`;
+
+export const findReactionAndUserByCommentIdsSQL = commentIds => 
+    `SELECT json_build_object(
+        'id', r.id,
+        'user', json_build_object(
+            'id', u.id,
+            'displayed_name', u.displayed_name,
+            'username', u.username,
+            'email', u.email,
+            'created_at', u.created_at, 
+            'profile_pic', u.profile_pic,
+            'description', u.description, 
+            'active', u.active
+        ),
+        'post_id', r.post_id, 
+        'user_id', r.user_id, 
+        'comment_id', r.comment_id, 
+        'reaction_type', r.reaction_type, 
+        'created_at', r.created_at 
+    ) AS result 
+    FROM reactions AS r
+    JOIN users AS u ON u.id = r.user_id 
+    WHERE comment_id IN (${commentIds});`;
 
 // INSERT
 export const insertNewReactionSQL = 
