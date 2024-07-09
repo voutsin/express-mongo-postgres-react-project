@@ -1,19 +1,68 @@
 import { validationResult } from 'express-validator';
 import { postgresQuery } from '../db/postgres.js';
-import { commentToResDto, commentWithReplyToResDto, detailedCommentToResDto, replyReqDtoToComment, reqDtoToComment } from '../mapper/commentMapper.js';
-import { addNewCommentSQL, deleteCommentSQL, findCommentByIdSQL, insertNewReplySQL, updateCommentSQL } from '../db/queries/commentsQueries.js';
+import { commentToResDto, commentWithReactionsToResDto, commentWithReplyToResDto, detailedCommentToResDto, replyReqDtoToComment, reqDtoToComment } from '../mapper/commentMapper.js';
+import { addNewCommentSQL, deleteCommentSQL, findCommentByIdSQL, findCommentRepliesSQL, findSingleCommentsByPostId, insertNewReplySQL, selectCountOfCommentsSQL, selectCountOfRepliesSQL, updateCommentSQL } from '../db/queries/commentsQueries.js';
 import { deleteCommentFeed, insertOrUpdateCommentFeed, updateCommentFeed } from '../db/repositories/FeedRepository.js';
 import { deleteReactionsByCommentIdSQL } from '../db/queries/reactionsQueries.js';
 
-const findAllComments = async (req, res) => {
+const findAllPostComments = async (req, res) => {
     try {
         // check validations
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
           return res.status(400).json({ errors: errors.array() });
         }
-        const result = await postgresQuery(findAllPostsSQL);
-        res.json(result.rows.map(row => postToResDto(row)));
+
+        const postId = req.query.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        // Total count of comments
+        const totalCountResult = await postgresQuery(selectCountOfCommentsSQL, [postId]);
+        const totalCount = parseInt(totalCountResult.rows[0].count, 10);
+
+        const result = await postgresQuery(findSingleCommentsByPostId, [postId, limit, offset]);
+        
+        // Pagination metadata
+        res.json({
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+            comments: await commentWithReactionsToResDto(result.rows)
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).send('Internal Server Error: ', e);
+    }
+}
+
+const findAllCommentReplies = async (req, res) => {
+    try {
+        // check validations
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
+
+        const commentId = req.query.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        // Total count of comments
+        const totalCountResult = await postgresQuery(selectCountOfRepliesSQL, [commentId]);
+        const totalCount = parseInt(totalCountResult.rows[0].count, 10);
+
+        const result = await postgresQuery(findCommentRepliesSQL, [commentId, limit, offset]);
+        
+        // Pagination metadata
+        res.json({
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+            replies: await commentWithReactionsToResDto(result.rows)
+        });
     } catch (e) {
         console.error(e);
         res.status(500).send('Internal Server Error: ', e);
@@ -162,7 +211,8 @@ const addReply = async (req, res) => {
 }
 
 export default {
-    findAllComments,
+    findAllPostComments,
+    findAllCommentReplies,
     addNewComment,
     updateComment,
     deleteComment,

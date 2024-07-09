@@ -21,6 +21,7 @@ export const ClassNames = {
     COMMENT: 'comment-btn',
     SHARE: 'share-btn',
     DISPLAY: 'display',
+    IN_MODAL: 'in-modal',
     TOOLTIP_MODAL: 'tooltip-modal',
     // menu
     NAV: 'nav',
@@ -73,6 +74,7 @@ export const ClassNames = {
     POST_COMMENT_SECTION: 'post-comment-section',
     COMMENTS_WRAPPER: 'comments-wrapper',
     COMMENTS_LIST: 'comments-list',
+    COMMENTS_LIST_ADD_NEW: 'comments-list-add-new',
     COMMENT_WRAPPER: 'comment-wrapper',
     COMMENT_BODY: 'comment-body',
     COMMENT_CONTENT: 'comment',

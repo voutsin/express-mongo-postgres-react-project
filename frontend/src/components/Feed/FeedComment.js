@@ -6,7 +6,7 @@ import { areSameObejcts, findCommentInCommentList } from "../../common/utils";
 
 const FeedComment = props => {
     const [commentData, setCommentData] = useState(null);
-    const { post, comment, commentsList } = props;
+    const { post, comment, commentsList, openCommentsModal } = props;
 
     useEffect(() => {
         if (!commentData && props.commentsList) {
@@ -31,7 +31,7 @@ const FeedComment = props => {
 
     return (
         <React.Fragment>
-            <Comment post={post} comment={commentData}/>
+            <Comment post={post} comment={commentData} openCommentsModal={openCommentsModal}/>
         </React.Fragment>
     )
 }

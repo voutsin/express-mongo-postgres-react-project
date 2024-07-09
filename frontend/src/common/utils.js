@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { omit } from 'underscore';
 import { BASE_URL } from "../config/apiRoutes";
+import { Reactions } from "./enums";
 
 export const removeEmptyFields = (object = {}) => {
     const res = Object.assign({}, object);
@@ -176,7 +176,8 @@ export const userHasReacted = (auth, obj) => {
 
 export const getReplyParentComment = commentData => {
     if (commentData.isReply) {
-        const reply = omit(commentData, 'replyComment');
+        const reply = Object.assign({}, commentData);
+        delete reply.replyComment;
         const parentComment = commentData.replyComment;
         return {
             ...parentComment,
@@ -226,4 +227,21 @@ export const findPostInPostList = (post, postsList) => {
     }
 
     return postsList.find(p => p.id === post.id) || null;
+}
+
+export const organizeReactions = reactions => {
+    const numberOfLikes = reactions.filter(reaction => reaction.reactionType === Reactions.LIKE).length;
+    const numberOfLoves = reactions.filter(reaction => reaction.reactionType === Reactions.LOVE).length;
+    const numberOfLaughs = reactions.filter(reaction => reaction.reactionType === Reactions.LAUGH).length;
+    const numberOfWows = reactions.filter(reaction => reaction.reactionType === Reactions.WOW).length;
+    const numberOfCries = reactions.filter(reaction => reaction.reactionType === Reactions.CRY).length;
+
+    return {
+        total: reactions.length,
+        1: numberOfLikes, //like
+        2: numberOfLoves, // love
+        3: numberOfLaughs, // laugh
+        4: numberOfWows, // wow
+        5: numberOfCries, // cry
+    }
 }

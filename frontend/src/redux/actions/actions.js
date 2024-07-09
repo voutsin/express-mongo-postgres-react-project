@@ -157,3 +157,27 @@ export const refreshPostData = post => ({
 export const clearCommentData = () => ({
     type: ActionTypes.CLEAR_COMMENT_DATA,
 });
+
+export const getPostComments = (postId, page, limit) => ({
+    type: ActionTypes.GET_POST_COMMENTS,
+    payload: {id: postId, page, limit}
+});
+
+export const getCommentReplies = (postId, commentId, page, limit) => ({
+    type: ActionTypes.GET_COMMENT_REPLIES,
+    payload: {postId, id: commentId, page, limit}
+});
+
+export const setCommentsList = (comments, postId) => ({
+    type: ActionTypes.SET_COMMENTS_LIST,
+    payload: {comments, postId}
+});
+
+export const setCommentsRepliesList = (replies, commentId, postId) => ({
+    type: ActionTypes.SET_COMMENTS_REPLIES_LIST,
+    payload: {replies, commentId, postId}
+});
+
+export const resetCommentList = () => ({
+    type: ActionTypes.RESET_COMMENTS_LIST
+})

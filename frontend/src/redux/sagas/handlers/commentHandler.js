@@ -1,5 +1,5 @@
 import { call, put } from "redux-saga/effects";
-import { setApiData, setError, setNewCommentData, setNewReplyData, updateCommentData, updateReplyCommentData } from "../../actions/actions";
+import { setApiData, setError, setNewCommentData, setNewReplyData, updateCommentData, updateReplyCommentData, setCommentsList, setCommentsRepliesList } from "../../actions/actions";
 import { request } from "../requests/authReqs";
 import { COMMENTS_ROUTES } from "../../../config/apiRoutes";
 
@@ -99,6 +99,58 @@ export function* handleAddReplyComment(action) {
         if (data) {
             // add new comment to post comment array 
             yield put(setNewReplyData(data));
+        }
+    } catch (error) {
+        yield put(setError(error));
+    }
+}
+
+export function* handleGetPostComments(action) {
+    try {
+        const { id, page, limit } = action.payload;
+        const payload = {
+            routeObj: COMMENTS_ROUTES.VIEW_POST_COMMENTS,
+            data: { id, page, limit, },
+            params: true
+        };
+        const response = yield call(request, payload);
+        const { data } = response;
+
+        const reduxPayload = {
+            data: data,
+            apiSuccess: true,
+            apiRouteName: COMMENTS_ROUTES.VIEW_POST_COMMENTS.name,
+        }
+        yield put(setApiData(reduxPayload));
+
+        if (data) {
+            yield put(setCommentsList(data.comments, action.payload.id));
+        }
+    } catch (error) {
+        yield put(setError(error));
+    }
+}
+
+export function* handleGetCommentReplies(action) {
+    try {
+        const { postId, id, page, limit } = action.payload;
+        const payload = {
+            routeObj: COMMENTS_ROUTES.VIEW_COMMENT_REPLIES,
+            data: { id, page, limit, },
+            params: true
+        };
+        const response = yield call(request, payload);
+        const { data } = response;
+
+        const reduxPayload = {
+            data: data,
+            apiSuccess: true,
+            apiRouteName: COMMENTS_ROUTES.VIEW_COMMENT_REPLIES.name,
+        }
+        yield put(setApiData(reduxPayload));
+
+        if (data) {
+            yield put(setCommentsRepliesList(data.replies, id, postId));
         }
     } catch (error) {
         yield put(setError(error));

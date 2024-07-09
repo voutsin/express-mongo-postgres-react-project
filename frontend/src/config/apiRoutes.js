@@ -12,6 +12,8 @@ const ApiRoutesNames = {
     ADD_NEW_COMMENT: 'ADD_NEW_COMMENT',
     UPDATE_COMMENT: 'UPDATE_COMMENT',
     DELETE_COMMENT: 'DELETE_COMMENT',
+    VIEW_POST_COMMENTS: 'VIEW_POST_COMMENTS',
+    VIEW_COMMENT_REPLIES: 'VIEW_COMMENT_REPLIES',
     REPLY: 'REPLY',
     ADD_NEW_REACTION: 'ADD_NEW_REACTION',
     UPDATE_REACTION: 'UPDATE_REACTION',
@@ -171,6 +173,16 @@ export const COMMENTS_ROUTES = {
         route: `${COMMENTS}/:id`,
         type: ApiTypes.DELETE,
         name: ApiRoutesNames.DELETE_COMMENT
+    },
+    VIEW_POST_COMMENTS: {
+        route: `${COMMENTS}/post`,
+        type: ApiTypes.GET,
+        name: ApiRoutesNames.VIEW_POST_COMMENTS
+    },
+    VIEW_COMMENT_REPLIES: {
+        route: `${COMMENTS}/replies`,
+        type: ApiTypes.GET,
+        name: ApiRoutesNames.VIEW_COMMENT_REPLIES
     },
 }
 

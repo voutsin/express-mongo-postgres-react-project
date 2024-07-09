@@ -1,12 +1,15 @@
 import express from "express";
 import CommentController from "../controller/CommentController.js";
-import { addNewCommentValidations, addNewReplyValidations, deleteCommentValidations, updateCommentValidations, viewCommentValidations } from "../validators/commentsValidator.js";
+import { addNewCommentValidations, addNewReplyValidations, deleteCommentValidations, updateCommentValidations, viewCommentRepliesValidations, viewCommentValidations, viewPostCommentsValidations } from "../validators/commentsValidator.js";
 import { addActiveUserIdInReq } from "../common/utils.js";
 
 const commentsRouter = express.Router();
 
-// find all comments - debug only
-commentsRouter.get('/', CommentController.findAllComments);
+// find all comments of a post
+commentsRouter.get('/post', viewPostCommentsValidations, CommentController.findAllPostComments);
+
+// find all replies in a comment
+commentsRouter.get('/replies', viewCommentRepliesValidations, CommentController.findAllCommentReplies);
 
 // add new comment
 commentsRouter.post('/addNew',  addActiveUserIdInReq, addNewCommentValidations, CommentController.addNewComment);

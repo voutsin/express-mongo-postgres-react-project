@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import UserImage from "../../structure/User/UserImage";
 import { ClassNames } from "../../styles/classes";
 import UserName from "../../structure/User/UserName";
@@ -6,16 +6,15 @@ import { Media, calculatePostAge } from "../../common/utils";
 import Modal from "../../structure/Modal";
 import ReactionsSection from "./Reactions/Reactions";
 import PostButtons from "./PostButtons";
-import CommentsSection from "./Comments/Comments";
 import { connect } from "react-redux";
 import { selectPostsData, selectTopFeeds } from "../../redux/reducers/apiReducer";
 import FeedComment from "../Feed/FeedComment";
+import CommentsSection from "../Post/Comments/Comments";
 
 const Post = props => {
-    const commentRef = useRef(null);
     const [imageMopdalFlag, openImageModal] = useState(false);
     const [mediaHeight, setMediaHeight] = useState('100%');
-    const [inputFocus, setInputFocus] = useState(false);
+    const [commentsModalFlag, openCommentsModal] = useState(false);
 
     const {post, fullWidth, posts, topFeeds} = props;
 
@@ -36,12 +35,20 @@ const Post = props => {
         }
     }
 
-    const handleToggleComment = () => {
-        commentRef.current.classList.add(ClassNames.DISPLAY);
-        // Scroll to the div
-        commentRef.current.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
-        setInputFocus(true);
-    }
+    const handleToggleComment = () => openCommentsModal(!commentsModalFlag);
+
+    const commentsModal = (
+        <Modal
+            handleClose={handleToggleComment}
+            flag={commentsModalFlag}
+        >
+            <CommentsSection
+                post={foundPost}
+                inputFocus={true} 
+                showList={true}
+            />
+        </Modal>
+    );
 
     const imageModal = (
         <Modal
@@ -86,19 +93,24 @@ const Post = props => {
                     }
                 </div>
                 <div className={ClassNames.POST_LIKE_SECTION}>
-                    <ReactionsSection reactionList={foundPost.reactions}/>
+                    <ReactionsSection 
+                        reactionList={foundPost.reactions}
+                        reactionsNumber={foundPost.reactionsNumber}
+                        commentsNumber={foundPost.commentsNumber}
+                        openCommentsModal={handleToggleComment}
+                    />
                 </div>
                 <div className={ClassNames.POST_BTNS}>
                     <PostButtons post={foundPost} handleAddComment={handleToggleComment}/>
                 </div>
                 <div className={ClassNames.POST_COMMENT_SECTION}>
                     {feedComment ? 
-                        <FeedComment post={foundPost} comment={feedComment}/>
+                        <FeedComment post={foundPost} comment={feedComment} openCommentsModal={handleToggleComment}/>
                     : null}
-                    <CommentsSection post={foundPost} commentRef={commentRef} inputFocus={inputFocus} />
                 </div>
             </div>
             {imageMopdalFlag && imageModal}
+            {commentsModalFlag && commentsModal}
         </React.Fragment>
     )
 }

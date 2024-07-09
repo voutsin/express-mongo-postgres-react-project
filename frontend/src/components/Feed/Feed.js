@@ -25,6 +25,7 @@ const Feed = props => {
 
     }, [props, feedCall, page, loading])
 
+    // TODO: PAGABLE FEED AND LOAD MORE
     const handleLoadMore = () => {
         setPage({
             ...page,
@@ -44,9 +45,9 @@ const Feed = props => {
             <div className={ClassNames.FEED_WRAPPER}>
                 {feeds && feeds.length > 0 
                 ? <div className={ClassNames.FEED_LIST}>
-                        {feeds.map(feed => {
+                        {feeds.map((feed, index) => {
                             return (
-                                <FeedComponent feed={feed}/>
+                                <FeedComponent key={`feed-${index}`} feed={feed}/>
                             )
                         })}
                     </div>

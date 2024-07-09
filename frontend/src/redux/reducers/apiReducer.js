@@ -2,7 +2,6 @@ import { NotifyTypes } from "../../common/enums";
 import { getReplyParentComment, groupedComments, isObjectEmpty } from "../../common/utils";
 import { COMMENTS_ROUTES, FEED_ROUTES } from "../../config/apiRoutes";
 import ActionTypes from "../actions/actionTypes";
-import { omit } from 'underscore';
 
 
 const defaultState = {};
@@ -89,6 +88,37 @@ export const apiReducer = (state = defaultState, action) => {
                     : [updatedPost],
             }
 
+        case ActionTypes.SET_COMMENTS_LIST:
+            const commentsList = action.payload.comments;
+            const commentIds = commentsList.map(c => c.id);
+            return {
+                ...updatedState,
+                COMMENTS_LIST: {
+                    ...updatedState.COMMENTS_LIST,
+                    [action.payload.postId]: [
+                        ...updatedState.COMMENTS_LIST[action.payload.postId].filter(c => !commentIds.includes(c.id)),
+                        ...commentsList
+                    ]
+                },
+            }
+
+        case ActionTypes.RESET_COMMENTS_LIST:
+            const feedState = updatedState[FEED_ROUTES.GET_FEED.name] && updatedState[FEED_ROUTES.GET_FEED.name].data;
+            if (feedState) {
+                const comments = feedState.feeds.map(feed => feed.topFeed)
+                .filter(tf => tf.comment != null)
+                .map(tf => getReplyParentComment(tf.comment));
+                return {
+                    ...updatedState,
+                    COMMENTS_LIST: groupedComments(comments),
+                }
+            }
+            
+            return {
+                ...updatedState,
+                COMMENTS_LIST: [],
+            }
+        
         case ActionTypes.SET_NEW_COMMENT_DATA: 
             // add new single comment
             const newComment = action.payload;
@@ -133,7 +163,8 @@ export const apiReducer = (state = defaultState, action) => {
             const addNewReply = comments => {
                 return comments.map(c => {
                     if (c.id === newReply.replyCommentId) {
-                        const reply = omit(newReply, 'replyComment');
+                        const reply = Object.assign({}, newReply);
+                        delete reply.replyComment;
                         return {
                             ...c,
                             replies: c.replies ? [
@@ -151,6 +182,41 @@ export const apiReducer = (state = defaultState, action) => {
                 COMMENTS_LIST: {
                     ...updatedState.COMMENTS_LIST,
                     [newReply.postId]: addNewReply(updatedState.COMMENTS_LIST[newReply.postId]),
+                },
+            }
+
+        // FOR ADD MULTIPLE NEW REPLIES
+        case ActionTypes.SET_COMMENTS_REPLIES_LIST:
+            const newReplies = action.payload.replies;
+            const commentId = action.payload.commentId;
+            const postId = action.payload.postId;
+
+            const addNewReplies = comments => {
+                return comments.map(c => {
+                    if (c.id === commentId) {
+                        const replies = newReplies.map(r => {
+                            delete r.replyComment; 
+                            return r;
+                        });
+                        const repliesIds = replies.map(r => r.id);
+
+                        return {
+                            ...c,
+                            replies: c.replies ? [
+                                ...c.replies.filter(r => !repliesIds.includes(r.id)),
+                                ...replies,
+                            ] : [...replies]
+                        }
+                    }
+                    return c;
+                });
+            }
+            
+            return {
+                ...updatedState,
+                COMMENTS_LIST: {
+                    ...updatedState.COMMENTS_LIST,
+                    [postId]: addNewReplies(updatedState.COMMENTS_LIST[postId]),
                 },
             }
 
@@ -201,6 +267,7 @@ export const apiReducer = (state = defaultState, action) => {
 //SELECTORS
 export const selectApiState = (state, valueName) => (state.api && state.api[valueName]);
 export const selectPostsData = state => (state.api && state.api.POSTS_LIST)
+export const selectCommentsData = state => (state.api && state.api.COMMENTS_LIST) || []
 
 export const selectTopFeeds = state => {
     if (state.api[FEED_ROUTES.GET_FEED.name] && state.api[FEED_ROUTES.GET_FEED.name].data) {

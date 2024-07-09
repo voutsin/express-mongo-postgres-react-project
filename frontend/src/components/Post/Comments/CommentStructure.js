@@ -4,7 +4,7 @@ import { ClassNames } from "../../../styles/classes";
 import { Button } from "../../../structure/Form/Form";
 import { MdMoreVert, MdThumbUp } from "react-icons/md";
 import ReactButton from "../utils/ReactButton";
-import { calculatePostAge } from "../../../common/utils";
+import { calculatePostAge, organizeReactions } from "../../../common/utils";
 import UserName from "../../../structure/User/UserName";
 import TooltipModal from "../../../structure/TooltipModal";
 import OptionsModal from "../utils/OptionsModal";
@@ -44,7 +44,10 @@ const CommentStructure = props => {
             handleClose={() => openReactionsList(false)}
             flag={reactionsListFlag}
         >
-            <ReactionsList postId={null} commentId={comment.id}/>
+            <ReactionsList 
+                postId={null} 
+                commentId={comment.id} 
+                reactionsNumber={organizeReactions(comment.reactions || [])}/>
         </Modal>
     );
 

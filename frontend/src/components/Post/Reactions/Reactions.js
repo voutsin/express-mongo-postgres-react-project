@@ -10,7 +10,10 @@ const ReactionsSection = props => {
     const [userModalFlag, openUsersModal] = useState(false);
 
     const {
-        reactionList
+        reactionList,
+        reactionsNumber,
+        commentsNumber,
+        openCommentsModal,
     } = props;
 
     const firstReaction = getDeepProp(props, 'reactionList.0');
@@ -39,22 +42,32 @@ const ReactionsSection = props => {
             handleClose={() => openUsersModal(false)}
             flag={userModalFlag}
         >
-            <ReactionsList postId={firstReaction ? firstReaction.postId : null}/>
+            <ReactionsList 
+                postId={firstReaction ? firstReaction.postId : null} 
+                reactionsNumber={reactionsNumber}
+            />
         </Modal>
     )
 
     return reactionList && reactionList.length > 0 ? (
         <React.Fragment>
             <div className={ClassNames.REACTIONS_SECTION}>
-                {user && <UserImage
-                    id={user.id}
-                    picUrl={user.profilePictureThumb}
-                    username={user.username}
-                    className={ClassNames.THUMBNAIL_IMG}
-                />}
-                <span className="text">
-                    {getText()}
-                </span>
+                <div className="reactions">
+                    {user && <UserImage
+                        id={user.id}
+                        picUrl={user.profilePictureThumb}
+                        username={user.username}
+                        className={ClassNames.THUMBNAIL_IMG}
+                    />}
+                    <span className="text">
+                        {getText()}
+                    </span>
+                </div>
+                <div className="commentsCount">
+                    <span onClick={openCommentsModal}>
+                        {commentsNumber ? `${commentsNumber} comments` : ''}
+                    </span>
+                </div>
             </div>
             {userModalFlag && userModal}
         </React.Fragment>

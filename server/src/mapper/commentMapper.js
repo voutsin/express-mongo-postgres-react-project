@@ -1,5 +1,6 @@
+import { uniq } from "underscore";
 import { postgresQuery } from "../db/postgres.js";
-import { findCommentAndUserByIdSQL, findCommentRepliesSQL } from "../db/queries/commentsQueries.js";
+import { findCommentAndUserByIdSQL } from "../db/queries/commentsQueries.js";
 import { findReactionAndUserByCommentIdsSQL } from "../db/queries/reactionsQueries.js";
 import { findUserById } from "../db/queries/userQueries.js";
 import { reactionAndUserResDto } from "./reactionMapper.js";
@@ -81,4 +82,28 @@ export const commentWithReplyToResDto = async comment => {
         } : null,
         reactions: reactions.filter(re => re.commentId === comment.id) || [],
     }
+}
+
+export const commentWithReactionsToResDto = async comments => {
+    const results = comments.map(c => c.result);
+    const commentIds = results.map(c => c.id);
+    results.forEach(c => {
+        if (c.latestReply) {
+            commentIds.push(c.latestReply.id);
+        }
+    });
+
+    const reactionResults = await postgresQuery(findReactionAndUserByCommentIdsSQL(uniq(commentIds).toString()));
+    const reactions = reactionResults ? reactionResults.rows.map(reaction => reactionAndUserResDto(reaction)) : [];
+
+    return results.map(comment => ({
+        ...commentToResDto(comment),
+        user: userToResDto(comment.user),
+        reactions: reactions.filter(re => re.commentId === comment.id) || [],
+        replies: comment.latestReply ? [{
+            ...commentToResDto(comment.latestReply),
+            user: userToResDto(comment.latestReply.user),
+            reactions: reactions.filter(re => re.commentId === comment.latestReply.id) || [],
+        }] : [],
+    }))
 }

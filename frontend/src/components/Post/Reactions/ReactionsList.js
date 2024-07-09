@@ -10,13 +10,16 @@ import { FRIENDS_ROUTES, REACTIONS_ROUTES } from "../../../config/apiRoutes";
 import { MdPersonAdd, MdSend } from "react-icons/md";
 import Loader from "../../../structure/Loader";
 import { getDeepProp } from "../../../common/utils";
+import { ReactionMapping } from "../../../common/enums";
 
 const ReactionsList = props => {
     const [callFlag, setCallFlag] = useState(false);
     const [loading, setLoading] = useState(true);
     const [sendRequestCall, setSendRequestCall] = useState(false);
+    const [reactionList, setReactionList] = useState([]);
+    const [selectedTab, setSelectedTab] = useState(-1);
 
-    const { auth } = props;
+    const { auth, reactionsNumber } = props;
 
     useEffect(() => {
         if (props.postId != null && !callFlag) {
@@ -30,10 +33,14 @@ const ReactionsList = props => {
         }
 
         if (props.postReactionsResponse && props.postReactionsResponse.success && loading) {
+            setSelectedTab(Object.keys(reactionsNumber).findIndex(key => key === 'total'));
+            setReactionList(props.postReactionsResponse.data);
             setLoading(false)
         }
 
         if (props.commentReactionsResponse && props.commentReactionsResponse.success && loading) {
+            setSelectedTab(Object.keys(reactionsNumber).findIndex(key => key === 'total'));
+            setReactionList(props.commentReactionsResponse.data);
             setLoading(false)
         }
 
@@ -42,7 +49,7 @@ const ReactionsList = props => {
             setSendRequestCall(true);
         }
 
-    }, [props, callFlag, loading, sendRequestCall])
+    }, [props, callFlag, loading, sendRequestCall, reactionsNumber])
 
     useEffect(() => {
         return () => {
@@ -58,8 +65,6 @@ const ReactionsList = props => {
         return <Loader mini={true} />
     }
 
-    const reactionList = getDeepProp(props, 'postReactionsResponse.data') || getDeepProp(props, 'commentReactionsResponse.data');
-
     const handleSendRequest = userId => {
         if (userId) {
             setSendRequestCall(false);
@@ -74,19 +79,54 @@ const ReactionsList = props => {
         }, 5000);
     }
 
+    const handleClickTab = (reactionType, targetIndex) => {
+        setSelectedTab(targetIndex);
+        const allReactions = getDeepProp(props, 'postReactionsResponse.data') || getDeepProp(props, 'commentReactionsResponse.data') || [];
+        if (reactionType === 'total') {
+            setReactionList(allReactions);
+        } else {
+            const filtered = allReactions.filter(reaction => reaction.reactionType === parseInt(reactionType));
+            setReactionList(filtered);
+        }
+    }
+
     return (
         <React.Fragment>
             {reactionList && reactionList.length > 0 
                 ? <div className="reaction-list-wrapper">
                     <div className="reaction-tabs">
-
+                        {reactionsNumber && Object.keys(reactionsNumber)
+                        .map((key, index) => {
+                            if (reactionsNumber[key] > 0) {
+                                const isSelected = selectedTab === index;
+                                return key === 'total' 
+                                ? <div 
+                                        key={`tab-${index}`} 
+                                        className={`tab total ${isSelected ? 'active' : ''}`}
+                                        onClick={() => handleClickTab(key, index)}
+                                    >
+                                        <span className="text">All</span>
+                                    </div>
+                                : (
+                                    <div 
+                                        key={`tab-${index}`} 
+                                        className={`tab ${ReactionMapping[key].className} ${isSelected ? 'active' : ''}`} 
+                                        onClick={() => handleClickTab(key, index)}
+                                    >
+                                        <span className="icon">{ReactionMapping[key].icon}</span>
+                                        <span className="text">{reactionsNumber[key]}</span>
+                                    </div>
+                                )
+                            }
+                            return null;
+                        })}
                     </div>
                     <div className="reaction-list">
-                        {reactionList.map(item => {
+                        {reactionList.map((item, index) => {
                             const user = item.user;
                             const currentUser = auth && auth.id === user.id;
                             return (
-                                <div className={ClassNames.USER_ITEM}>
+                                <div key={`user-${user.id}${index}`} className={ClassNames.USER_ITEM}>
                                     <UserImage
                                         id={user.id}
                                         picUrl={user.profilePictureThumb}

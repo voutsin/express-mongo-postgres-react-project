@@ -4,7 +4,7 @@ import { handleUserLogin, handleUserLogout, handleUserVerification } from './han
 import { handleBlockUser, handleFindUserFriends, handleFindUserFriendsBirthdays, handleSendFriendRequest, handleUserRegistration } from './handlers/usersHandler';
 import { handleGetUserFeed } from './handlers/feedHandler';
 import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
-import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleUpdateComment } from './handlers/commentHandler';
+import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleGetCommentReplies, handleGetPostComments, handleUpdateComment } from './handlers/commentHandler';
 
 /**
  * when the action is triggered the watcher will execute the handle function
@@ -30,6 +30,8 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.UPDATE_COMMENT, handleUpdateComment);
     yield takeLatest(ActionTypes.DELETE_COMMENT, handleDeleteComment);
     yield takeLatest(ActionTypes.ADD_NEW_REPLY, handleAddReplyComment);
+    yield takeLatest(ActionTypes.GET_POST_COMMENTS, handleGetPostComments);
+    yield takeLatest(ActionTypes.GET_COMMENT_REPLIES, handleGetCommentReplies);
     // reactions
     yield takeLatest(ActionTypes.ADD_NEW_REACTION, handleAddNewReaction);
     yield takeLatest(ActionTypes.UPDATE_REACTION, handleUpdateReaction);

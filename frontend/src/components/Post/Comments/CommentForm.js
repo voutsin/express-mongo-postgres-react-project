@@ -22,7 +22,6 @@ const CommentForm = props => {
             setCommentCall(false);
             setInputs(Object.assign({}));
             setVersion(version + 1);
-            commentRef.current.classList.remove(ClassNames.DISPLAY);
         }
 
         if (props.updateCommentResponse && props.updateCommentResponse.success && commentCall) {
@@ -30,7 +29,6 @@ const CommentForm = props => {
             setCommentCall(false);
             setInputs(Object.assign({}));
             setVersion(version + 1);
-            commentRef.current.classList.remove(ClassNames.DISPLAY);
             props.handleUpdateComment(null);
         }
 
@@ -86,6 +84,8 @@ const CommentForm = props => {
         }
     }
 
+    const textLabel = `${updatedComment ? 'Edit' : 'Add'} ${isReply ? 'Reply' : 'Comment'}`
+
     return (
         <React.Fragment>
             <div className={ClassNames.ADD_COMMENT} ref={commentRef}>
@@ -93,7 +93,7 @@ const CommentForm = props => {
                     <TextInput
                         inputFocus={inputFocus}
                         name={'content'}
-                        label={updatedComment ? 'Edit Comment' : 'Add Comment'}
+                        label={textLabel}
                     />
                 </Form>
                 <LoadingButton 

@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import { canAccessPost, commentExists, postExists } from './commonMethods.js';
 
 
@@ -64,6 +64,40 @@ export const viewCommentValidations = [
         }
       }),
 ];
+
+export const viewPostCommentsValidations = [
+  query('id')
+    .exists().withMessage('Post id is required')
+    .notEmpty().withMessage('Post id cannot be empty')
+    .custom(async id => {
+        if (!(await postExists(id))) {
+            throw new Error('Post does not exist');
+        }
+    }),
+  query('page')
+    .exists().withMessage('Page number is required')
+    .notEmpty().withMessage('Page number cannot be empty'),
+  query('limit')
+    .exists().withMessage('Number of results is required')
+    .notEmpty().withMessage('Number of results cannot be empty')
+]
+
+export const viewCommentRepliesValidations = [
+  query('id')
+    .exists().withMessage('Comment id is required')
+    .notEmpty().withMessage('Comment id cannot be empty')
+    .custom(async id => {
+        if (!(await commentExists(id))) {
+            throw new Error('Comment does not exist');
+        }
+    }),
+  query('page')
+    .exists().withMessage('Page number is required')
+    .notEmpty().withMessage('Page number cannot be empty'),
+  query('limit')
+    .exists().withMessage('Number of results is required')
+    .notEmpty().withMessage('Number of results cannot be empty')
+]
 
 export const addNewReplyValidations = [
   body('commentId')

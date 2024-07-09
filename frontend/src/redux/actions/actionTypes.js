@@ -32,6 +32,11 @@ const ActionTypes = {
     REFRESH_POST_DATA: 'refreshPostData',
     SET_COMMENT_DATA: 'setCommentData',
     CLEAR_COMMENT_DATA: 'clearCommentData',
+    GET_POST_COMMENTS: 'getPostComments',
+    GET_COMMENT_REPLIES: 'getCommentReplies',
+    SET_COMMENTS_LIST: 'setCommentsList',
+    SET_COMMENTS_REPLIES_LIST: 'setCommentsRepliesList',
+    RESET_COMMENTS_LIST: 'resetCommentsList',
 }
 
 export default ActionTypes;
