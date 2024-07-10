@@ -88,6 +88,18 @@ export const apiReducer = (state = defaultState, action) => {
                     : [updatedPost],
             }
 
+        // ADD NEW POST 
+        case ActionTypes.ADD_NEW_POST_DATA:
+            const newPost = action.payload.post;
+
+            return {
+                ...updatedState,
+                POSTS_LIST: [
+                    newPost,
+                    ...updatedState.POSTS_LIST
+                ],
+            }
+
         case ActionTypes.SET_COMMENTS_LIST:
             const commentsList = action.payload.comments;
             const commentIds = commentsList.map(c => c.id);

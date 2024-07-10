@@ -180,4 +180,14 @@ export const setCommentsRepliesList = (replies, commentId, postId) => ({
 
 export const resetCommentList = () => ({
     type: ActionTypes.RESET_COMMENTS_LIST
-})
+});
+
+export const addNewPost = data => ({
+    type: ActionTypes.ADD_NEW_POST,
+    payload: data
+});
+
+export const addNewPostData = post => ({
+    type: ActionTypes.ADD_NEW_POST_DATA,
+    payload: post
+});

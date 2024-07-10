@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { selectApiState } from '../../redux/reducers/apiReducer';
 import { FEED_ROUTES } from '../../config/apiRoutes';
 import { getUserFeed } from '../../redux/actions/actions';
-import { getDeepProp } from '../../common/utils';
 import { ClassNames } from '../../styles/classes';
 import FeedComponent from './FeedComponent';
 import Loader from '../../structure/Loader.js'
@@ -12,6 +11,7 @@ const Feed = props => {
     const [feedCall, setFeedCallFlag] = useState(false);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState({page: 1, pageSize: 10});
+    const [feedData, setFeedData] = useState(null);
 
     useEffect(() => {
         if (props.auth && props.auth.id && !feedCall) {
@@ -21,6 +21,12 @@ const Feed = props => {
 
         if (props.feedResponse && props.feedResponse.success && loading) {
             setLoading(false);
+            setFeedData(props.feedResponse.data.feeds)
+        }
+
+        if (!props.feedResponse || !props.feedResponse.success) {
+            setLoading(true);
+            setFeedData(null);
         }
 
     }, [props, feedCall, page, loading])
@@ -34,8 +40,6 @@ const Feed = props => {
         props.getUserFeed(page);
     }
 
-    const feeds = getDeepProp(props, 'feedResponse.data.feeds');
-
     if (loading) {
         return <Loader mini={true} />
     }
@@ -43,9 +47,9 @@ const Feed = props => {
     return (
         <React.Fragment>
             <div className={ClassNames.FEED_WRAPPER}>
-                {feeds && feeds.length > 0 
+                {feedData && feedData.length > 0 
                 ? <div className={ClassNames.FEED_LIST}>
-                        {feeds.map((feed, index) => {
+                        {feedData.map((feed, index) => {
                             return (
                                 <FeedComponent key={`feed-${index}`} feed={feed}/>
                             )

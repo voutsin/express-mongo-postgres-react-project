@@ -18,6 +18,9 @@ const ApiRoutesNames = {
     ADD_NEW_REACTION: 'ADD_NEW_REACTION',
     UPDATE_REACTION: 'UPDATE_REACTION',
     DELETE_REACTION: 'DELETE_REACTION',
+    ADD_NEW_POST: 'ADD_NEW_POST',
+    UPDATE_POST: 'UPDATE_POST',
+    DELETE_POST: 'DELETE_POST',
 }
 
 const AUTH = '/auth';
@@ -130,14 +133,17 @@ export const POSTS_ROUTES = {
     ADD_NEW_POST: {
         route: `${POSTS}/addNew`,
         type: ApiTypes.POST,
+        name: ApiRoutesNames.ADD_NEW_POST
     },
     UPDATE_POST: {
         route: `${POSTS}/edit`,
         type: ApiTypes.PUT,
+        name: ApiRoutesNames.UPDATE_POST
     },
     DELETE_POST: {
         route: `${POSTS}/:id`,
         type: ApiTypes.DELETE,
+        name: ApiRoutesNames.DELETE_POST
     },
 }
 

@@ -5,6 +5,7 @@ import { handleBlockUser, handleFindUserFriends, handleFindUserFriendsBirthdays,
 import { handleGetUserFeed } from './handlers/feedHandler';
 import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
 import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleGetCommentReplies, handleGetPostComments, handleUpdateComment } from './handlers/commentHandler';
+import { handleAddNewPost } from './handlers/postHandler';
 
 /**
  * when the action is triggered the watcher will execute the handle function
@@ -22,6 +23,7 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.GET_USER_FEED, handleGetUserFeed);
     // post
     yield takeLatest(ActionTypes.GET_POST_REACTIONS, handleGetPostReactions);
+    yield takeLatest(ActionTypes.ADD_NEW_POST, handleAddNewPost);
     // friends
     yield takeLatest(ActionTypes.SEND_FRIEND_REQUEST, handleSendFriendRequest);
     yield takeLatest(ActionTypes.BLOCK_USER, handleBlockUser);

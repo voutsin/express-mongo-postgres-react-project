@@ -2,6 +2,8 @@ import { pick } from "underscore";
 import { postgresQuery } from "../db/postgres.js";
 import { findPostDetailsSQL } from "../db/queries/postsQueries.js";
 import { findDetailedLists, findFeedDetails } from "./utils.js";
+import { findUserById } from "../db/queries/userQueries.js";
+import { userToResDto } from "./userMapper.js";
 
 export const postToResDto = post => {
     return {
@@ -99,5 +101,14 @@ export const updatePostReqDtoToPost = req => {
         content: req.content,
         media_url: req.mediaUrl,
         post_type: parseInt(req.postType),
+    }
+}
+
+export const postWithUserResDto = async post => {
+    const userResults = await postgresQuery(findUserById, [post.user_id]);
+
+    return {
+        ...postToResDto(post),
+        user: userToResDto(userResults.rows[0]),
     }
 }

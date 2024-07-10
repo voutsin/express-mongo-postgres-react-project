@@ -2,12 +2,13 @@ import { validationResult } from 'express-validator';
 import { unlink, access, constants } from 'fs';
 import { postgresQuery } from '../db/postgres.js';
 import { createNewPostSQL, deletePostSQL, findAllPostsByUserIdSQL, findAllPostsSQL, findPostByIdSQL, updatePostSQL } from '../db/queries/postsQueries.js';
-import { detailedPostToResDto, postReqDtoToPost, postToResDto, updatePostReqDtoToPost } from '../mapper/postMapper.js';
+import { detailedPostToResDto, postReqDtoToPost, postToResDto, postWithUserResDto, updatePostReqDtoToPost } from '../mapper/postMapper.js';
 import { PostType } from '../common/enums.js';
 import { addNewPostValidations, updatePostValidations } from '../validators/postValidator.js';
 import { deleteFeedByPostId, insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
 import { deleteCommentsByPostId } from '../db/queries/commentsQueries.js';
 import { deleteReactionsByPostIdSQL } from '../db/queries/reactionsQueries.js';
+import { omit } from 'underscore';
 
 const findAllPosts = async (req, res) => {
     try {
@@ -92,9 +93,22 @@ const addNewPost = async (req, res) => {
         const result = await postgresQuery(createNewPostSQL, params);
 
         // add to feed
-        await insertNewFeedForPost(result.rows[0], req.userId);
+        const postFeed = await insertNewFeedForPost(result.rows[0], req.userId);
+        const postResDto = await postWithUserResDto(result.rows[0]);
 
-        res.json(result.rows.map(row => postToResDto(row)));
+        res.json({
+          post: {
+            ...postResDto,
+            comments: [],
+            reactions: [],
+            reactionsNumber: {total: 0},
+            commentsNumber: 0,
+          },
+          feed: {
+            ...omit(postFeed._doc, '__v', '_id'),
+            user: postResDto.user,
+          },
+        });
     } catch (e) {
         console.error(e);
         res.status(500).send('Internal Server Error: ', e);

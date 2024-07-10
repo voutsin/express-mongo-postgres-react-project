@@ -245,3 +245,22 @@ export const organizeReactions = reactions => {
         5: numberOfCries, // cry
     }
 }
+
+export const getYoutubeVideoId = (url) => {
+    const regex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const matches = url.match(regex);
+    return matches ? matches[1] : null;
+}
+
+export const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+export const extractUrls = (text) => {
+    const parts = text.split(urlRegex);
+    const urls = [];
+    parts.forEach(part => {
+        if (urlRegex.test(part)) {
+            urls.push(part);
+        }
+    });
+    return urls
+}

@@ -90,4 +90,13 @@ export const ClassNames = {
     REPOST: 'repost',
     SEND_TO_CHAT: 'send-to-chat',
     ACTION_BTNS: 'share-action-btns',
+    // add new
+    ADD_NEW_POST_ACTION: 'add-new-post-action',
+    ADD_NEW_POST_WRAPPER: 'add-new-post-wrapper',
+    ADD_NEW_POST_BTN: 'add-new-post-btn',
+    TRIGGER_DIV: 'trigger-div',
+    DRAG_DROP_WRAPPER: 'drag-drop-wrapper',
+    DRAG_DROP_DIV: 'drag-drop-div',
+    DROP_FILE_INPUT: 'drop-file-input',
+    ADD_NEW_POST_SUBMIT_BTN: 'add-new-post-submit-btn',
 }

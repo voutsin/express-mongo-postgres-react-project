@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UserImage from "../../structure/User/UserImage";
 import { ClassNames } from "../../styles/classes";
 import UserName from "../../structure/User/UserName";
-import { Media, calculatePostAge } from "../../common/utils";
+import { Media, calculatePostAge, extractUrls, getYoutubeVideoId } from "../../common/utils";
 import Modal from "../../structure/Modal";
 import ReactionsSection from "./Reactions/Reactions";
 import PostButtons from "./PostButtons";
@@ -15,13 +15,29 @@ const Post = props => {
     const [imageMopdalFlag, openImageModal] = useState(false);
     const [mediaHeight, setMediaHeight] = useState('100%');
     const [commentsModalFlag, openCommentsModal] = useState(false);
+    const [linkPreview, setLinkPreview] = useState(false);
 
     const {post, fullWidth, posts, topFeeds} = props;
 
-    if(post == null) {return null;}
-
     const foundPost = posts ? posts.find(p => p.id === post.id) : post;
     const foundTopFeed = topFeeds ? topFeeds.find(f => f.content.postId === post.id) : null;
+
+    useEffect(() => {
+        if (foundPost) {
+            const urlsInContent = foundPost ? extractUrls(foundPost.content) : false;
+            if (urlsInContent && urlsInContent.length > 0) {
+                const firstUrl = urlsInContent[0];
+                const youtubeVideoId = getYoutubeVideoId(firstUrl);
+                if (youtubeVideoId) {
+                    setLinkPreview(`https://www.youtube.com/embed/${youtubeVideoId}`);
+                } else {
+                    setLinkPreview(null);
+                }
+            }
+        }
+    }, [foundPost]);
+
+    if(post == null) {return null;}
 
     const {
         user
@@ -77,12 +93,26 @@ const Post = props => {
                     />
                     <div className="info">
                         <UserName name={user.name} id={user.id}/>
-                        <span className="text">{`${postAge.value} ${postAge.key} ago`}</span>
+                        <span className="text">{postAge.key ? `${postAge.value} ${postAge.key} ago` : postAge.value}</span>
                     </div>
                 </div>
                 <div className={ClassNames.POST_BODY}>
                     <div className={ClassNames.POST_BODY_TEXT}>
                         <p>{foundPost.content}</p>
+                        {linkPreview && (
+                            <div className="preview">
+                                <iframe
+                                    width="100%"
+                                    height="300"
+                                    src={linkPreview}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    title="Link Preview"
+                                    style={{ marginBottom: '10px' }}
+                                />
+                            </div>
+                        )}
                     </div>
                     {foundPost.mediaUrl && 
                         <div className={ClassNames.POST_BODY_MULTIMEDIA} onClick={handleImageClick} style={{height: mediaHeight}} >

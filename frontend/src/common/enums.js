@@ -55,3 +55,9 @@ export const Reactions = {
     WOW: 4,
     CRY: 5,
 }
+
+export const PostTypes = {
+    PROFILE_PIC: 1,
+    STATUS: 2,
+    MULTIMEDIA: 3,
+}
