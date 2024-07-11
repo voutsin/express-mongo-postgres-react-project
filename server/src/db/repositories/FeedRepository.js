@@ -60,54 +60,73 @@ export const findFeedsForUser = async (friendsIds, pageSize, skip) => {
 
 export const findFeedsGroupByPost = async (friendsIds, pageSize, skip) => {
     try {
-        const feeds = await Feed.aggregate([
-            // query for select
+        const matchStage = {
+            $match: {
+              userId: { $in: friendsIds }
+            }
+        };
+        
+        const countPipeline = [
+            matchStage,
             {
-              $match: {
-                userId: { $in: friendsIds }
+              $group: {
+                _id: "$content.postId"
               }
             },
-            // group feeds into an array by post id
+            {
+              $group: {
+                _id: null,
+                totalGroups: { $sum: 1 }
+              }
+            }
+        ];
+
+        const feedPipeline = [
+            matchStage,
+            {
+              $sort: {
+                timestamp: -1
+              }
+            },
             {
               $group: {
                 _id: "$content.postId",
-                feeds: {
-                  $push: {
-                    userId: "$userId",
-                    type: "$type",
-                    content: "$content",
-                    timestamp: "$timestamp"
-                  }
+                feeds: { 
+                    $push: {
+                      userId: "$userId",
+                      type: "$type",
+                      content: "$content",
+                      timestamp: "$timestamp"
+                    } 
                 },
-                count: { $sum: 1 }, // count the number of feeds per postId
-                maxTimestamp: { $max: "$timestamp" } // Find the latest timestamp in each group
+                mostRecentFeedTimestamp: { $first: "$timestamp" }
               }
             },
-            // sort feeds array by timestamp descending
             {
-              $project: {
-                feeds: {
-                  $sortArray: {
-                    input: "$feeds",
-                    sortBy: { timestamp: -1 } // Sort feeds within each postId group by timestamp descending
-                  }
-                },
+              $sort: {
+                mostRecentFeedTimestamp: -1
               }
-            },
-            // sort results by max timestamp descending
-            {
-              $sort: { maxTimestamp: -1 } // Sorting by timestamp
             },
             {
               $skip: skip
             },
             {
               $limit: pageSize
+            },
+            {
+              $project: {
+                _id: 0,
+                postId: "$_id",
+                feeds: 1
+              }
             }
-        ]);
+        ];
+
+        const feeds = await Feed.aggregate(feedPipeline);
+        const countResult = await Feed.aggregate(countPipeline);
 
         return {
-            totalRecords: feeds.length,
+            totalRecords: (countResult.length > 0) ? countResult[0].totalGroups : 0,
             feeds,
         }
     } catch (e) {

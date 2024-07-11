@@ -31,11 +31,11 @@ const findUserPostFeed = async (req, res) => {
         const activeUser = getActiveUser(req);
         if (activeUser == null) {
             throw new Error('No active user found');
-        }   
+        }
 
         const userId = parseInt(activeUser.id);
-        const page = parseInt(req.params.page) || 1; // default to page 1 if not provided
-        const pageSize = parseInt(req.params.pageSize) || 10; // default to 10 items per page if not provided
+        const page = parseInt(req.query.page) || 1; // default to page 1 if not provided
+        const pageSize = parseInt(req.query.pageSize) || 10; // default to 10 items per page if not provided
         const skip = (page - 1) * pageSize;
 
         // find all active user's friends

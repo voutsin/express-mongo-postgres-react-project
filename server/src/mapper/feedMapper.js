@@ -91,7 +91,7 @@ export const feedByPostResDto = async feedRes => {
                 comment: topFeed.content.commentId ? comments.find(c => c.id === topFeed.content.commentId) : null,
             },
             users: uniq(postFeed.feeds.map(f => f.userId)).map(userId => users.find(u => u.id === userId)).filter(user => user != null),
-            post: mappedPosts.find(post => post.id === postFeed._id),
+            post: mappedPosts.find(post => post.id === postFeed.postId),
         }
     })
 }
