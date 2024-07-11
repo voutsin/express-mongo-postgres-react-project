@@ -191,3 +191,23 @@ export const addNewPostData = post => ({
     type: ActionTypes.ADD_NEW_POST_DATA,
     payload: post
 });
+
+export const deletePost = data => ({
+    type: ActionTypes.DELETE_POST,
+    payload: data
+});
+
+export const deletePostData = post => ({
+    type: ActionTypes.DELETE_POST_DATA,
+    payload: post
+});
+
+export const updatePost = data => ({
+    type: ActionTypes.UPDATE_POST,
+    payload: data
+});
+
+export const updatePostData = post => ({
+    type: ActionTypes.UPDATE_POST_DATA,
+    payload: post
+});

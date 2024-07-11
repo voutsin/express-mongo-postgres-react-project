@@ -4,7 +4,7 @@ import { Button } from "../../../structure/Form/Form";
 import { getDeepProp } from "../../../common/utils";
 import { selectApiState } from "../../../redux/reducers/apiReducer";
 import { FRIENDS_ROUTES } from "../../../config/apiRoutes";
-import { blockUser, deleteComment } from "../../../redux/actions/actions";
+import { blockUser, deleteComment, deletePost } from "../../../redux/actions/actions";
 
 const OptionsModal = props => {
     const [userId, setUserId] = useState(null);
@@ -32,7 +32,7 @@ const OptionsModal = props => {
 
     const handleDelete = () => {
         if (post) {
-            // TODO: add post action
+            props.deletePost(post);
         } else if (comment) {
             props.deleteComment(comment);
         } 
@@ -40,7 +40,7 @@ const OptionsModal = props => {
 
     const handleUpdate = () => {
         if (post) {
-            // TODO: add post action
+            props.handleUpdatePost(post);
         } else if (comment) {
             props.handleUpdateComment(comment);
         }
@@ -75,7 +75,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     // delete item
     deleteComment: comment => dispatch(deleteComment(comment)),
-    // deletePost: id => dispatch(deletePost(id)),
+    deletePost: id => dispatch(deletePost(id)),
     // user
     blockUser: id => dispatch(blockUser(id)),
 });

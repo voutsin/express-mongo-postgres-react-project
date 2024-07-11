@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import UserImage from "../../structure/User/UserImage";
 import { ClassNames } from "../../styles/classes";
 import UserName from "../../structure/User/UserName";
@@ -7,20 +7,42 @@ import Modal from "../../structure/Modal";
 import ReactionsSection from "./Reactions/Reactions";
 import PostButtons from "./PostButtons";
 import { connect } from "react-redux";
-import { selectPostsData, selectTopFeeds } from "../../redux/reducers/apiReducer";
+import { selectApiState, selectPostsData, selectTopFeeds } from "../../redux/reducers/apiReducer";
 import FeedComment from "../Feed/FeedComment";
 import CommentsSection from "../Post/Comments/Comments";
+import { Button } from "../../structure/Form/Form";
+import { MdMoreVert } from "react-icons/md";
+import TooltipModal from "../../structure/TooltipModal";
+import OptionsModal from "./utils/OptionsModal";
+import PostFormModal from "../AddNewPost/PostFormModal";
+import { POSTS_ROUTES } from "../../config/apiRoutes";
+import { clearData } from "../../redux/actions/actions";
 
 const Post = props => {
     const [imageMopdalFlag, openImageModal] = useState(false);
-    const [mediaHeight, setMediaHeight] = useState('100%');
+    const [mediaHeight, setMediaHeight] = useState('600px');
     const [commentsModalFlag, openCommentsModal] = useState(false);
     const [linkPreview, setLinkPreview] = useState(false);
+    const [optionsModalFlag, openOptionsModal] = useState(false);
+    const [updateModalFlag, openUpdateModal] = useState(false);
+    const [updatePostDataFlag, setUpdatePostDataFlag] = useState(false);
 
-    const {post, fullWidth, posts, topFeeds} = props;
+    const {post, fullWidth, posts, topFeeds, updatePostData} = props;
 
     const foundPost = posts ? posts.find(p => p.id === post.id) : post;
     const foundTopFeed = topFeeds ? topFeeds.find(f => f.content.postId === post.id) : null;
+
+    const clearUpdatePostData = useCallback(() => {
+        setUpdatePostDataFlag(true);
+        openUpdateModal(false);
+    }, []);
+
+    useEffect(() => {
+        if (updatePostData && updatePostData.success && !updatePostDataFlag) {
+            clearUpdatePostData();
+        }
+
+    }, [updatePostData, updatePostDataFlag, clearUpdatePostData])
 
     useEffect(() => {
         if (foundPost) {
@@ -37,7 +59,7 @@ const Post = props => {
         }
     }, [foundPost]);
 
-    if(post == null) {return null;}
+    if(!post || !foundPost) {return null;}
 
     const {
         user
@@ -52,6 +74,12 @@ const Post = props => {
     }
 
     const handleToggleComment = () => openCommentsModal(!commentsModalFlag);
+
+    const handleUpdatePost = () => {
+        openOptionsModal(false);
+        openUpdateModal(true);
+        setUpdatePostDataFlag(false);
+    }
 
     const commentsModal = (
         <Modal
@@ -77,6 +105,24 @@ const Post = props => {
         </Modal>
     );
 
+    const optionsModal = (
+        <TooltipModal
+            handleClose={() => openOptionsModal(false)}
+            flag={optionsModalFlag}
+        >
+            <OptionsModal post={foundPost} handleUpdatePost={handleUpdatePost}/>
+        </TooltipModal>
+    );
+
+    const updatePostModal = (
+        <Modal
+            handleClose={() => openUpdateModal(false)}
+            flag={updateModalFlag}
+        >
+            <PostFormModal updatedPost={foundPost} />
+        </Modal>
+    );
+
     const feedComment = foundTopFeed && foundTopFeed.comment ? {
         ...foundTopFeed.comment,
     } : null;
@@ -94,6 +140,12 @@ const Post = props => {
                     <div className="info">
                         <UserName name={user.name} id={user.id}/>
                         <span className="text">{postAge.key ? `${postAge.value} ${postAge.key} ago` : postAge.value}</span>
+                    </div>
+                    <div className="actions">
+                        <Button className={ClassNames.INVISIBLE_BTN} onClick={() => openOptionsModal(true)}>
+                            <MdMoreVert/>
+                        </Button>
+                        {optionsModalFlag && optionsModal}
                     </div>
                 </div>
                 <div className={ClassNames.POST_BODY}>
@@ -115,7 +167,7 @@ const Post = props => {
                         )}
                     </div>
                     {foundPost.mediaUrl && 
-                        <div className={ClassNames.POST_BODY_MULTIMEDIA} onClick={handleImageClick} style={{height: mediaHeight}} >
+                        <div className={ClassNames.POST_BODY_MULTIMEDIA} onClick={handleImageClick} style={{height: fullWidth ? '100%' : mediaHeight}} >
                             <div className="media">
                                 <Media width={600} mediaUrl={foundPost.mediaUrl} handleHeightChange={h => setMediaHeight(h)} fullWidth={fullWidth}/>
                             </div>
@@ -141,6 +193,7 @@ const Post = props => {
             </div>
             {imageMopdalFlag && imageModal}
             {commentsModalFlag && commentsModal}
+            {updateModalFlag && updatePostModal}
         </React.Fragment>
     )
 }
@@ -148,7 +201,14 @@ const Post = props => {
 const mapStateToProps = state => ({
     posts: selectPostsData(state),
     topFeeds: selectTopFeeds(state),
-})
+    updatePostData: selectApiState(state, POSTS_ROUTES.UPDATE_POST.name),
+});
+
+const mapDispatchToProps = dispatch => ({
+    clearData: stateValues => dispatch(clearData(stateValues)),
+});
+
 export default connect(
-    mapStateToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(Post);

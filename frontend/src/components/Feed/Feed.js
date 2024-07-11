@@ -13,6 +13,8 @@ const Feed = props => {
     const [page, setPage] = useState({page: 1, pageSize: 10});
     const [feedData, setFeedData] = useState(null);
 
+    const { feedResponse } = props;
+
     useEffect(() => {
         if (props.auth && props.auth.id && !feedCall) {
             props.getUserFeed(page);
@@ -30,6 +32,13 @@ const Feed = props => {
         }
 
     }, [props, feedCall, page, loading])
+
+    useEffect(() => {
+        const propsFeeds = feedResponse && feedResponse.data && feedResponse.data.feeds;
+        if (propsFeeds && feedData && JSON.stringify(feedData) !== JSON.stringify(propsFeeds)) {
+            setFeedData(propsFeeds);
+        }
+    }, [feedResponse, feedData])
 
     // TODO: PAGABLE FEED AND LOAD MORE
     const handleLoadMore = () => {
@@ -51,7 +60,10 @@ const Feed = props => {
                 ? <div className={ClassNames.FEED_LIST}>
                         {feedData.map((feed, index) => {
                             return (
-                                <FeedComponent key={`feed-${index}`} feed={feed}/>
+                                <FeedComponent 
+                                    key={`feed-${index}${feed.post && feed.post.id}`} 
+                                    feed={feed}
+                                />
                             )
                         })}
                     </div>

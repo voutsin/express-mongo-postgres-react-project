@@ -100,6 +100,68 @@ export const apiReducer = (state = defaultState, action) => {
                 ],
             }
 
+        // DELETE POST 
+        case ActionTypes.DELETE_POST_DATA:
+            const deletedPost = action.payload;
+            return {
+                ...updatedState,
+                [FEED_ROUTES.GET_FEED.name]: updatedState[FEED_ROUTES.GET_FEED.name] && updatedState[FEED_ROUTES.GET_FEED.name].data
+                    ? {
+                        ...updatedState[FEED_ROUTES.GET_FEED.name],
+                        data: {
+                            ...updatedState[FEED_ROUTES.GET_FEED.name].data,
+                            feeds: updatedState[FEED_ROUTES.GET_FEED.name].data.feeds.filter(feed => feed.post && feed.post.id !== deletedPost.id)
+                        }
+                    }
+                    : null,
+                POSTS_LIST: updatedState.POSTS_LIST 
+                    ? updatedState.POSTS_LIST.filter(post => post.id !== deletedPost.id)
+                    : [],
+            }
+
+        // UPDATE POST 
+        case ActionTypes.UPDATE_POST_DATA:
+            const post = action.payload;
+
+            const fidAndUpdatePost = posts => {
+                return posts.map(p => {
+                    if (p.id === post.id) {
+                        return {
+                            ...p,
+                            ...post,
+                        }
+                    }
+                    return p;
+                })
+            }
+
+            return {
+                ...updatedState,
+                [FEED_ROUTES.GET_FEED.name]: updatedState[FEED_ROUTES.GET_FEED.name] && updatedState[FEED_ROUTES.GET_FEED.name].data
+                    ? {
+                        ...updatedState[FEED_ROUTES.GET_FEED.name],
+                        data: {
+                            ...updatedState[FEED_ROUTES.GET_FEED.name].data,
+                            feeds: updatedState[FEED_ROUTES.GET_FEED.name].data.feeds.map(feed => {
+                                if (feed.post && feed.post.id === post.id) {
+                                    return {
+                                        ...feed,
+                                        post: {
+                                            ...feed.post,
+                                            ...post,
+                                        }
+                                    }
+                                }
+                                return feed;
+                            })
+                        }
+                    }
+                    : null,
+                POSTS_LIST: updatedState.POSTS_LIST 
+                    ? fidAndUpdatePost(updatedState.POSTS_LIST)
+                    : [],
+            }
+
         case ActionTypes.SET_COMMENTS_LIST:
             const commentsList = action.payload.comments;
             const commentIds = commentsList.map(c => c.id);
@@ -278,8 +340,9 @@ export const apiReducer = (state = defaultState, action) => {
 
 //SELECTORS
 export const selectApiState = (state, valueName) => (state.api && state.api[valueName]);
-export const selectPostsData = state => (state.api && state.api.POSTS_LIST)
-export const selectCommentsData = state => (state.api && state.api.COMMENTS_LIST) || []
+export const selectPostsData = state => (state.api && state.api.POSTS_LIST);
+export const selectCommentsData = state => (state.api && state.api.COMMENTS_LIST) || [];
+export const selectFeedData = state => (state.api && state.api[FEED_ROUTES.GET_FEED.name] && state.api[FEED_ROUTES.GET_FEED.name].data) || [];
 
 export const selectTopFeeds = state => {
     if (state.api[FEED_ROUTES.GET_FEED.name] && state.api[FEED_ROUTES.GET_FEED.name].data) {

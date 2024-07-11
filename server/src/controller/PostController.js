@@ -132,6 +132,9 @@ const updatePost = async (req, res) => {
             return res.status(400).send(errors.message);
         }
 
+        const oldPostResult = await postgresQuery(findPostByIdSQL, [body.id]);
+        const oldPost = oldPostResult ? oldPostResult.rows[0] : null;
+
         body.postType = parseInt(body.postType);
 
         const mediaPath = req.file ? req.file.path : null;
@@ -146,7 +149,12 @@ const updatePost = async (req, res) => {
 
         const params = Object.values(updatePostReqDtoToPost(finalBody));
         const result = await postgresQuery(updatePostSQL, params);
-        res.json(result.rows.map(row => postToResDto(row)));
+
+        if (result && oldPost) {
+          deleteFileFromDirectory(oldPost.media_url);
+        }
+
+        res.json(postToResDto(result.rows[0]));
     } catch (e) {
         console.error(e);
         res.status(500).send('Internal Server Error: ', e);
@@ -179,26 +187,29 @@ const deletePost = async (req, res) => {
             await deleteFeedByPostId(deletedPost.id);
             
             // delete files associated with the post if present
-            const filePath = deletedPost.media_url;
-
-            filePath && access(filePath, constants.F_OK, (err) => {
-                if (err) {
-                  return res.status(404).send('File not found');
-                }
-            
-                // File exists, delete it
-                unlink(filePath, (err) => {
-                  if (err) {
-                    return res.status(500).send('Error deleting the file');
-                  }
-                });
-            });
+            deleteFileFromDirectory(deletedPost.media_url);
         }
-        res.json(result.rows.map(row => postToResDto(row)));
+        res.json(postToResDto(result.rows[0]));
     } catch (e) {
         console.error(e);
         res.status(500).send('Internal Server Error: ', e);
     }
+}
+
+const deleteFileFromDirectory = filePath => {
+  // delete files associated with the post if present
+  filePath && access(filePath, constants.F_OK, (err) => {
+      if (err) {
+        return res.status(404).send('File not found');
+      }
+  
+      // File exists, delete it
+      unlink(filePath, (err) => {
+        if (err) {
+          return res.status(500).send('Error deleting the file');
+        }
+      });
+  });
 }
 
 export default {

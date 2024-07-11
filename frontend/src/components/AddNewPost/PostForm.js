@@ -5,9 +5,9 @@ import { MdAddPhotoAlternate, MdClose, MdUpload } from "react-icons/md";
 import { ClassNames } from "../../styles/classes";
 import Loader from "../../structure/Loader";
 import { PostTypes } from "../../common/enums";
-import { getYoutubeVideoId } from "../../common/utils";
+import { getYoutubeVideoId, urlToFile } from "../../common/utils";
 
-const AddNewPostForm = props => {
+const PostForm = props => {
     const fileInputRef = useRef(null);
     const [formData, setFormData] = useState({});
     const [fileInputFlag, openFileInput] = useState(false);
@@ -15,8 +15,43 @@ const AddNewPostForm = props => {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [loading, setLoading] = useState(false);
     const [linkPreview, setLinkPreview] = useState(null);
+    const [inputsAdded, setInputsAdded] = useState(false);
 
-    const { handlePublishPost } = props;
+    const { handlePublishPost, updatedPost } = props;
+
+    const extractPreview = content => {
+        const youtubeVideoId = getYoutubeVideoId(content);
+        return youtubeVideoId ? `https://www.youtube.com/embed/${youtubeVideoId}` : null;
+    }
+
+    useEffect(() => {
+        const setFileFromUrl = async mediaUrl => {
+            const mediaFile = await urlToFile(mediaUrl);
+            if (mediaFile) {
+                // Create a DataTransfer object and add the file to it
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(mediaFile);
+                // Assign the DataTransfer object to the input's files property
+                if (fileInputRef.current) {
+                    fileInputRef.current.files = dataTransfer.files;
+                    // Manually trigger the change event
+                    fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                setFile(mediaFile);
+            }
+        }
+
+        if (updatedPost && !inputsAdded) {
+            setFormData(updatedPost);
+            setLinkPreview(extractPreview(updatedPost.content));
+            if (updatedPost.mediaUrl) {
+                setFileFromUrl(updatedPost.mediaUrl);
+                openFileInput(true);
+            }
+
+            setInputsAdded(true);
+        }
+    }, [updatedPost, inputsAdded, fileInputRef]);
 
     useEffect(() => {
         if (previewUrl && file) {
@@ -26,12 +61,7 @@ const AddNewPostForm = props => {
 
     const handleChange = (name, value) => {
         if (name === 'content') {
-            const youtubeVideoId = getYoutubeVideoId(value);
-            if (youtubeVideoId) {
-                setLinkPreview(`https://www.youtube.com/embed/${youtubeVideoId}`);
-            } else {
-                setLinkPreview(null);
-            }
+            setLinkPreview(extractPreview(value));
         }
 
         setFormData(prev => ({
@@ -159,4 +189,4 @@ const AddNewPostForm = props => {
     )
 }
 
-export default AddNewPostForm;
+export default PostForm;

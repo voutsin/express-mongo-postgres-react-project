@@ -39,6 +39,10 @@ const ActionTypes = {
     RESET_COMMENTS_LIST: 'resetCommentsList',
     ADD_NEW_POST: 'addNewPost',
     ADD_NEW_POST_DATA: 'addNewPostData',
+    DELETE_POST: 'deletePost',
+    DELETE_POST_DATA: 'deletePostData',
+    UPDATE_POST: 'updatePost',
+    UPDATE_POST_DATA: 'updatePostData',
 }
 
 export default ActionTypes;

@@ -19,7 +19,7 @@ postsRouter.get('/user/:id?', findUserPostsValidations, PostController.findAllUs
 postsRouter.post('/addNew', addActiveUserIdInReq, uploadMiddleware.single('media_url'), PostController.addNewPost);
 
 // update post
-postsRouter.put('/edit', addActiveUserIdInReq, uploadMiddleware.single('media_url'), PostController.updatePost);
+postsRouter.put('/edit', addActiveUserIdInReq, deletePostValidations, uploadMiddleware.single('media_url'), PostController.updatePost);
 
 // delete post
 postsRouter.delete('/:id?', deletePostValidations, PostController.deletePost);

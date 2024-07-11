@@ -4,10 +4,10 @@ import UserImage from '../../structure/User/UserImage';
 import { connect } from 'react-redux';
 import { Button } from '../../structure/Form/Form';
 import Modal from '../../structure/Modal';
-import AddNewPostModal from './AddNewPostModal';
 import { selectApiState } from '../../redux/reducers/apiReducer';
 import { POSTS_ROUTES } from '../../config/apiRoutes';
 import { clearData } from '../../redux/actions/actions';
+import PostFormModal from './PostFormModal';
 
 const AddNewPost = props => {
     const [addNewModalFlag, openAddNewModal] = useState(false);
@@ -33,7 +33,7 @@ const AddNewPost = props => {
             handleClose={() => openAddNewModal(false)}
             flag={addNewModalFlag}
         >
-            <AddNewPostModal/>
+            <PostFormModal/>
         </Modal>
     )
 

@@ -73,8 +73,6 @@ const Comment = props => {
     }
 
     const handleLoadMoreReplies = () => {
-        console.log("page: ", repliesPage)
-        console.log("new page: ", repliesPage.page + 1)
         props.getCommentReplies(post.id, commentData.id, repliesPage.page + 1, repliesPage.limit);
         setFetchComments(false);
     }

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BASE_URL } from "../config/apiRoutes";
 import { Reactions } from "./enums";
 
@@ -115,11 +115,40 @@ export const calculatePostAge = (timestamp) => {
 export const Video = props => {
     const {
         width, height, url
-    } = props
+    } = props;
+
+    const videoRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        videoRef.current.play();
+                    } else {
+                        videoRef.current && videoRef.current.pause();
+                    }
+                });
+            },
+            { threshold: 0.5 } // Adjust this value as needed
+        );
+
+        if (videoRef.current) {
+            observer.observe(videoRef.current);
+        }
+
+        return () => {
+            if (videoRef.current) {
+                observer.unobserve(videoRef.current);
+            }
+        };
+    }, []);
+
+    const suffix = getUrlSuffix(url);
 
     return (
-        <video width={width} height={height} controls autoplay loop muted poster="https://via.placeholder.com/640x360">
-            <source src={url} type="video/mp4"/>
+        <video ref={videoRef} width={width} height={height} controls autoplay={true} loop muted poster={`https://via.placeholder.com/${width}x${height}`}>
+            <source src={url} type={`video/${suffix === 'mov' ? 'quicktime' : suffix}`}/>
             Your browser does not support the video tag.
         </video>
     )
@@ -147,16 +176,20 @@ export const Media = props => {
         mediaType === 'image' 
             ? <img src={`${BASE_URL}/${mediaUrl}`} alt={''} width={fullWidth ? 'auto' : width} height={fullWidth ? 'auto' : mediaHeight} ref={mediaRef} onLoad={handleImageLoad}/> 
             : mediaType === 'video'
-                ? <Video url={`${BASE_URL}/${mediaUrl}`} width={fullWidth ? 'auto' : width} height={fullWidth ? 'auto' : mediaHeight} ref={mediaRef} onLoadedMetadata={handleImageLoad}/>
+                ? <Video url={`${BASE_URL}/${mediaUrl}`} width={fullWidth ? 'auto' : width} height={fullWidth ? 'auto' : '600'} ref={mediaRef} onLoadedMetadata={handleImageLoad}/>
                 : null
     )
 }
 
-export const getMediaType = url => {
+export const getUrlSuffix = url => {
     const split = url.split('.');
-    const suffix = split[split.length - 1].toLowerCase();
+    return split[split.length - 1].toLowerCase();
+}
+
+export const getMediaType = url => {
+    const suffix = getUrlSuffix(url);
     const imageFormats = ['jpg', 'png'];
-    const videoFormats = ['mp4'];
+    const videoFormats = ['mp4', 'mov'];
 
     return imageFormats.includes(suffix) ? 'image' : videoFormats.includes(suffix) ? 'video' : null;
 }
@@ -263,4 +296,21 @@ export const extractUrls = (text) => {
         }
     });
     return urls
+}
+
+export const urlToFile = async mediaUrl => {
+    const response = await fetch(`${BASE_URL}/${mediaUrl}`);
+    const blob = await response.blob();
+    const fileName = mediaUrl.split('/').pop(); // Extract file name from URL
+    // Convert blob to File object
+    return new File([blob], fileName, { type: blob.type });
+}
+
+export const fileToDataUrl = file => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+    });
 }
