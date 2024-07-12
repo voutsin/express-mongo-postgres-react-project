@@ -79,6 +79,11 @@ export const getUserFeed = data => ({
     payload: data
 });
 
+export const setFeedData = data => ({
+    type: ActionTypes.SET_FEED_DATA,
+    payload: data
+});
+
 export const getPostReactions = id => ({
     type: ActionTypes.GET_POST_REACTIONS,
     payload: id

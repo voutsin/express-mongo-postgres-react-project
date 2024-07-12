@@ -15,6 +15,7 @@ const ActionTypes = {
     FIND_USER_FRIENDS_BIRTHDAYS: 'findUserFriendsBirthdays',
     BLOCK_USER: 'blockUser',
     GET_USER_FEED: 'getUserFeed',
+    SET_FEED_DATA: 'setFeedData',
     GET_POST_REACTIONS: 'getPostReactions',
     GET_COMMENT_REACTIONS: 'getCommentReactions',
     SEND_FRIEND_REQUEST: 'sendFriendRequest',

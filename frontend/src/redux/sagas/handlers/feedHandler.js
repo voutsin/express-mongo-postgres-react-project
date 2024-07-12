@@ -1,5 +1,5 @@
 import { call, put } from "redux-saga/effects";
-import { setApiData, setError, setPostListFromFeed } from "../../actions/actions";
+import { setError, setFeedData, setPostListFromFeed } from "../../actions/actions";
 import { request } from "../requests/authReqs";
 import { FEED_ROUTES } from "../../../config/apiRoutes";
 
@@ -13,13 +13,10 @@ export function* handleGetUserFeed(action) {
         const response = yield call(request, payload);
         const { data } = response;
         
-        const reduxPayload = {
-            data: data,
-            apiSuccess: true,
-            apiRouteName: FEED_ROUTES.GET_FEED.name,
+        if (data) {
+            yield put(setFeedData(data));
+            yield put(setPostListFromFeed(data));
         }
-        yield put(setApiData(reduxPayload));
-        yield put(setPostListFromFeed(reduxPayload));
     } catch (error) {
         yield put(setError(error));
     }

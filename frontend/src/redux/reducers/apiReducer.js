@@ -1,5 +1,5 @@
 import { NotifyTypes } from "../../common/enums";
-import { getReplyParentComment, groupedComments, isObjectEmpty } from "../../common/utils";
+import { getDeepProp, getReplyParentComment, groupedComments, isObjectEmpty } from "../../common/utils";
 import { COMMENTS_ROUTES, FEED_ROUTES } from "../../config/apiRoutes";
 import ActionTypes from "../actions/actionTypes";
 
@@ -61,12 +61,50 @@ export const apiReducer = (state = defaultState, action) => {
                 return {...state};
             }
 
+        // SET FEED DATA
+        case ActionTypes.SET_FEED_DATA:
+            const newFeeds = action.payload.feeds;
+            const feedObj = updatedState[FEED_ROUTES.GET_FEED.name];
+            const feedPostIds = newFeeds.map(f => f.post && f.post.id).filter(id => id != null);
+
+            let updatedFeeds = [];
+            if (feedObj && feedObj.data && feedObj.data.feeds && feedObj.data.feeds.length >  0) {
+                updatedFeeds = feedObj.data.feeds.filter(f => f.post && !feedPostIds.includes(f.post.id)); // filter existing posts
+                updatedFeeds.push(...newFeeds);
+            } else {
+                updatedFeeds = [...newFeeds];
+            }
+
+            const {
+                page, pageSize, totalPages, totalRecords
+            } = action.payload;
+
+            return {
+                ...updatedState,
+                [FEED_ROUTES.GET_FEED.name]: feedObj && feedObj.data
+                    ? {
+                        ...feedObj,
+                        data: {
+                            ...feedObj.data,
+                            page, pageSize, totalPages, totalRecords,
+                            feeds: updatedFeeds
+                        }
+                    }
+                    : {
+                        data: action.payload,
+                        success: true,
+                    },
+            }
+
         case ActionTypes.SET_FEED_POST_DATA:
-            const feeds = action.payload.data.feeds;
+            // get feeds
+            const feeds = getDeepProp(updatedState, `${[FEED_ROUTES.GET_FEED.name]}.data.feeds`) || [];
+            // get posts and comments
             const feedPosts = feeds.map(feed => feed.post);
             const comments = feeds.map(feed => feed.topFeed)
                 .filter(tf => tf.comment != null)
                 .map(tf => getReplyParentComment(tf.comment));
+                
             return {
                 ...state,
                 POSTS_LIST: feedPosts,
