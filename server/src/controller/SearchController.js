@@ -1,10 +1,12 @@
+import { asyncHandler } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
 import { searchPostSQL } from "../db/queries/postsQueries.js";
 import { searchUserSQL } from "../db/queries/userQueries.js";
 import { postToResDtoForSearch } from "../mapper/postMapper.js";
 import { userToResDto } from "../mapper/userMapper.js";
+import AppError from "../model/AppError.js";
 
-const searchByCriteria = async (req, res) => {
+const searchByCriteria = asyncHandler(async (req, res, next) => {
     try {
         const text = req.query.text;
         // search content in users
@@ -22,10 +24,9 @@ const searchByCriteria = async (req, res) => {
           postCount: posts.length,
         });
     } catch (e) {
-        console.error(e);
-        res.status(500).send('Internal Server Error: ', e);
+        next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+});
 
 export default {
     searchByCriteria

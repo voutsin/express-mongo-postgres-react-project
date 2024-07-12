@@ -17,6 +17,8 @@ import reactionsRouter from './routes/reactions.js';
 import searchRouter from './routes/search.js';
 import cors from 'cors';
 import { access, constants } from 'fs';
+import { globalErrorHandler } from './common/utils.js';
+import AppError from './model/AppError.js';
 // import WebSocket, {WebSocketServer} from 'ws';
 
 dotenv.config();
@@ -84,6 +86,16 @@ app.use('/feed', feedsRouter);
 app.use('/comments', commentsRouter);
 app.use('/reactions', reactionsRouter);
 app.use('/search', searchRouter);
+
+
+// Handling all undefined routes
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+
+// Use the global error handling middleware
+app.use(globalErrorHandler);
 
 const port = process.env.SERVER_PORT;
 const server = app.listen(port, () => {

@@ -1,10 +1,31 @@
 import { body, param } from 'express-validator';
-import { userIsTheCurrent, usernameExists } from './commonMethods.js';
+import { passwordMatch, userIsTheCurrent, usernameExists } from './commonMethods.js';
 import { findOtherUsersByEmail } from '../db/queries/userQueries.js';
 import { postgresQuery } from '../db/postgres.js';
 import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
 import { FriendStatus } from '../common/enums.js';
 import { getActiveUser } from '../common/utils.js';
+
+export const loginValidations = [
+  body('username')
+    .exists().withMessage('Username is required')
+    .notEmpty().withMessage('Username cannot be empty')
+    .custom(async username => {
+      if (!(await usernameExists(username))) {
+          throw new Error('Username does not exist');
+      }
+    }),
+  body('password')
+    .exists().withMessage('Password is required')
+    .notEmpty().withMessage('Password cannot be empty')
+    .isLength({ min: 5 }).withMessage('Password must be at least 5 characters long')
+    .custom(async (password, {req}) => {
+      const match = await passwordMatch(password, req.body.username);
+      if (!match) {
+        throw new Error('Invalid password or username');
+      }
+    }),
+];
 
 export const updateUserValidations = [
   // check if username already exists

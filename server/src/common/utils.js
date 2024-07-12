@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 import dotenv from "dotenv";
 import { postgresQuery } from '../db/postgres.js';
 import { finReactionByPostIdOrCommentIdSQL } from '../db/queries/reactionsQueries.js';
+import AppError from '../model/AppError.js';
+import { validationResult } from 'express-validator';
 
 dotenv.config();
 
@@ -13,6 +15,37 @@ export const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
 export const UPLOAD_DIR = 'uploads';
 export const THUMBNAIL_PREFIX = 'profile_pic_thumbnail_';
+
+export const asyncHandler = fn => (req, res, next) => {
+  // check validations
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+      return next(new AppError({ errors: errors.array() }, 400));
+  }
+  
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+
+export const globalErrorHandler = (err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  // Parse message if it is a JSON string
+  const message = JSON.parse(err.message);
+
+  if (err.status === 500) {
+    console.error({
+      ...err,
+      message,
+    }); // Log the error details for debugging
+  }
+
+  res.status(err.statusCode).json({
+    status: err.status,
+    message
+  });
+};
 
 export const getActiveUser = req => {
   const accessToken = req.cookies[ACCESS_TOKEN_COOKIE];

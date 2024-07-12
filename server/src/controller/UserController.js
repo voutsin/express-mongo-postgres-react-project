@@ -1,5 +1,5 @@
 import { FriendStatus, PostType } from "../common/enums.js";
-import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, getActiveUser } from "../common/utils.js";
+import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, asyncHandler, getActiveUser } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
 import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship, findUserFrinedsBirthdays } from "../db/queries/friendsQueries.js";
 import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
@@ -10,25 +10,19 @@ import jwt from 'jsonwebtoken';
 import { createNewPostSQL } from '../db/queries/postsQueries.js';
 import { postReqDtoToPost, postToResDto } from '../mapper/postMapper.js';
 import { insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
+import AppError from "../model/AppError.js";
 
-const findAll = async (req, res) => {
+const findAll = asyncHandler(async (req, res, next) => {
     try {
       const result = await postgresQuery(findAllUsersSQL);
       res.json(result.rows.map(row => userToResDto(row)));
     } catch (e) {
-      console.error(e);
-      res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+});
 
-const registerNewUser = async (req, res) => {
+const registerNewUser = asyncHandler(async (req, res, next) => {
   try {
-      // Handle validation errors
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-
       const finalBody = await newUserReqDtoToUser(req.body);
       const params = Object.values(finalBody);
       const result = await postgresQuery(insertNewUser, params);
@@ -48,18 +42,12 @@ const registerNewUser = async (req, res) => {
         res.status(200);
     }
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const findByUserId = async (req, res) => {
+const findByUserId = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
     const params = Object.values(req.params).map(param => parseInt(param));
     const result = await postgresQuery(findUserById, params);
     if (result.rows.length > 0) {
@@ -67,28 +55,12 @@ const findByUserId = async (req, res) => {
       res.status(200);
     }
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const updateUser = async (req, res) => {
+const updateUser = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (req.body == null) {
-      const error = {
-          type: "field",
-          value: null,
-          msg: "User not defined",
-          path: "id",
-      }
-      errors.push(error)
-    } 
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     // mapper
     const finalBody = await updateUserReqDtoToUser(req.body);
     // update query
@@ -100,40 +72,23 @@ const updateUser = async (req, res) => {
       res.status(200);
     }
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const findAllFriendsOfUser = async (req, res) => {
+const findAllFriendsOfUser = asyncHandler(async (req, res, next) => {
   try {
-    if (req.params == null || req.params.id == null) {
-      const error = {
-          type: "field",
-          value: null,
-          msg: "User ID not defined",
-          path: "id",
-      }
-      return res.status(400).json({ errors: [error] });
-    } 
     const params = Object.values(req.params);
     const result = await postgresQuery(findAllActiveFriendshipsByUserId, params);
     const resposne = await detailedFriendToResDto(result.rows);
     res.json(resposne);
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const requestFriendship = async (req, res) => {
+const requestFriendship = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.body); // param 1 is request user id
     const activeUser = getActiveUser(req);
     params.push(activeUser ? activeUser.id : null); // param 2 is active user id
@@ -155,19 +110,12 @@ const requestFriendship = async (req, res) => {
       res.status(200);
     }
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const acceptFriendship = async (req, res) => {
+const acceptFriendship = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.params); // param 1 is request user id
     const activeUser = getActiveUser(req);
     params.push(activeUser ? activeUser.id : null); // param 2 is active user id
@@ -186,19 +134,12 @@ const acceptFriendship = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const deleteFriend = async (req, res) => {
+const deleteFriend = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.params); // param 1 is request user id
     const activeUser = getActiveUser(req);
     params.push(activeUser ? activeUser.id : null); // param 2 is active user id
@@ -210,19 +151,12 @@ const deleteFriend = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const blockUser = async (req, res) => {
+const blockUser = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.params); // param 1 is request user id
     const activeUser = getActiveUser(req);
     if (activeUser == null) {
@@ -247,12 +181,11 @@ const blockUser = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const deactivateProfile = async (req, res) => {
+const deactivateProfile = asyncHandler(async (req, res, next) => {
   try {
     const activeUser = getActiveUser(req);
     if (activeUser == null) {
@@ -266,20 +199,13 @@ const deactivateProfile = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
 // TODO: check if needed as endpoint
-const searchUserByCriteria = async (req, res) => {
+const searchUserByCriteria = asyncHandler(async (req, res, next) => {
   try {
-    // Handle validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.params);
     const results = await postgresQuery(`SELECT * FROM users WHERE (username ILIKE '%${params[0]}%' OR email ILIKE '%${params[0]}%' OR displayed_name ILIKE '%${params[0]}%') AND active = 1;`)
     if (results) {
@@ -287,12 +213,11 @@ const searchUserByCriteria = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const editProfilePic = async (req, res) => {
+const editProfilePic = asyncHandler(async (req, res, next) => {
   try {
     // Handle validation errors
     const errors = validationResult(req);
@@ -309,7 +234,7 @@ const editProfilePic = async (req, res) => {
 
     const profilePicPath = req.file ? req.file.path : null;
     if (!profilePicPath) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      next(new AppError('No file uploaded', 400));
     }
 
     const activeUser = getActiveUser(req);
@@ -343,12 +268,11 @@ const editProfilePic = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const findFriendsBirthdays = async (req, res) => {
+const findFriendsBirthdays = asyncHandler(async (req, res, next) => {
   try {
     const results = await postgresQuery(findUserFrinedsBirthdays, [req.userId]);
     if (results) {
@@ -356,10 +280,9 @@ const findFriendsBirthdays = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
 export default {
     findAll,

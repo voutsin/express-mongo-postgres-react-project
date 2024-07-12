@@ -25,8 +25,8 @@ export const findDetailedLists = async (postId) => {
             user: users.find(user => user.id === reaction.userId)
         }));
     const comments = mapComments(allComments, users, reactions);
-    const posts = mapPosts(allPosts, users, comments, reactions);
-
+    const posts = await mapPosts(allPosts, users, comments, reactions);
+    
     return {
         users, posts, comments, reactions
     }

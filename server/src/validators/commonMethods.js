@@ -6,6 +6,7 @@ import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
 import { findPostByIdAndActiveUserSQL, userCanAccessPostSQL } from '../db/queries/postsQueries.js';
 import { findReactionByIdAndActiveUserSQL } from '../db/queries/reactionsQueries.js';
 import { findByEmail, findByUserName, findUserById } from '../db/queries/userQueries.js';
+import bcrypt from 'bcrypt';
 
 export const emailExists = async email => {
     const res = await postgresQuery(findByEmail, [email]);
@@ -18,6 +19,16 @@ export const usernameExists = async (attr, searchType) => {
         [attr]
     );
     return res.rows.length > 0;
+}
+
+export const passwordMatch = async (password, username) => {
+    const params = [username];
+    const queryResult = await postgresQuery(findByUserName, params);
+    // get first as username is unique
+    const user = queryResult.rows[0];
+    // Compare the input password with the stored hash
+    const match = await bcrypt.compare(password, user.password_hash);
+    return user && match;
 }
 
 export const userIsTheCurrent = (req, attrToCheck, userValue) => {

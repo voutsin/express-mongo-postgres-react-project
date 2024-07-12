@@ -1,10 +1,10 @@
-import { validationResult } from 'express-validator';
 import { postgresQuery } from '../db/postgres.js';
-import { getActiveUser } from '../common/utils.js';
+import { asyncHandler, getActiveUser } from '../common/utils.js';
 import { findAllActiveFriendshipsByUserId } from '../db/queries/friendsQueries.js';
-import { findFeedsForUser, findFeedsGroupByPost } from '../db/repositories/FeedRepository.js';
-import { feedByPostResDto, feedToResDto } from '../mapper/feedMapper.js';
+import { findFeedsGroupByPost } from '../db/repositories/FeedRepository.js';
+import { feedByPostResDto } from '../mapper/feedMapper.js';
 import { uniq } from 'underscore';
+import AppError from '../model/AppError.js';
 
 /**
  * This is the endpoint that the user uses to display his feed.
@@ -20,17 +20,11 @@ import { uniq } from 'underscore';
  * 
  * returns an array of objects.
  */
-const findUserPostFeed = async (req, res) => {
+const findUserPostFeed = asyncHandler(async (req, res, next) => {
     try {
-        // check validations
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-        }
-
         const activeUser = getActiveUser(req);
         if (activeUser == null) {
-            throw new Error('No active user found');
+            next(new AppError('No active user found', 400));
         }
 
         const userId = parseInt(activeUser.id);
@@ -63,10 +57,9 @@ const findUserPostFeed = async (req, res) => {
           feeds: feeds
         });
     } catch (e) {
-        console.error(e);
-        res.status(500).send('Internal Server Error: ', e);
+        next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+})
 
 export default {
     findUserPostFeed,
