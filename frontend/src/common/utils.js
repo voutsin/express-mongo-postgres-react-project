@@ -314,3 +314,52 @@ export const fileToDataUrl = file => {
         reader.readAsDataURL(file);
     });
 }
+
+export const updateTopFeedComment = (newComment, feedObj, commentsList, action) => {
+    const feedsExists = feedObj && feedObj.data && feedObj.data.feeds;
+    
+    const findFromCommentsList = (commentId, postId) => {
+        const commList = (commentsList && commentsList[postId]) || [];
+        if (commList) {
+            return commList.find(c => c.id === commentId)
+        }
+        return null;
+    }
+
+    return feedsExists
+    ? {
+        ...feedObj,
+        data: {
+            ...feedObj.data,
+            feeds: feedObj.data.feeds.map(feed => {
+                const topFeedComment = feed.topFeed && feed.topFeed.comment;
+                if (topFeedComment && topFeedComment.id === newComment.id) {
+                    let updatedComment = null;
+
+                    if (topFeedComment.isReply) {
+                        if (action === 'DELETE_COMMENT') {
+                            updatedComment = topFeedComment.replyComment && findFromCommentsList(topFeedComment.replyComment.id, topFeedComment.postId)
+                        } else if (action === 'UPDATE_COMMENT') {
+                            updatedComment = {
+                                ...newComment,
+                                replyComment: topFeedComment.replyComment,
+                            }
+                        } else if (action === 'ADD_REPLY') {
+                            // new comment is reply
+                        }
+                    }
+
+                    return {
+                        ...feed,
+                        topFeed: {
+                            ...feed.topFeed,
+                            comment: updatedComment
+                        }
+                    }
+                }
+                return feed;
+            })
+        }
+    }
+    : null
+}

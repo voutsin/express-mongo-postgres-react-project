@@ -60,28 +60,30 @@ const CommentsSection = props => {
 
     return (
         <React.Fragment>
-            {showList && comments.length > 0 &&
-                <div className={ClassNames.COMMENTS_WRAPPER}>
-                    <h4>Comments</h4>
-                    <div className={ClassNames.COMMENTS_LIST}>
-                        {comments.map((comment, index) => {
-                            return (
-                                <Comment 
-                                    key={`com-${post.id}${comment.id}${index}`} 
-                                    post={post} 
-                                    comment={comment} 
-                                    showList={true}
-                                />
-                            )
-                        })}
-                        {loadMore && 
-                            <div className="load-more">
-                                <span onClick={handleLoadMoreComments}>load more...</span>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
+            <div className={ClassNames.COMMENTS_WRAPPER}>
+                <h4>Comments</h4>
+                {showList && comments.length > 0 &&
+                    <React.Fragment>
+                        <div className={ClassNames.COMMENTS_LIST}>
+                            {comments.map((comment, index) => {
+                                return (
+                                    <Comment 
+                                        key={`com-${post.id}${comment.id}${index}`} 
+                                        post={post} 
+                                        comment={comment} 
+                                        showList={true}
+                                    />
+                                )
+                            })}
+                            {loadMore && 
+                                <div className="load-more">
+                                    <span onClick={handleLoadMoreComments}>load more...</span>
+                                </div>
+                            }
+                        </div>
+                    </React.Fragment>
+                }
+            </div>
             <div className={ClassNames.COMMENTS_LIST_ADD_NEW}>
                 <CommentForm post={post} commentRef={commentRef} inputFocus={inputFocus} />
             </div>

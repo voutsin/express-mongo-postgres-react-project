@@ -159,6 +159,16 @@ export const refreshPostData = post => ({
     payload: post
 });
 
+export const refreshPostWithCommentData = (comment, commentAction) => ({
+    type: ActionTypes.REFRESH_POST_COMMENT_DATA,
+    payload: {comment, commentAction}
+});
+
+export const refreshTopFeedCommentData = (comment, action) => ({
+    type: ActionTypes.REFRESH_TOP_FEED_COMMENT,
+    payload: {comment, action}
+});
+
 export const clearCommentData = () => ({
     type: ActionTypes.CLEAR_COMMENT_DATA,
 });

@@ -1,5 +1,5 @@
 import { NotifyTypes } from "../../common/enums";
-import { getDeepProp, getReplyParentComment, groupedComments, isObjectEmpty } from "../../common/utils";
+import { getDeepProp, getReplyParentComment, groupedComments, isObjectEmpty, updateTopFeedComment } from "../../common/utils";
 import { COMMENTS_ROUTES, FEED_ROUTES } from "../../config/apiRoutes";
 import ActionTypes from "../actions/actionTypes";
 
@@ -8,6 +8,8 @@ const defaultState = {};
 
 export const apiReducer = (state = defaultState, action) => {
     let updatedState = { ...state };
+
+    const feedObj = updatedState[FEED_ROUTES.GET_FEED.name];
 
     switch(action.type) {
         case ActionTypes.CLEAR_DATA:
@@ -64,7 +66,6 @@ export const apiReducer = (state = defaultState, action) => {
         // SET FEED DATA
         case ActionTypes.SET_FEED_DATA:
             const newFeeds = action.payload.feeds;
-            const feedObj = updatedState[FEED_ROUTES.GET_FEED.name];
             const feedPostIds = newFeeds.map(f => f.post && f.post.id).filter(id => id != null);
 
             let updatedFeeds = [];
@@ -124,6 +125,31 @@ export const apiReducer = (state = defaultState, action) => {
                             : p
                     })
                     : [updatedPost],
+            }
+        
+        // refresh post data with new comment
+        case ActionTypes.REFRESH_POST_COMMENT_DATA:
+            const payloadComment = action.payload.comment;
+            const payloadAction = action.payload.commentAction;
+
+            return {
+                ...updatedState,
+                POSTS_LIST: updatedState.POSTS_LIST.map(post => {
+                    if (post.id === payloadComment.postId) {
+                        return {
+                            ...post, 
+                            commentsNumber: payloadAction === 'DELETE' ? post.commentsNumber - 1 : post.commentsNumber + 1
+                        }
+                    }
+                    return post;
+                }),
+            }
+
+        // REFRESH TOP FEED COMMENT WHEN DELETE
+        case ActionTypes.REFRESH_TOP_FEED_COMMENT:
+            return {
+                ...updatedState,
+                [FEED_ROUTES.GET_FEED.name]: updateTopFeedComment(action.payload.comment, feedObj, updatedState.COMMENTS_LIST, action.payload.action)
             }
 
         // ADD NEW POST 
@@ -203,12 +229,14 @@ export const apiReducer = (state = defaultState, action) => {
         case ActionTypes.SET_COMMENTS_LIST:
             const commentsList = action.payload.comments;
             const commentIds = commentsList.map(c => c.id);
+
+            const postCommentsList = updatedState.COMMENTS_LIST && updatedState.COMMENTS_LIST[action.payload.postId]
             return {
                 ...updatedState,
                 COMMENTS_LIST: {
                     ...updatedState.COMMENTS_LIST,
                     [action.payload.postId]: [
-                        ...updatedState.COMMENTS_LIST[action.payload.postId].filter(c => !commentIds.includes(c.id)),
+                        ...(postCommentsList ? postCommentsList.filter(c => !commentIds.includes(c.id)) : []),
                         ...commentsList
                     ]
                 },

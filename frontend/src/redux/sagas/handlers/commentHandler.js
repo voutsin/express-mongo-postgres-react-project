@@ -1,5 +1,5 @@
 import { call, put } from "redux-saga/effects";
-import { setApiData, setError, setNewCommentData, setNewReplyData, updateCommentData, updateReplyCommentData, setCommentsList, setCommentsRepliesList } from "../../actions/actions";
+import { setApiData, setError, setNewCommentData, setNewReplyData, updateCommentData, updateReplyCommentData, setCommentsList, setCommentsRepliesList, refreshPostWithCommentData } from "../../actions/actions";
 import { request } from "../requests/authReqs";
 import { COMMENTS_ROUTES } from "../../../config/apiRoutes";
 
@@ -22,6 +22,7 @@ export function* handleAddNewComment(action) {
         if (data) {
             // add new comment to post comment array
             yield put(setNewCommentData(data));
+            yield put(refreshPostWithCommentData(data, 'ADD'));
         }
     } catch (error) {
         yield put(setError(error));
@@ -74,6 +75,8 @@ export function* handleDeleteComment(action) {
             } else {
                 yield put(updateCommentData(action.payload, true));   
             }
+            yield put(refreshPostWithCommentData(action.payload, 'DELETE'));
+            // yield put(refreshTopFeedCommentData(action.payload, 'DELETE_COMMENT'));
         }
     } catch (error) {
         yield put(setError(error));

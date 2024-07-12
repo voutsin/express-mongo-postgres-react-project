@@ -87,14 +87,19 @@ export const commentWithReplyToResDto = async comment => {
 export const commentWithReactionsToResDto = async comments => {
     const results = comments.map(c => c.result);
     const commentIds = results.map(c => c.id);
+    
     results.forEach(c => {
         if (c.latestReply) {
             commentIds.push(c.latestReply.id);
         }
     });
 
-    const reactionResults = await postgresQuery(findReactionAndUserByCommentIdsSQL(uniq(commentIds).toString()));
-    const reactions = reactionResults ? reactionResults.rows.map(reaction => reactionAndUserResDto(reaction)) : [];
+    let reactions = [];
+    if (commentIds && commentIds.length > 0) {
+        const reactionResults = await postgresQuery(findReactionAndUserByCommentIdsSQL(uniq(commentIds).toString()));
+        reactions = reactionResults ? reactionResults.rows.map(reaction => reactionAndUserResDto(reaction)) : [];
+    }
+    
 
     return results.map(comment => ({
         ...commentToResDto(comment),

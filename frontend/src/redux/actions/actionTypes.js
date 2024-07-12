@@ -31,6 +31,8 @@ const ActionTypes = {
     UPDATE_REACTION: 'updateReaction',
     DELETE_REACTION: 'deleteReaction',
     REFRESH_POST_DATA: 'refreshPostData',
+    REFRESH_POST_COMMENT_DATA: 'refreshPostCommentData',
+    REFRESH_TOP_FEED_COMMENT: 'refreshTopFeedComment',
     SET_COMMENT_DATA: 'setCommentData',
     CLEAR_COMMENT_DATA: 'clearCommentData',
     GET_POST_COMMENTS: 'getPostComments',
