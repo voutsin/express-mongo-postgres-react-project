@@ -2,10 +2,11 @@ import { FriendStatus } from '../common/enums.js';
 import { getActiveUser } from '../common/utils.js';
 import { postgresQuery } from '../db/postgres.js';
 import { findCommentByIdAndActiveUserSQL } from '../db/queries/commentsQueries.js';
-import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
+import { findAllFriendshipsByUserIdAndStatus, findFriendshipByIds } from '../db/queries/friendsQueries.js';
 import { findPostByIdAndActiveUserSQL, userCanAccessPostSQL } from '../db/queries/postsQueries.js';
 import { findReactionByIdAndActiveUserSQL } from '../db/queries/reactionsQueries.js';
 import { findByEmail, findByUserName, findUserById } from '../db/queries/userQueries.js';
+import bcrypt from 'bcrypt';
 
 export const emailExists = async email => {
     const res = await postgresQuery(findByEmail, [email]);
@@ -18,6 +19,20 @@ export const usernameExists = async (attr, searchType) => {
         [attr]
     );
     return res.rows.length > 0;
+}
+
+export const passwordMatch = async (password, username) => {
+    const params = [username];
+    const queryResult = await postgresQuery(findByUserName, params);
+    // get first as username is unique
+    const user = queryResult.rows[0];
+    // Compare the input password with the stored hash
+    let match = false;
+    if (user) {
+        match = await bcrypt.compare(password, user.password_hash);
+    }
+    
+    return user && match;
 }
 
 export const userIsTheCurrent = (req, attrToCheck, userValue) => {
@@ -37,6 +52,14 @@ export const userIsFriend = async (req, userId) => {
     const friendship = await postgresQuery(findFriendshipByIds, [activeUser.id, id]);
     const activeFriendships = friendship && friendship.rows && friendship && friendship.rows.filter(row => row.status === FriendStatus.ACCEPTED);
     return activeFriendships && activeFriendships.length > 0;
+}
+
+export const userIsBlocked = async (userId, activeUserId) => {
+    if (userId !== activeUserId) {
+        const blockedResults = await postgresQuery(findAllFriendshipsByUserIdAndStatus, [userId, activeUserId, FriendStatus.BLOCKED]);
+        return blockedResults && blockedResults.rows.length > 0
+    }
+    return false;
 }
 
 export const canAccessPost = async (activeUserId, postId, postUserId) => {

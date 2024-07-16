@@ -1,5 +1,6 @@
 import { ReactionType } from "../common/enums.js";
 import { postgresQuery } from "../db/postgres.js"
+import { selectCountOfPostCommentsSQL } from "../db/queries/commentsQueries.js";
 import { findPostByIdSQL } from "../db/queries/postsQueries.js";
 import { commentToResDto } from "./commentMapper.js";
 import { postToResDto } from "./postMapper.js";
@@ -15,7 +16,7 @@ export const findDetailedLists = async (postId) => {
     const commentResults = commentParams.length > 0 ? await postgresQuery(`SELECT * FROM comments WHERE post_id IN (${commentParams});`) : {rows: []};
     const allComments = [...commentResults.rows];
     const reactionResults = await findReactions(allPosts, allComments);
-    const userResults = await findUsers(allPosts, allComments, reactionResults.rows);
+    const userResults = await findUsers(allPosts, allComments, reactionResults);
 
     // lists
     const users = userResults.map(user => userToResDto(user));
@@ -24,10 +25,30 @@ export const findDetailedLists = async (postId) => {
             user: users.find(user => user.id === reaction.userId)
         }));
     const comments = mapComments(allComments, users, reactions);
-    const posts = mapPosts(allPosts, users, comments, reactions);
-
+    const posts = await mapPosts(allPosts, users, comments, reactions);
+    
     return {
         users, posts, comments, reactions
+    }
+}
+
+export const findFeedDetails = async postId => {
+    // queries
+    const postResults = await postgresQuery(findPostByIdSQL, [postId]);
+    const allPosts = [...postResults.rows];
+    const reactionResults = await findReactions(allPosts, []);
+    const userResults = await findUsers(allPosts, [], reactionResults);
+
+    // lists
+    const users = userResults.map(user => userToResDto(user));
+    const reactions = reactionResults.map(reaction => ({
+            ...reaction,
+            user: users.find(user => user.id === reaction.userId)
+        }));
+    const posts = await mapPosts(allPosts, users, [], reactions);
+
+    return {
+        users, posts, reactions
     }
 }
 
@@ -83,10 +104,11 @@ export const mapReplies = (comments = []) => {
     return allSingleComments;
 }
 
-export const mapPosts = (postResults = [], users = [], comments = [], reactions = []) => {
-    return postResults ? postResults
+export const mapPosts = async (postResults = [], users = [], comments = [], reactions = []) => {
+    return postResults ? await Promise.all(
+    postResults
     .map(post => postToResDto(post))
-    .map(post => {
+    .map(async post => {
         const postComments = comments.filter(comment => comment.postId === post.id);
         const postReactions = reactions.filter(reaction => reaction.postId === post.id && reaction.commentId == null); // reactions with this post id and is for post only
 
@@ -96,9 +118,9 @@ export const mapPosts = (postResults = [], users = [], comments = [], reactions 
             comments: postComments,
             reactions: postReactions, 
             reactionsNumber: calculateReactions(postReactions),
-            commentsNumber: calculateComments(postComments),
+            commentsNumber: await calculateComments(post.id, postComments),
         }
-    }) : []
+    })) : []
 }
 
 export const calculateReactions = reactions => {
@@ -109,23 +131,29 @@ export const calculateReactions = reactions => {
     const numberOfCries = reactions.filter(reaction => reaction.reactionType === ReactionType.CRY).length;
 
     return {
-        likes: numberOfLikes,
-        loves: numberOfLoves,
-        laughs: numberOfLaughs,
-        wows: numberOfWows,
-        cries: numberOfCries,
         total: reactions.length,
+        1: numberOfLikes, //like
+        2: numberOfLoves, // love
+        3: numberOfLaughs, // laugh
+        4: numberOfWows, // wow
+        5: numberOfCries, // cry
     }
 }
 
-export const calculateComments = comments => {
-    let commentNumber = comments.length;
+export const calculateComments = async (postId, comments) => {
+    let commentNumber = 0;
 
-    comments.forEach(comment => {
-        if (comment.replies) {
-            commentNumber += comment.replies.length;
-        }
-    });
+    if (comments && comments.length > 0) {
+        commentNumber = comments.length;
+        comments.forEach(comment => {
+            if (comment.replies) {
+                commentNumber += comment.replies.length;
+            }
+        });
+    } else if (postId) {
+        const commentsCountResult = await postgresQuery(selectCountOfPostCommentsSQL, [postId]);
+        commentNumber = parseInt(commentsCountResult.rows[0].count, 10);
+    }
 
     return commentNumber;
 }

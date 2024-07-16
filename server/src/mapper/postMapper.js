@@ -1,7 +1,9 @@
 import { pick } from "underscore";
 import { postgresQuery } from "../db/postgres.js";
 import { findPostDetailsSQL } from "../db/queries/postsQueries.js";
-import { findDetailedLists } from "./utils.js";
+import { findDetailedLists, findFeedDetails } from "./utils.js";
+import { findUserById } from "../db/queries/userQueries.js";
+import { userToResDto } from "./userMapper.js";
 
 export const postToResDto = post => {
     return {
@@ -17,6 +19,15 @@ export const postToResDto = post => {
 // for feed or view
 export const detailedPostToResDto = async post => {
     const lists = await findDetailedLists(post.id);
+    const {
+        posts
+    } = lists;
+
+    return posts.find(p => p.id === post.id) || null;
+}
+
+export const postWithoutCommentsResDto = async post => {
+    const lists = await findFeedDetails(post.id);
     const {
         posts
     } = lists;
@@ -45,6 +56,7 @@ export const postToResDtoForSearch = async post => {
         'userprofpicurl',
         'userdisplayname',
         'userdesc',
+        'userBirthDate',
         'useractive'
     ]
     const userPickedFields = pick(postInfo, userFields)
@@ -66,6 +78,7 @@ export const postToResDtoForSearch = async post => {
             profilePictureUrl: userPickedFields.userprofpicurl,
             name: userPickedFields.userdisplayname,
             description: userPickedFields.userdesc,
+            birthDate: userPickedFields.userBirthDate,
             active: Boolean(userPickedFields.useractive),
         },
         commentCount: parseInt(postInfo.commentcount),
@@ -88,5 +101,14 @@ export const updatePostReqDtoToPost = req => {
         content: req.content,
         media_url: req.mediaUrl,
         post_type: parseInt(req.postType),
+    }
+}
+
+export const postWithUserResDto = async post => {
+    const userResults = await postgresQuery(findUserById, [post.user_id]);
+
+    return {
+        ...postToResDto(post),
+        user: userToResDto(userResults.rows[0]),
     }
 }

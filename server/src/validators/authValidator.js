@@ -23,10 +23,10 @@ export const registerUserValidations = [
       .exists().withMessage('Username is required')
       .notEmpty().withMessage('Username cannot be empty')
       .custom(async username => {
-      if (await usernameExists(username)) {
-          throw new Error('Username already in use');
-      }
-    }),
+        if (await usernameExists(username)) {
+            throw new Error('Username already in use');
+        }
+      }),
     body('name')
       .exists().withMessage('Name is required')
       .notEmpty().withMessage('Name cannot be empty'),

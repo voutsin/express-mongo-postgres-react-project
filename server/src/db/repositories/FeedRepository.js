@@ -58,6 +58,83 @@ export const findFeedsForUser = async (friendsIds, pageSize, skip) => {
     }
 }
 
+export const findFeedsGroupByPost = async (friendsIds, pageSize, skip) => {
+    try {
+        const matchStage = {
+            $match: {
+              userId: { $in: friendsIds }
+            }
+        };
+        
+        const countPipeline = [
+            matchStage,
+            {
+              $group: {
+                _id: "$content.postId"
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                totalGroups: { $sum: 1 }
+              }
+            }
+        ];
+
+        const feedPipeline = [
+            matchStage,
+            {
+              $sort: {
+                timestamp: -1
+              }
+            },
+            {
+              $group: {
+                _id: "$content.postId",
+                feeds: { 
+                    $push: {
+                      userId: "$userId",
+                      type: "$type",
+                      content: "$content",
+                      timestamp: "$timestamp"
+                    } 
+                },
+                mostRecentFeedTimestamp: { $first: "$timestamp" }
+              }
+            },
+            {
+              $sort: {
+                mostRecentFeedTimestamp: -1
+              }
+            },
+            {
+              $skip: skip
+            },
+            {
+              $limit: pageSize
+            },
+            {
+              $project: {
+                _id: 0,
+                postId: "$_id",
+                feeds: 1
+              }
+            }
+        ];
+
+        const feeds = await Feed.aggregate(feedPipeline);
+        const countResult = await Feed.aggregate(countPipeline);
+
+        return {
+            totalRecords: (countResult.length > 0) ? countResult[0].totalGroups : 0,
+            feeds,
+        }
+    } catch (e) {
+        console.log("Find Feeds error: ", e);
+        throw new Error(e);
+    }
+}
+
 export const insertOrUpdateCommentFeed = async comment => {
     const {
         id,
@@ -121,9 +198,6 @@ export const updateCommentFeed = async comment => {
         }
         // update feed
         const update = await Feed.updateOne(query, feed);
-        if (update.modifiedCount === 0) {
-            throw new Error('No feed updated')
-        }
         return feed;
     } catch (e) {
         console.log("Update comment to Feed error: ", e);
@@ -154,10 +228,7 @@ export const deleteCommentFeed = async (previousComment, oldCommentId) => {
             }
 
             // update feed
-            const update = await Feed.updateOne(query, feed);
-            if (update.modifiedCount === 0) {
-                throw new Error('No feed updated')
-            }
+            await Feed.updateOne(query, feed);
             return feed;
         } else {
             const query = { 'content.commentId': Number(oldCommentId), type: Number(FeedTypes.COMMENT) };

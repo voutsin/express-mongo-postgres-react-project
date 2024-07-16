@@ -15,16 +15,23 @@ import feedsRouter from './routes/feeds.js';
 import commentsRouter from './routes/comments.js';
 import reactionsRouter from './routes/reactions.js';
 import searchRouter from './routes/search.js';
+import cors from 'cors';
+import { access, constants } from 'fs';
+import { globalErrorHandler } from './common/utils.js';
+import AppError from './model/AppError.js';
 // import WebSocket, {WebSocketServer} from 'ws';
 
 dotenv.config();
 
 const app = express();
 
-// // Middleware to parse JSON bodies
-// app.use(express.json());
-// // Middleware for parsing form-data bodies
-// app.use(express.urlencoded({ extended: true }));
+// Use cors middleware
+app.use(cors({
+  origin: (origin, callback) => {
+    callback(null, origin); // Allow all origins
+  },
+  credentials: true // Allow credentials (cookies, authorization headers, etc.)
+}));
 
 // for parsing application/json
 app.use(bodyParser.json()); 
@@ -38,13 +45,34 @@ app.use(cookieParser());
 
 connectToMongoDB();
 
+//An error handling middleware
+app.use(function (err, req, res, next) {
+  res.status(500);
+  res.send("Oops, something went wrong. ", err)
+});
+
 app.use('/auth', authRouter);
 
 // Serve static files from the "uploads" directory
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-app.use('/uploads', express.static(join(__dirname, 'uploads')));
+
+app.get('/uploads/:userId/:filename', (req, res) => {
+  const { userId, filename } = req.params;
+  const filepath = join(__dirname, '..', 'uploads', userId, filename);
+
+  // Check if the file exists
+  access(filepath, constants.F_OK, (err) => {
+      if (err) {
+          // Send a 404 response if the file is not found
+          return res.status(404).json({ message: 'File not found' });
+      }
+
+      // Send the file if it exists
+      res.sendFile(filepath);
+  });
+});
 
 // apply authenticate jwt token middleware
 app.use(authenticate);
@@ -58,6 +86,16 @@ app.use('/feed', feedsRouter);
 app.use('/comments', commentsRouter);
 app.use('/reactions', reactionsRouter);
 app.use('/search', searchRouter);
+
+
+// Handling all undefined routes
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+
+// Use the global error handling middleware
+app.use(globalErrorHandler);
 
 const port = process.env.SERVER_PORT;
 const server = app.listen(port, () => {

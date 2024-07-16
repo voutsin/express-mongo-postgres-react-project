@@ -1,82 +1,67 @@
 import { FriendStatus, PostType } from "../common/enums.js";
-import { getActiveUser } from "../common/utils.js";
+import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, MEDIA_THUMBNAIL_PREFIX, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, UPLOAD_DIR, asyncHandler, getActiveUser } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
-import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship } from "../db/queries/friendsQueries.js";
+import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship, findUserFrinedsBirthdays, findAllDetailedActiveFriendshipsByUserId } from "../db/queries/friendsQueries.js";
 import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
-import { detailedFriendToResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
+import { detailedFriendToResDto, detailedFriendToResDtoWithCounters, friendAndUserResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userDetailedResDto, userToResDto } from "../mapper/userMapper.js";
 import { validationResult } from 'express-validator';
-import { unlink } from 'fs';
+import { readdir, unlink } from 'fs';
+import jwt from 'jsonwebtoken';
 import { createNewPostSQL } from '../db/queries/postsQueries.js';
 import { postReqDtoToPost, postToResDto } from '../mapper/postMapper.js';
 import { insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
+import AppError from "../model/AppError.js";
+import { join } from "path";
 
-const findAll = async (req, res) => {
+const findAll = asyncHandler(async (req, res, next) => {
     try {
       const result = await postgresQuery(findAllUsersSQL);
       res.json(result.rows.map(row => userToResDto(row)));
     } catch (e) {
-      console.error(e);
-      res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+});
 
-const registerNewUser = async (req, res) => {
+const registerNewUser = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    
-    const finalBody = await newUserReqDtoToUser(req.body);
-    const params = Object.values(finalBody);
-    const result = await postgresQuery(insertNewUser, params);
-    if (result) {
-      res.json(userToResDto(finalBody));
-      res.status(200);
+      const finalBody = await newUserReqDtoToUser(req.body);
+      const params = Object.values(finalBody);
+      const result = await postgresQuery(insertNewUser, params);
+      if (result) {
+        const user = result.rows[0];
+        const authUser = {
+          userId: user.id,
+          username: user.username,
+        }
+
+        const accessToken = jwt.sign(authUser, SECRET_KEY, { expiresIn: ACCESS_TOKEN_EXPIRE_TIME });
+        const refreshToken = jwt.sign(authUser, SECRET_KEY, { expiresIn: REFRESH_TOKEN_EXPIRE_TIME });
+
+        res.cookie(ACCESS_TOKEN_COOKIE, accessToken);
+        res.cookie(REFRESH_TOKEN_COOKIE, refreshToken);
+        res.json(userToResDto(user));
+        res.status(200);
     }
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const findByUserId = async (req, res) => {
+const findByUserId = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
     const params = Object.values(req.params).map(param => parseInt(param));
     const result = await postgresQuery(findUserById, params);
     if (result.rows.length > 0) {
-      res.json(userToResDto(result.rows[0]));
+      res.json(userDetailedResDto(result.rows[0]));
       res.status(200);
     }
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const updateUser = async (req, res) => {
+const updateUser = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (req.body == null) {
-      const error = {
-          type: "field",
-          value: null,
-          msg: "User not defined",
-          path: "id",
-      }
-      errors.push(error)
-    } 
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     // mapper
     const finalBody = await updateUserReqDtoToUser(req.body);
     // update query
@@ -88,44 +73,43 @@ const updateUser = async (req, res) => {
       res.status(200);
     }
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const findAllFriendsOfUser = async (req, res) => {
+const findAllFriendsOfUser = asyncHandler(async (req, res, next) => {
   try {
-    if (req.params == null || req.params.id == null) {
-      const error = {
-          type: "field",
-          value: null,
-          msg: "User ID not defined",
-          path: "id",
-      }
-      return res.status(400).json({ errors: [error] });
-    } 
     const params = Object.values(req.params);
     const result = await postgresQuery(findAllActiveFriendshipsByUserId, params);
-    const resposne = await detailedFriendToResDto(result.rows);
+    const resposne = await detailedFriendToResDto(result.rows, false);
     res.json(resposne);
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const requestFriendship = async (req, res) => {
+const findAllDetailedFriendsOfUser = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+    const params = Object.values(req.params);
+    const result = await postgresQuery(findAllDetailedActiveFriendshipsByUserId, [...params, req.userId]);
+    const friendships = req.userId === req.params.id 
+      ? result.rows
+      : result.rows.filter(f => f.status === FriendStatus.ACCEPTED);
+    const resposne = await detailedFriendToResDto(friendships, true);
+    res.json(detailedFriendToResDtoWithCounters(resposne));
+  } catch (e) {
+    next(new AppError('Internal Server Error: ' + e, 500));
+  }
+});
 
-    const params = Object.values(req.params); // param 1 is request user id
+const requestFriendship = asyncHandler(async (req, res, next) => {
+  try {
+    let params = Object.values(req.body); 
     const activeUser = getActiveUser(req);
-    params.push(activeUser ? activeUser.id : null); // param 2 is active user id
-
+    params = [
+      activeUser.id, // param 1 is active user id
+      ...params // param 2 is request user id
+    ]
     const results = [];
     const res1 = await postgresQuery(insertNewFriendshipRequest, params);
     if (res1) {
@@ -143,19 +127,12 @@ const requestFriendship = async (req, res) => {
       res.status(200);
     }
   } catch (e) {
-    console.error(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const acceptFriendship = async (req, res) => {
+const acceptFriendship = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.params); // param 1 is request user id
     const activeUser = getActiveUser(req);
     params.push(activeUser ? activeUser.id : null); // param 2 is active user id
@@ -174,19 +151,12 @@ const acceptFriendship = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const deleteFriend = async (req, res) => {
+const deleteFriend = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.params); // param 1 is request user id
     const activeUser = getActiveUser(req);
     params.push(activeUser ? activeUser.id : null); // param 2 is active user id
@@ -198,19 +168,12 @@ const deleteFriend = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const blockUser = async (req, res) => {
+const blockUser = asyncHandler(async (req, res, next) => {
   try {
-    // check validations
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.params); // param 1 is request user id
     const activeUser = getActiveUser(req);
     if (activeUser == null) {
@@ -235,12 +198,11 @@ const blockUser = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+      next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const deactivateProfile = async (req, res) => {
+const deactivateProfile = asyncHandler(async (req, res, next) => {
   try {
     const activeUser = getActiveUser(req);
     if (activeUser == null) {
@@ -254,20 +216,13 @@ const deactivateProfile = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
 // TODO: check if needed as endpoint
-const searchUserByCriteria = async (req, res) => {
+const searchUserByCriteria = asyncHandler(async (req, res, next) => {
   try {
-    // Handle validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const params = Object.values(req.params);
     const results = await postgresQuery(`SELECT * FROM users WHERE (username ILIKE '%${params[0]}%' OR email ILIKE '%${params[0]}%' OR displayed_name ILIKE '%${params[0]}%') AND active = 1;`)
     if (results) {
@@ -275,12 +230,11 @@ const searchUserByCriteria = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
 
-const editProfilePic = async (req, res) => {
+const editProfilePic = asyncHandler(async (req, res, next) => {
   try {
     // Handle validation errors
     const errors = validationResult(req);
@@ -297,7 +251,7 @@ const editProfilePic = async (req, res) => {
 
     const profilePicPath = req.file ? req.file.path : null;
     if (!profilePicPath) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      next(new AppError('No file uploaded', 400));
     }
 
     const activeUser = getActiveUser(req);
@@ -331,10 +285,43 @@ const editProfilePic = async (req, res) => {
       res.status(200);
     }
   } catch(e) {
-    console.log(e);
-    res.status(500).send('Internal Server Error: ', e);
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
-}
+});
+
+const findFriendsBirthdays = asyncHandler(async (req, res, next) => {
+  try {
+    const results = await postgresQuery(findUserFrinedsBirthdays, [req.userId]);
+    if (results) {
+      res.json(results.rows.map(row => friendAndUserResDto(row)));
+      res.status(200);
+    }
+  } catch(e) {
+    next(new AppError('Internal Server Error: ' + e, 500));
+  }
+});
+
+const findUserPhotos = asyncHandler(async (req, res, next) => {
+  try {
+    const mediaDir = join(UPLOAD_DIR, req.params.id);
+
+    readdir(mediaDir, (err, files) => {
+      if (err) {
+        return res.status(500).json({ error: 'Unable to read media directory' });
+      }
+
+      // Map the filenames to their respective paths
+      res.json(files.filter(file => file.includes(MEDIA_THUMBNAIL_PREFIX))
+        .map(file => ({
+          thumbnailUrl: join('/', UPLOAD_DIR, req.params.id, file),
+          name: file.split('.')[0],
+          url: join('/', UPLOAD_DIR, req.params.id, file.split(MEDIA_THUMBNAIL_PREFIX)[1]),
+        })));
+    });
+  } catch(e) {
+    next(new AppError('Internal Server Error: ' + e, 500));
+  }
+});
 
 export default {
     findAll,
@@ -342,6 +329,7 @@ export default {
     findByUserId,
     updateUser,
     findAllFriendsOfUser,
+    findAllDetailedFriendsOfUser,
     requestFriendship,
     acceptFriendship,
     deleteFriend,
@@ -349,4 +337,6 @@ export default {
     deactivateProfile,
     searchUserByCriteria,
     editProfilePic,
+    findFriendsBirthdays,
+    findUserPhotos,
 };

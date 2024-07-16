@@ -3,7 +3,8 @@
 export const findAllPostsSQL = `SELECT * FROM posts;`;
 export const findPostByIdSQL = `SELECT * FROM posts WHERE id = $1;`;
 export const findPostByIdAndActiveUserSQL = `SELECT p.* FROM posts AS p JOIN users AS u ON u.id = p.user_id AND u.active = 1 WHERE p.id = $1;`;
-export const findAllPostsByUserIdSQL = `SELECT * FROM posts WHERE user_id = $1;`;
+export const findAllPostsByUserIdSQL = `SELECT * FROM posts WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3;`;
+export const findPostsCountByUserIdSQL = `SELECT COUNT(*) FROM posts WHERE user_id = $1;`;
 export const findAllPostsForFeedSQL = ids => `SELECT * FROM posts WHERE id IN (${ids});`;
 export const userCanAccessPostSQL = 
     `SELECT p.* FROM posts AS p 
@@ -28,6 +29,7 @@ export const findPostDetailsSQL =
         u.profile_pic AS userProfPicUrl,
         u.displayed_name AS userDisplayName,
         u.description AS userDesc,
+        u.birth_date AS userBirthDate,
         u.active AS userActive, 
         (SELECT count(c.*) FROM comments AS c WHERE c.post_id = p.id) AS commentCount,
         (SELECT count(r.*) FROM reactions AS r WHERE r.post_id = p.id AND r.comment_id IS NULL) AS reactionCount

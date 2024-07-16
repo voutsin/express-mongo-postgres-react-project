@@ -1,3 +1,10 @@
+import { uniq } from "underscore";
+import { postgresQuery } from "../db/postgres.js";
+import { findCommentAndUserByIdSQL } from "../db/queries/commentsQueries.js";
+import { findReactionAndUserByCommentIdsSQL } from "../db/queries/reactionsQueries.js";
+import { findUserById } from "../db/queries/userQueries.js";
+import { reactionAndUserResDto } from "./reactionMapper.js";
+import { userToResDto } from "./userMapper.js";
 import { findDetailedLists } from "./utils.js";
 
 export const commentToResDto = comment => {
@@ -48,4 +55,60 @@ export const replyReqDtoToComment = req => {
         is_reply: 1, 
         reply_comment_id: parseInt(req.commentId),
     }
+}
+
+export const commentWithReplyToResDto = async comment => {
+    let reply = null;
+    const commentIds = [comment.id];
+    if (comment.reply_comment_id != null) {
+        const replyResults = await postgresQuery(findCommentAndUserByIdSQL, [comment.reply_comment_id]);
+        reply = replyResults ? replyResults.rows[0].result : null;
+        commentIds.push(reply.id);
+    }
+
+    const reactionResults = await postgresQuery(findReactionAndUserByCommentIdsSQL(commentIds.toString()));
+    const reactions = reactionResults ? reactionResults.rows.map(reaction => reactionAndUserResDto(reaction)) : [];
+
+    const userResult = await postgresQuery(findUserById, [comment.user_id]);
+    const user = userResult ? userToResDto(userResult.rows[0]) : null;
+
+    return {
+        ...commentToResDto(comment),
+        user: user,
+        replyComment: reply ? {
+            ...commentToResDto(reply),
+            user: userToResDto(reply.user),
+            reactions: reactions.filter(re => re.commentId === reply.id) || [],
+        } : null,
+        reactions: reactions.filter(re => re.commentId === comment.id) || [],
+    }
+}
+
+export const commentWithReactionsToResDto = async comments => {
+    const results = comments.map(c => c.result);
+    const commentIds = results.map(c => c.id);
+    
+    results.forEach(c => {
+        if (c.latestReply) {
+            commentIds.push(c.latestReply.id);
+        }
+    });
+
+    let reactions = [];
+    if (commentIds && commentIds.length > 0) {
+        const reactionResults = await postgresQuery(findReactionAndUserByCommentIdsSQL(uniq(commentIds).toString()));
+        reactions = reactionResults ? reactionResults.rows.map(reaction => reactionAndUserResDto(reaction)) : [];
+    }
+    
+
+    return results.map(comment => ({
+        ...commentToResDto(comment),
+        user: userToResDto(comment.user),
+        reactions: reactions.filter(re => re.commentId === comment.id) || [],
+        replies: comment.latestReply ? [{
+            ...commentToResDto(comment.latestReply),
+            user: userToResDto(comment.latestReply.user),
+            reactions: reactions.filter(re => re.commentId === comment.latestReply.id) || [],
+        }] : [],
+    }))
 }

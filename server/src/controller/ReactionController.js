@@ -1,34 +1,30 @@
-import { validationResult } from 'express-validator';
-import { deleteReactoinByIdSQL, findAllReactionsSQL, findReactionByIdSQL, insertNewReactionSQL, updateReactionSQL } from '../db/queries/reactionsQueries.js';
-import { detailedReactioToResDto, reactionToResDto, reqDtoToReaction } from '../mapper/reactionMapper.js';
+import { deleteReactoinByIdSQL, findReactionByCommentIdOnlySQL, findReactionByIdSQL, findReactionByPostIdOnlySQL, insertNewReactionSQL, updateReactionSQL } from '../db/queries/reactionsQueries.js';
+import { detailedReactioToResDto, reactionAndUserResDto, reqDtoToReaction } from '../mapper/reactionMapper.js';
 import { postgresQuery } from '../db/postgres.js';
 import { deleteReactionFeed, insertNewFeedForReaction, updateReactionFeed } from '../db/repositories/FeedRepository.js';
+import { asyncHandler } from '../common/utils.js';
+import AppError from '../model/AppError.js';
 
-// debug only
-const findAllReactions = async (req, res) => {
+const findAllPostReactions = asyncHandler(async (req, res, next) => {
     try {
-        // Handle validation errors
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-        }
-
-        const reactions = await postgresQuery(findAllReactionsSQL);
-        res.json(reactions.rows.map(row => reactionToResDto(row)));
+        const reactions = await postgresQuery(findReactionByPostIdOnlySQL, [req.params.id, req.userId]);
+        res.json(reactions.rows.map(row => reactionAndUserResDto(row)));
     } catch(e) {
-        console.log(e);
-        res.status(500).send('Internal Server Error: ', e);
+        next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+});
 
-const addNewReaction = async (req, res) => {
+const findAllCommentReactions = asyncHandler(async (req, res, next) => {
     try {
-        // Handle validation errors
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-        }
+        const reactions = await postgresQuery(findReactionByCommentIdOnlySQL, [req.params.id, req.userId]);
+        res.json(reactions.rows.map(row => reactionAndUserResDto(row)));
+    } catch(e) {
+        next(new AppError('Internal Server Error: ' + e, 500));
+    }
+});
 
+const addNewReaction = asyncHandler(async (req, res, next) => {
+    try {
         const finalBody = {
             ...req.body,
             userId: parseInt(req.userId),
@@ -40,21 +36,14 @@ const addNewReaction = async (req, res) => {
         // add feed for reaction
         await insertNewFeedForReaction(result.rows[0]);
 
-        res.json(result.rows.map(row => reactionToResDto(row)));
+        res.json(await detailedReactioToResDto(result.rows[0]));
     } catch(e) {
-        console.log(e);
-        res.status(500).send('Internal Server Error: ', e);
+        next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+});
 
-const updateReaction = async (req, res) => {
+const updateReaction = asyncHandler(async (req, res, next) => {
     try {
-        // Handle validation errors
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-        }
-
         const finalBody = {
             id: req.body.id,
             reaction_type: parseInt(req.body.reactionType),
@@ -66,54 +55,40 @@ const updateReaction = async (req, res) => {
         // update feed for reaction
         await updateReactionFeed(result.rows[0]);
 
-        res.json(result.rows.map(row => reactionToResDto(row)));
+        res.json(await detailedReactioToResDto(result.rows[0]));
     } catch(e) {
-        console.log(e);
-        res.status(500).send('Internal Server Error: ', e);
+        next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+});
 
-const deleteReaction = async (req, res) => {
+const deleteReaction = asyncHandler(async (req, res, next) => {
     try {
-        // Handle validation errors
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-        }
-
         // delete reaction from db
         const result = await postgresQuery(deleteReactoinByIdSQL, [req.params.id]);
 
         // delete reaction from feed
         await deleteReactionFeed(result.rows[0]);
 
-        res.json(result.rows.map(row => reactionToResDto(row)));
+        res.json(await detailedReactioToResDto(result.rows[0]));
     } catch(e) {
-        console.log(e);
-        res.status(500).send('Internal Server Error: ', e);
+        next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+});
 
-const viewReaction = async (req, res) => {
+const viewReaction = asyncHandler(async (req, res, next) => {
     try {
-        // Handle validation errors
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-        }
-
         // delete reaction from db
         const result = await postgresQuery(findReactionByIdSQL, [req.params.id]);
 
         res.json(await detailedReactioToResDto(result.rows[0]));
     } catch(e) {
-        console.log(e);
-        res.status(500).send('Internal Server Error: ', e);
+        next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+});
 
 export default {
-    findAllReactions,
+    findAllPostReactions,
+    findAllCommentReactions,
     addNewReaction,
     updateReaction,
     deleteReaction,

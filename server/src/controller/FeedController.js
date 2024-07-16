@@ -1,9 +1,10 @@
-import { validationResult } from 'express-validator';
 import { postgresQuery } from '../db/postgres.js';
-import { getActiveUser } from '../common/utils.js';
+import { asyncHandler, getActiveUser } from '../common/utils.js';
 import { findAllActiveFriendshipsByUserId } from '../db/queries/friendsQueries.js';
-import { findFeedsForUser } from '../db/repositories/FeedRepository.js';
-import { feedToResDto } from '../mapper/feedMapper.js';
+import { findFeedsGroupByPost } from '../db/repositories/FeedRepository.js';
+import { feedByPostResDto } from '../mapper/feedMapper.js';
+import { uniq } from 'underscore';
+import AppError from '../model/AppError.js';
 
 /**
  * This is the endpoint that the user uses to display his feed.
@@ -19,22 +20,16 @@ import { feedToResDto } from '../mapper/feedMapper.js';
  * 
  * returns an array of objects.
  */
-const findUserPostFeed = async (req, res) => {
+const findUserPostFeed = asyncHandler(async (req, res, next) => {
     try {
-        // check validations
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
-        }
-
         const activeUser = getActiveUser(req);
         if (activeUser == null) {
-            throw new Error('No active user found');
-        }   
+            next(new AppError('No active user found', 400));
+        }
 
         const userId = parseInt(activeUser.id);
-        const page = parseInt(req.params.page) || 1; // default to page 1 if not provided
-        const pageSize = parseInt(req.params.pageSize) || 10; // default to 10 items per page if not provided
+        const page = parseInt(req.query.page) || 1; // default to page 1 if not provided
+        const pageSize = parseInt(req.query.pageSize) || 10; // default to 10 items per page if not provided
         const skip = (page - 1) * pageSize;
 
         // find all active user's friends
@@ -43,10 +38,15 @@ const findUserPostFeed = async (req, res) => {
             return res.status(200).send('No friends made yet. Consider adding some friends to see news!');
         }
         const friendsIds = friendsResults.rows.map(row => row.friend_id);
+        const userIds = uniq([
+            ...friendsIds,
+            parseInt(activeUser.id)
+        ]);
 
         // find feeds based on his friends actions
-        const feedsResults = await findFeedsForUser(friendsIds, pageSize, skip);
-        const feeds = await feedToResDto(feedsResults.feeds);
+        const feedsResults = await findFeedsGroupByPost(userIds, pageSize, skip);
+        // const feeds = await feedToResDto(feedsResults.feeds);
+        const feeds = await feedByPostResDto(feedsResults.feeds);
 
         // Return results and pagination metadata
         res.status(200).send({
@@ -57,10 +57,9 @@ const findUserPostFeed = async (req, res) => {
           feeds: feeds
         });
     } catch (e) {
-        console.error(e);
-        res.status(500).send('Internal Server Error: ', e);
+        next(new AppError('Internal Server Error: ' + e, 500));
     }
-}
+})
 
 export default {
     findUserPostFeed,
