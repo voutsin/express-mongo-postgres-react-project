@@ -26,7 +26,7 @@ export const ROUTES = {
         component: SearchPage
     },
     PROFILE: {
-        path: '/profile',
+        path: '/profile/:id',
         component: UserProfile
     },
     CHAT: {

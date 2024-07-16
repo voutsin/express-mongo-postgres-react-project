@@ -13,9 +13,12 @@ function App() {
           <Route path={ROUTES.BASE.path} element={<Layout />}>
             {/* protected routes */}
             <Route element={<RequireAuth />}>
-                {Object.values(ROUTES).map(route => (
-                  <Route path={route.path} element={<route.component />} />
-                ))}
+                {Object.values(ROUTES).map(route => {
+                  const Component = route.component;
+                  return (
+                    <Route exact path={route.path} element={<Component />} />
+                  );
+                })}
             </Route>
 
             {/* public routes */}

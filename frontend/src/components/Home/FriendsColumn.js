@@ -27,7 +27,6 @@ const FriendsColumn = props => {
         if (postLink) {
             // add link to chat message
         }
-        console.log("user: ", info)
     }
 
     return (

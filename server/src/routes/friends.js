@@ -6,7 +6,10 @@ import { addActiveUserIdInReq } from "../common/utils.js";
 const friendsRouter = express.Router();
 
 // find friends
-friendsRouter.get('/:id?', findUserByIdValidations, UserController.findAllFriendsOfUser);
+friendsRouter.get('/:id?', addActiveUserIdInReq, findUserByIdValidations, UserController.findAllFriendsOfUser);
+
+// detailed friendships of a user
+friendsRouter.get('/detailed/:id?', addActiveUserIdInReq, findUserByIdValidations, UserController.findAllDetailedFriendsOfUser);
 
 // request friendship
 friendsRouter.post('/request', requestFriendValidations, UserController.requestFriendship);

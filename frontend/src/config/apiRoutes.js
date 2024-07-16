@@ -3,11 +3,16 @@ import { ApiTypes } from "../common/enums";
 const ApiRoutesNames = {
     REGISTER_USER: 'REGISTER_USER',
     FIND_USER_FRIENDS: 'FIND_USER_FRIENDS',
+    FIND_DETAILED_USER_FRIENDS: 'FIND_DETAILED_USER_FRIENDS',
     FIND_USER_FRIENDS_BIRTHDAYS: 'FIND_USER_FRIENDS_BIRTHDAYS',
+    FIND_USER_BY_ID: 'FIND_USER_BY_ID',
+    FIND_USER_MEDIA: 'FIND_USER_MEDIA',
     GET_FEED: 'GET_FEED',
     VIEW_POST_REACTIONS: 'VIEW_POST_REACTIONS',
     VIEW_COMMENT_REACTIONS: 'VIEW_COMMENT_REACTIONS',
+    ACCEPT_FRIENDSHIP: 'ACCEPT_FRIENDSHIP',
     REQUEST_FRIENDSHIP: 'REQUEST_FRIENDSHIP',
+    DELETE_FRIENDSHIP: 'DELETE_FRIENDSHIP',
     BLOCK_FRIEND: 'BLOCK_FRIEND',
     ADD_NEW_COMMENT: 'ADD_NEW_COMMENT',
     UPDATE_COMMENT: 'UPDATE_COMMENT',
@@ -21,6 +26,7 @@ const ApiRoutesNames = {
     ADD_NEW_POST: 'ADD_NEW_POST',
     UPDATE_POST: 'UPDATE_POST',
     DELETE_POST: 'DELETE_POST',
+    FIND_USER_POSTS: 'FIND_USER_POSTS',
 }
 
 const AUTH = '/auth';
@@ -75,6 +81,12 @@ export const USERS_ROUTES = {
     FIND_BY_ID: {
         route: `${USERS}/:id`,
         type: ApiTypes.GET,
+        name: ApiRoutesNames.FIND_USER_BY_ID
+    },
+    FIND_USER_MEDIA: {
+        route: `${USERS}/media/:id`,
+        type: ApiTypes.GET,
+        name: ApiRoutesNames.FIND_USER_MEDIA
     },
     EDIT: {
         route: `${USERS}/edit`,
@@ -96,6 +108,11 @@ export const FRIENDS_ROUTES = {
         type: ApiTypes.GET,
         name: ApiRoutesNames.FIND_USER_FRIENDS
     },
+    FIND_DETAILED_USER_FRIENDS: {
+        route: `${FRIENDS}/detailed/:id`,
+        type: ApiTypes.GET,
+        name: ApiRoutesNames.FIND_DETAILED_USER_FRIENDS
+    },
     FIND_USER_FRIENDS_BIRTHDAYS: {
         route: `${FRIENDS}/birthdays/get`,
         type: ApiTypes.GET,
@@ -109,10 +126,12 @@ export const FRIENDS_ROUTES = {
     ACCEPT_FRIENDSHIP: {
         route: `${FRIENDS}/accept/:friendId`,
         type: ApiTypes.PUT,
+        name: ApiRoutesNames.ACCEPT_FRIENDSHIP
     },
     DELETE_FRIENDSHIP: {
         route: `${FRIENDS}/delete/:friendId`,
         type: ApiTypes.DELETE,
+        name: ApiRoutesNames.DELETE_FRIENDSHIP
     },
     BLOCK_FRIEND: {
         route: `${FRIENDS}/block/:friendId`,
@@ -123,12 +142,13 @@ export const FRIENDS_ROUTES = {
 
 export const POSTS_ROUTES = {
     FIND_BY_ID: {
-        route: `${POSTS}/:id`,
+        route: `${POSTS}/single/:id`,
         type: ApiTypes.GET,
     },
     FIND_USER_POSTS: {
-        route: `${POSTS}/user/:id`,
+        route: `${POSTS}/user`,
         type: ApiTypes.GET,
+        name: ApiRoutesNames.FIND_USER_POSTS
     },
     ADD_NEW_POST: {
         route: `${POSTS}/addNew`,

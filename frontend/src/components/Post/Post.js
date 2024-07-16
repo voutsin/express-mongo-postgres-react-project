@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import UserImage from "../../structure/User/UserImage";
 import { ClassNames } from "../../styles/classes";
 import UserName from "../../structure/User/UserName";
@@ -19,6 +19,7 @@ import { POSTS_ROUTES } from "../../config/apiRoutes";
 import { clearData } from "../../redux/actions/actions";
 
 const Post = props => {
+    const textRef = useRef(null);
     const [imageMopdalFlag, openImageModal] = useState(false);
     const [mediaHeight, setMediaHeight] = useState('600px');
     const [commentsModalFlag, openCommentsModal] = useState(false);
@@ -26,6 +27,8 @@ const Post = props => {
     const [optionsModalFlag, openOptionsModal] = useState(false);
     const [updateModalFlag, openUpdateModal] = useState(false);
     const [updatePostDataFlag, setUpdatePostDataFlag] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const [textToggle, setTextToggle] = useState(false);
 
     const {post, fullWidth, posts, topFeeds, updatePostData} = props;
 
@@ -59,6 +62,12 @@ const Post = props => {
         }
     }, [foundPost]);
 
+    useEffect(() => {
+        if (textRef && textRef.current && textRef.current.offsetHeight > 100) {
+            setTextToggle(true);
+        }
+    }, [textRef])
+
     if(!post || !foundPost) {return null;}
 
     const {
@@ -79,6 +88,16 @@ const Post = props => {
         openOptionsModal(false);
         openUpdateModal(true);
         setUpdatePostDataFlag(false);
+    }
+
+    const toggleText = () => {
+        const expanded = textRef.current.classList.contains('expanded');
+        if (expanded) {
+            textRef.current.classList.remove('expanded');
+        } else {
+            textRef.current.classList.add('expanded');
+        }
+        setExpanded(!expanded);
     }
 
     const commentsModal = (
@@ -150,7 +169,12 @@ const Post = props => {
                 </div>
                 <div className={ClassNames.POST_BODY}>
                     <div className={ClassNames.POST_BODY_TEXT}>
-                        <p>{foundPost.content}</p>
+                        <p ref={textRef} className="text">
+                            <span>{foundPost.content}</span>
+                        </p>
+                        <span className={`more ${textToggle ? 'active' : ''}`} onClick={toggleText}>
+                            {expanded ? 'view less' : 'view more'}
+                        </span>
                         {linkPreview && (
                             <div className="preview">
                                 <iframe

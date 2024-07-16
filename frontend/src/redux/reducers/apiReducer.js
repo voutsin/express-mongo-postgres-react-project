@@ -29,8 +29,9 @@ export const apiReducer = (state = defaultState, action) => {
             if (!error || isObjectEmpty(error)) {
                 return {...state}
             }
-            const errors = error.response.data.errors || error.response.data.error;
-            const errorMessage = Array.isArray(errors) ? errors.map(err => err.msg).join(', <br/>') : errors;
+            const errors = error.response.data.message.errors || error.response.data.errors || error.response.data.error;
+            
+            const errorMessage = Array.isArray(errors) ? errors.map(err => err.msg || err).join(', <br/>') : errors;
             return {
                 ...state,
                 error: error.response,
@@ -110,6 +111,24 @@ export const apiReducer = (state = defaultState, action) => {
                 ...state,
                 POSTS_LIST: feedPosts,
                 COMMENTS_LIST: groupedComments(comments),
+            }
+
+        case ActionTypes.SET_POST_LIST_DATA:
+            const newPostsList = action.payload;
+            const oldPostsList = updatedState.POSTS_LIST;
+
+            let updatedPostsList = [];
+            if (oldPostsList) {
+                const postIds = newPostsList.map(p => p.id).filter(id => id != null);
+                updatedPostsList = oldPostsList.filter(p => !postIds.includes(p.id)); // filter existing posts
+                updatedPostsList.push(...newPostsList);
+            } else {
+                updatedPostsList = [...newPostsList];
+            }
+            
+            return {
+                ...updatedState,
+                POSTS_LIST: updatedPostsList,
             }
 
         case ActionTypes.REFRESH_POST_DATA:
@@ -408,7 +427,7 @@ export const apiReducer = (state = defaultState, action) => {
 export const selectApiState = (state, valueName) => (state.api && state.api[valueName]);
 export const selectPostsData = state => (state.api && state.api.POSTS_LIST);
 export const selectCommentsData = state => (state.api && state.api.COMMENTS_LIST) || [];
-export const selectFeedData = state => (state.api && state.api[FEED_ROUTES.GET_FEED.name] && state.api[FEED_ROUTES.GET_FEED.name].data) || [];
+export const selectFeedData = state => (state.api && state.api[FEED_ROUTES.GET_FEED.name] && state.api[FEED_ROUTES.GET_FEED.name].data) || null;
 
 export const selectTopFeeds = state => {
     if (state.api[FEED_ROUTES.GET_FEED.name] && state.api[FEED_ROUTES.GET_FEED.name].data) {

@@ -41,9 +41,9 @@ export const clearData = stateValues => ({
     payload: stateValues
 });
 
-export const notify = (message, type) => ({
+export const notify = (message, type, extraData) => ({
     type: ActionTypes.NOTIFY,
-    payload: {message, type}
+    payload: {message, type, extraData}
 });
 
 export const clearNotify = () => ({
@@ -62,6 +62,41 @@ export const setPostListFromFeed = feed => ({
 
 export const findUserFriends = id => ({
     type: ActionTypes.FIND_USER_FRIENDS,
+    payload: id
+});
+
+export const getDetailedUserFriends = id => ({
+    type: ActionTypes.FIND_DETAILED_USER_FRIENDS,
+    payload: id
+});
+
+export const sendFriendRequest = userId => ({
+    type: ActionTypes.SEND_FRIEND_REQUEST,
+    payload: userId
+});
+
+export const cancelFriendRequest = userId => ({
+    type: ActionTypes.CANCEL_FRIEND_REQUEST,
+    payload: userId
+});
+
+export const acceptFriendRequest = userId => ({
+    type: ActionTypes.ACCEPT_FRIEND_REQUEST,
+    payload: userId
+});
+
+export const declineFriendRequest = userId => ({
+    type: ActionTypes.DECLINE_FRIEND_REQUEST,
+    payload: userId
+});
+
+export const deleteFriendship = userId => ({
+    type: ActionTypes.DELETE_FRIENDSHIP,
+    payload: userId
+});
+
+export const unBlockUser = id => ({
+    type: ActionTypes.UN_BLOCK_USER,
     payload: id
 });
 
@@ -92,11 +127,6 @@ export const getPostReactions = id => ({
 export const getCommentReactions = id => ({
     type: ActionTypes.GET_COMMENT_REACTIONS,
     payload: id
-});
-
-export const sendFriendRequest = userId => ({
-    type: ActionTypes.SEND_FRIEND_REQUEST,
-    payload: userId
 });
 
 export const addNewComment = data => ({
@@ -225,4 +255,24 @@ export const updatePost = data => ({
 export const updatePostData = post => ({
     type: ActionTypes.UPDATE_POST_DATA,
     payload: post
+});
+
+export const getUserInfo = userId => ({
+    type: ActionTypes.FIND_USER_INFO,
+    payload: userId
+});
+
+export const getUserMedia = userId => ({
+    type: ActionTypes.FIND_USER_MEDIA,
+    payload: userId
+});
+
+export const getUserPosts = (userId, page, pageSize) => ({
+    type: ActionTypes.FIND_USER_POST_LIST,
+    payload: {id: userId, page, pageSize}
+});
+
+export const setPostListData = posts => ({
+    type: ActionTypes.SET_POST_LIST_DATA,
+    payload: posts
 });

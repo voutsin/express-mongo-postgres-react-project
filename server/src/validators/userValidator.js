@@ -1,5 +1,5 @@
 import { body, param } from 'express-validator';
-import { passwordMatch, userIsTheCurrent, usernameExists } from './commonMethods.js';
+import { passwordMatch, userIsBlocked, userIsTheCurrent, usernameExists } from './commonMethods.js';
 import { findOtherUsersByEmail } from '../db/queries/userQueries.js';
 import { postgresQuery } from '../db/postgres.js';
 import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
@@ -145,9 +145,12 @@ export const findUserByIdValidations = [
   param('id')
     .exists().withMessage('User id is required')
     .notEmpty().withMessage('User id cannot be empty')
-    .custom(async id => {
+    .custom(async (id, {req}) => {
       if (!(await usernameExists(id, 'id'))) {
           throw new Error('User ID does not exist');
+      }
+      if (await userIsBlocked(id, req.userId)) {
+        throw new Error('Cannot access this user.');
       }
     }),
 ]

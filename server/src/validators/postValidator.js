@@ -1,6 +1,5 @@
-import { param } from 'express-validator';
+import { query, param } from 'express-validator';
 import { postExists, userIsTheCurrent, usernameExists } from './commonMethods.js';
-import { getActiveUser } from '../common/utils.js';
 import { postgresQuery } from '../db/postgres.js';
 import { findPostByIdSQL } from '../db/queries/postsQueries.js';
 import { PostType } from '../common/enums.js';
@@ -17,7 +16,7 @@ export const findPostValidations = [
 ]
 
 export const findUserPostsValidations = [
-    param('id')
+    query('id')
       .exists().withMessage('User id is required')
       .notEmpty().withMessage('User id cannot be empty')
       .custom(async id => {
@@ -60,10 +59,7 @@ export const updatePostValidations = async req => {
     try {
         const alreadyPost = await postgresQuery(findPostByIdSQL, [body.id]);
         const post = alreadyPost.rows[0];
-        const activeUser = getActiveUser(req);
-        if (activeUser == null) {
-            throw new Error('No active user found');
-        }
+        const activeUserId = req.userId;
 
         const checkNulls = (body.postType === PostType.STATUS ? body.content != null : true) && body.postType != null;
         if (!checkNulls) {
@@ -73,7 +69,7 @@ export const updatePostValidations = async req => {
         if (!checkAlreadyPost) {
             errorMessage = 'No post found with this id.';
         }
-        const checkActiveUserIdPostUser = post && post.user_id.toString() === activeUser.id;
+        const checkActiveUserIdPostUser = post && post.user_id.toString() === activeUserId;
         if (!checkActiveUserIdPostUser) {
             errorMessage = 'You have no access to edit this post.';
         }

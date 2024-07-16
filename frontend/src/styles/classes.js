@@ -90,6 +90,7 @@ export const ClassNames = {
     REPOST: 'repost',
     SEND_TO_CHAT: 'send-to-chat',
     ACTION_BTNS: 'share-action-btns',
+    POSTS_LIST: 'posts-list',
     // add new
     ADD_NEW_POST_ACTION: 'add-new-post-action',
     ADD_NEW_POST_WRAPPER: 'add-new-post-wrapper',
@@ -99,4 +100,19 @@ export const ClassNames = {
     DRAG_DROP_DIV: 'drag-drop-div',
     DROP_FILE_INPUT: 'drop-file-input',
     ADD_NEW_POST_SUBMIT_BTN: 'add-new-post-submit-btn',
+    // user profile
+    USER_HEADER_WRAPPER: 'user-header-wrapper',
+    USER_PROFILE_IMG: 'user-profile-img',
+    USER_PROFILE_INFO: 'user-profile-info',
+    USERNAME_DIV: 'username-div',
+    USER_INFO_DIV: 'info-div',
+    USER_SIDEBAR_WRAPPER: 'user-sidebar-wrapper',
+    USER_FRIENDS_WRAPPER: 'user-friends-wrapper',
+    USER_PROFILE_FRIENDS_WRAPPER: 'user-profile-friends-wrapper',
+    USER_FRIENDS_LIST: 'friends-list',
+    USER_FRIEND_ITEM: 'friend-item',
+    USER_PHOTOS_WRAPPER: 'user-photos-wrapper',
+    USER_PHOTOS_LIST: 'photos',
+    USER_PHOTO_ITEM: 'photo',
+    FRIENDSHIPS_TABS: 'friendship-tabs',
 }

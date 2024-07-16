@@ -49,7 +49,7 @@ const ReactionsSection = props => {
         </Modal>
     )
 
-    return reactionList && reactionList.length > 0 ? (
+    return (reactionList && reactionList.length > 0) || commentsNumber ? (
         <React.Fragment>
             <div className={ClassNames.REACTIONS_SECTION}>
                 <div className="reactions">

@@ -1,5 +1,5 @@
 import { call, put, select } from "redux-saga/effects";
-import { addNewPostData, clearData, deletePostData, getUserFeed, setApiData, setError, updatePostData } from "../../actions/actions";
+import { addNewPostData, clearData, deletePostData, getUserFeed, setApiData, setError, setPostListData, updatePostData } from "../../actions/actions";
 import { multiPartRequest, request } from "../requests/authReqs";
 import { FEED_ROUTES, POSTS_ROUTES } from "../../../config/apiRoutes";
 import { selectFeedData } from "../../reducers/apiReducer";
@@ -96,6 +96,32 @@ export function* handleUpdatePost(action) {
         if (data) {
             // update post data
             yield put(updatePostData(data));
+        }
+    } catch (error) {
+        yield put(setError(error));
+    }
+}
+
+export function* handleGetUserPosts(action) {
+    try {
+        const { id, page, pageSize } = action.payload;
+        const payload = {
+            routeObj: POSTS_ROUTES.FIND_USER_POSTS,
+            data: {id, page, pageSize},
+            params: true
+        };
+        const response = yield call(request, payload);
+        const { data } = response;
+
+        const reduxPayload = {
+            data: data,
+            apiSuccess: true,
+            apiRouteName: POSTS_ROUTES.FIND_USER_POSTS.name,
+        }
+        yield put(setApiData(reduxPayload));
+
+        if (data) {
+            yield put(setPostListData(data.posts));
         }
     } catch (error) {
         yield put(setError(error));

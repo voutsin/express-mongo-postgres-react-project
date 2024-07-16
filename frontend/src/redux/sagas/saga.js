@@ -1,11 +1,11 @@
 import { takeLatest } from 'redux-saga/effects';
 import ActionTypes from '../actions/actionTypes';
 import { handleUserLogin, handleUserLogout, handleUserVerification } from './handlers/auth';
-import { handleBlockUser, handleFindUserFriends, handleFindUserFriendsBirthdays, handleSendFriendRequest, handleUserRegistration } from './handlers/usersHandler';
+import { handleAcceptFriendRequest, handleBlockUser, handleDeleteFriendship, handleFindDetailedUserFriends, handleFindUserDetails, handleFindUserFriends, handleFindUserFriendsBirthdays, handleFindUserMedia, handleSendFriendRequest, handleUserRegistration } from './handlers/usersHandler';
 import { handleGetUserFeed } from './handlers/feedHandler';
 import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
 import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleGetCommentReplies, handleGetPostComments, handleUpdateComment } from './handlers/commentHandler';
-import { handleAddNewPost, handleDeletePost, handleUpdatePost } from './handlers/postHandler';
+import { handleAddNewPost, handleDeletePost, handleGetUserPosts, handleUpdatePost } from './handlers/postHandler';
 
 /**
  * when the action is triggered the watcher will execute the handle function
@@ -17,8 +17,8 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.LOGOUT, handleUserLogout);
     yield takeLatest(ActionTypes.REGISTER_USER, handleUserRegistration);
     // users
-    yield takeLatest(ActionTypes.FIND_USER_FRIENDS, handleFindUserFriends);
-    yield takeLatest(ActionTypes.FIND_USER_FRIENDS_BIRTHDAYS, handleFindUserFriendsBirthdays);
+    yield takeLatest(ActionTypes.FIND_USER_INFO, handleFindUserDetails);
+    yield takeLatest(ActionTypes.FIND_USER_MEDIA, handleFindUserMedia);
     // feed
     yield takeLatest(ActionTypes.GET_USER_FEED, handleGetUserFeed);
     // post
@@ -26,8 +26,17 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.ADD_NEW_POST, handleAddNewPost);
     yield takeLatest(ActionTypes.DELETE_POST, handleDeletePost);
     yield takeLatest(ActionTypes.UPDATE_POST, handleUpdatePost);
+    yield takeLatest(ActionTypes.FIND_USER_POST_LIST, handleGetUserPosts);
     // friends
+    yield takeLatest(ActionTypes.FIND_USER_FRIENDS, handleFindUserFriends);
+    yield takeLatest(ActionTypes.FIND_DETAILED_USER_FRIENDS, handleFindDetailedUserFriends);
+    yield takeLatest(ActionTypes.FIND_USER_FRIENDS_BIRTHDAYS, handleFindUserFriendsBirthdays);
     yield takeLatest(ActionTypes.SEND_FRIEND_REQUEST, handleSendFriendRequest);
+    yield takeLatest(ActionTypes.ACCEPT_FRIEND_REQUEST, handleAcceptFriendRequest);
+    yield takeLatest(ActionTypes.DECLINE_FRIEND_REQUEST, handleDeleteFriendship);
+    yield takeLatest(ActionTypes.CANCEL_FRIEND_REQUEST, handleDeleteFriendship);
+    yield takeLatest(ActionTypes.DELETE_FRIENDSHIP, handleDeleteFriendship);
+    yield takeLatest(ActionTypes.UN_BLOCK_USER, handleDeleteFriendship);
     yield takeLatest(ActionTypes.BLOCK_USER, handleBlockUser);
     // comments
     yield takeLatest(ActionTypes.ADD_NEW_COMMENT, handleAddNewComment);

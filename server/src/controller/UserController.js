@@ -1,16 +1,17 @@
 import { FriendStatus, PostType } from "../common/enums.js";
-import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, asyncHandler, getActiveUser } from "../common/utils.js";
+import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, MEDIA_THUMBNAIL_PREFIX, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, UPLOAD_DIR, asyncHandler, getActiveUser } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
-import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship, findUserFrinedsBirthdays } from "../db/queries/friendsQueries.js";
+import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship, findUserFrinedsBirthdays, findAllDetailedActiveFriendshipsByUserId } from "../db/queries/friendsQueries.js";
 import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
-import { detailedFriendToResDto, friendAndUserResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userToResDto } from "../mapper/userMapper.js";
+import { detailedFriendToResDto, detailedFriendToResDtoWithCounters, friendAndUserResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userDetailedResDto, userToResDto } from "../mapper/userMapper.js";
 import { validationResult } from 'express-validator';
-import { unlink } from 'fs';
+import { readdir, unlink } from 'fs';
 import jwt from 'jsonwebtoken';
 import { createNewPostSQL } from '../db/queries/postsQueries.js';
 import { postReqDtoToPost, postToResDto } from '../mapper/postMapper.js';
 import { insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
 import AppError from "../model/AppError.js";
+import { join } from "path";
 
 const findAll = asyncHandler(async (req, res, next) => {
     try {
@@ -51,7 +52,7 @@ const findByUserId = asyncHandler(async (req, res, next) => {
     const params = Object.values(req.params).map(param => parseInt(param));
     const result = await postgresQuery(findUserById, params);
     if (result.rows.length > 0) {
-      res.json(userToResDto(result.rows[0]));
+      res.json(userDetailedResDto(result.rows[0]));
       res.status(200);
     }
   } catch (e) {
@@ -80,8 +81,22 @@ const findAllFriendsOfUser = asyncHandler(async (req, res, next) => {
   try {
     const params = Object.values(req.params);
     const result = await postgresQuery(findAllActiveFriendshipsByUserId, params);
-    const resposne = await detailedFriendToResDto(result.rows);
+    const resposne = await detailedFriendToResDto(result.rows, false);
     res.json(resposne);
+  } catch (e) {
+    next(new AppError('Internal Server Error: ' + e, 500));
+  }
+});
+
+const findAllDetailedFriendsOfUser = asyncHandler(async (req, res, next) => {
+  try {
+    const params = Object.values(req.params);
+    const result = await postgresQuery(findAllDetailedActiveFriendshipsByUserId, [...params, req.userId]);
+    const friendships = req.userId === req.params.id 
+      ? result.rows
+      : result.rows.filter(f => f.status === FriendStatus.ACCEPTED);
+    const resposne = await detailedFriendToResDto(friendships, true);
+    res.json(detailedFriendToResDtoWithCounters(resposne));
   } catch (e) {
     next(new AppError('Internal Server Error: ' + e, 500));
   }
@@ -89,10 +104,12 @@ const findAllFriendsOfUser = asyncHandler(async (req, res, next) => {
 
 const requestFriendship = asyncHandler(async (req, res, next) => {
   try {
-    const params = Object.values(req.body); // param 1 is request user id
+    let params = Object.values(req.body); 
     const activeUser = getActiveUser(req);
-    params.push(activeUser ? activeUser.id : null); // param 2 is active user id
-
+    params = [
+      activeUser.id, // param 1 is active user id
+      ...params // param 2 is request user id
+    ]
     const results = [];
     const res1 = await postgresQuery(insertNewFriendshipRequest, params);
     if (res1) {
@@ -284,12 +301,35 @@ const findFriendsBirthdays = asyncHandler(async (req, res, next) => {
   }
 });
 
+const findUserPhotos = asyncHandler(async (req, res, next) => {
+  try {
+    const mediaDir = join(UPLOAD_DIR, req.params.id);
+
+    readdir(mediaDir, (err, files) => {
+      if (err) {
+        return res.status(500).json({ error: 'Unable to read media directory' });
+      }
+
+      // Map the filenames to their respective paths
+      res.json(files.filter(file => file.includes(MEDIA_THUMBNAIL_PREFIX))
+        .map(file => ({
+          thumbnailUrl: join('/', UPLOAD_DIR, req.params.id, file),
+          name: file.split('.')[0],
+          url: join('/', UPLOAD_DIR, req.params.id, file.split(MEDIA_THUMBNAIL_PREFIX)[1]),
+        })));
+    });
+  } catch(e) {
+    next(new AppError('Internal Server Error: ' + e, 500));
+  }
+});
+
 export default {
     findAll,
     registerNewUser,
     findByUserId,
     updateUser,
     findAllFriendsOfUser,
+    findAllDetailedFriendsOfUser,
     requestFriendship,
     acceptFriendship,
     deleteFriend,
@@ -298,4 +338,5 @@ export default {
     searchUserByCriteria,
     editProfilePic,
     findFriendsBirthdays,
+    findUserPhotos,
 };

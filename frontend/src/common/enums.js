@@ -48,6 +48,63 @@ export const ReactionMapping = {
     },
 }
 
+export const FriendStatusMapping = {
+    1: {
+        icon: null,
+        name: 'Requested',
+    },
+    2: {
+        icon: null,
+        name: 'Pending',
+    },
+    3: {
+        icon: null,
+        name: 'Accepted',
+    },
+    4: {
+        icon: null,
+        name: 'Blocked',
+    },
+}
+
+export const FriendUserAction = {
+    REQUEST: {
+        value: 1,
+        name: 'Request',
+        action: 'sendFriendRequest',
+    },
+    CANCEL_REQUEST: {
+        value: 2,
+        name: 'Cancel Request',
+        action: 'cancelFriendRequest',
+    },
+    ACCEPT: {
+        value: 3,
+        name: 'Accept',
+        action: 'acceptFriendRequest',
+    },
+    DECLINE: {
+        value: 4,
+        name: 'Decline',
+        action: 'declineFriendRequest',
+    },
+    UNFRIEND: {
+        value: 5,
+        name: 'Unfriend',
+        action: 'deleteFriendship',
+    },
+    BLOCK: {
+        value: 6,
+        name: 'Block',
+        action: 'blockUser',
+    },
+    UNBLOCK: {
+        value: 7,
+        name: 'UnBlock',
+        action: 'unBlockUser',
+    },
+}
+
 export const Reactions = {
     LIKE: 1,
     LOVE: 2,
