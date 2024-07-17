@@ -38,6 +38,8 @@ code {
   --fullWidth-post-width-big: 1000px;
 
   --modal-standard-width: 450px;
+
+  --chat-header-height: 100px;
 }
 
 /* GENERAL */
@@ -155,7 +157,7 @@ input:-internal-autofill-selected, textarea:-internal-autofill-selected {color:v
 .friend:last-child {border-bottom:none;}
 .thumbnail-img {font-size: 30px;color:var(--secondary-color);display: flex;flex-wrap: wrap;justify-content: center;align-items: center;margin-right:10px;}
 .birthdays-view, .friends-view {padding-bottom: 30px;margin: 0;border-bottom: 1px solid var(--light-gray-color);display:flex;flex-direction: column;align-items: flex-start;justify-content: flex-start;}
-.birthdays-view > div, .friends-view > div, .birthdays-view > h4, .friends-view > h4 {width:100%;}
+.birthdays-view > div, .friends-view > div, .birthdays-view > h4, .friends-view > h4 {width:calc(100% - 20px);}
 .no-birthdays, .no-friends {margin:0 10px;}
 .right-sidebar h4 {margin: 30px 10px;}
 .birthdays-div {display: flex;flex-direction: row;justify-content: space-between;align-items: flex-start;}
@@ -358,3 +360,31 @@ input:-internal-autofill-selected, textarea:-internal-autofill-selected {color:v
 .select-input .options .label:hover {background: var(--light-gray-color);}
 .select-input .tooltip-modal {padding: 0;overflow: hidden;}
 .user-friends-wrapper .user-item .actions {display: flex;flex-direction: row;justify-content: flex-end;align-items: center;}
+/* CHAT */
+.chat-page {display: flex;flex-direction: row;height: 100%;justify-content: flex-start;align-items: flex-start;}
+.chat-groups-wrapper {width: 230px;padding: 40px 10px;height: calc(100% - 80px);position: relative;}
+.chat-group-inner {position: relative;height: 100%;}
+.chat-groups {position: absolute;top: 0;left: 0;bottom:60px;right: 0;}
+.group {position: relative;display: flex;flex-direction: row;align-items: center;justify-content: flex-start;overflow: hidden;cursor: pointer;margin-bottom: 10px;transition: var(--standard-transition);padding: 5px;border-radius: var(--div-border-radius);}
+.group:hover {background: var(--light-gray-color);}
+.chatroom {width: calc(100% - 240px);padding: 20px;border-left: 1px solid var(--light-gray-color);height: calc(100% - 40px);position: relative;}
+.chatroom .form {position: absolute;bottom: 0;left: 0;right: 0;padding: 20px;box-shadow: 0 -4px 10px -4px #8080806b;display: flex;flex-direction: row;justify-content: space-between;align-items: center;}
+.chatroom .form form {width:100%;}
+.chatroom .form .input-wrapper textarea {min-height: 30px;width: 100%!important;resize: none;overflow: hidden;}
+.chatroom .message {display: flex;flex-direction: row;align-items: flex-start;margin-bottom: 10px;}
+.chatroom .message.current {flex-direction: row-reverse;}
+.chatroom .message.current .thumbnail-img {margin-right: 0;margin-left:10px;}
+.chatroom .message .text {padding: 10px;background: var(--light-gray-color);border-radius: var(--div-border-radius);max-width: 50%;}
+.send-btn {width: 60px;margin-left: 10px;display: flex;flex-wrap: wrap;justify-content: center;align-items: center;font-size: 22px;color: var(--trird-color)!important;}
+.send-btn:disabled {color: var(--light-gray-color);}
+.choose-user {padding-top: 20px;position: absolute;bottom: 0;left: 0;right: 0;}
+.chatroom .messages {margin-top: var(--chat-header-height);}
+.chat-header {padding: 20px;height: 60px;position: absolute;top: 0;left: 0;right: 0;border-bottom: 1px solid var(--light-gray-color);box-shadow: 0 4px 10px -4px #8080806b;background: var(--body-color-light);}
+.chat-header .user {display: flex;flex-direction: row;justify-content: flex-start;align-items: center;}
+.chat-header .user .thumbnail-img {width: 60px;height: 60px;font-size: 50px;}
+.chat-header .user .thumbnail-img img {width: 60px;}
+.chat-header .user span {font-size: 18px;font-weight: 600;}
+.chat-page .friends-view {width: 350px;height: calc(100% - 40px);border-left: 1px solid var(--light-gray-color);}
+.chat-page .friends-view h4 {padding-left: 10px;width: max-content;}
+.unread-messages {z-index: 10;position: absolute;top: 0;left: 0;font-size: 10px;width: 15px;height: 15px;background: var(--error-color);border-radius: 50%;display: flex;justify-content: center;align-items: center;color: var(--body-color-light);}
+.unread-messages span {font-size: 10px;}

@@ -276,3 +276,47 @@ export const setPostListData = posts => ({
     type: ActionTypes.SET_POST_LIST_DATA,
     payload: posts
 });
+
+// CHAT
+export const disconnectSocket = () => ({
+    type: ActionTypes.DISCONNECT_SOCKET,
+});
+
+export const clearChatData = stateValues => ({
+    type: ActionTypes.CLEAR_CHAT_DATA,
+    payload: stateValues
+});
+
+export const getMessageGroups = () => ({
+    type: ActionTypes.GET_MESSAGE_GROUPS,
+});
+
+export const setMessageGroupData = groups => ({
+    type: ActionTypes.SET_MESSAGE_GROUPS_DATA,
+    payload: groups
+});
+
+export const getGroupMessages = (groupId, page, pageSize) => ({
+    type: ActionTypes.GET_GROUP_MESSAGES,
+    payload: { groupId, page, pageSize }
+});
+
+export const setGroupMessagesData = messages => ({
+    type: ActionTypes.SET_GROUP_MESSAGES_DATA,
+    payload: messages
+});
+
+export const sendMessage = (content, groupId, receiverId) => ({
+    type: ActionTypes.SEND_MESSAGE,
+    payload: { content, groupId, receiverId }
+});
+
+export const setMessageData = message => ({
+    type: ActionTypes.SET_MESSAGE_DATA,
+    payload: message
+});
+
+export const receiveMessage = (message) => ({
+    type: ActionTypes.RECEIVE_MESSAGE,
+    payload: message
+});

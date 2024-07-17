@@ -33,7 +33,7 @@ export const createThumbnail = async (req, res, next) => {
   const filePath = req.file.path;
   const { userId } = req;
   const uploadDir = `${UPLOAD_DIR}/${userId}`;
-  const thumbnailName = `${PROFILE_PIC_THUMBNAIL_PREFIX}${userId}${req.file.filename}`;
+  const thumbnailName = `${PROFILE_PIC_THUMBNAIL_PREFIX}${req.file.filename}`;
   const thumbnailPath = join(uploadDir, thumbnailName);
 
   try {

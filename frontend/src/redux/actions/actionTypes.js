@@ -56,6 +56,16 @@ const ActionTypes = {
     FIND_USER_MEDIA: 'findUserMedia',
     FIND_USER_POST_LIST: 'findUserPosts',
     SET_POST_LIST_DATA: 'setPostsListData',
+    // chat
+    CLEAR_CHAT_DATA: 'CLEAR_CHAT_DATA',
+    DISCONNECT_SOCKET: 'DISCONNECT_SOCKET',
+    GET_MESSAGE_GROUPS: 'getMessageGroups',
+    SET_MESSAGE_GROUPS_DATA: 'setMessageGroupsData',
+    GET_GROUP_MESSAGES: 'getGroupMessages',
+    SET_GROUP_MESSAGES_DATA: 'setGroupMessagesData',
+    SEND_MESSAGE: 'sendMessage',
+    SET_MESSAGE_DATA: 'setMessageData',
+    RECEIVE_MESSAGE: 'receiveMessage',
 }
 
 export default ActionTypes;

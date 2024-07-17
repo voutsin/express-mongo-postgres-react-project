@@ -19,12 +19,16 @@ import cors from 'cors';
 import { access, constants } from 'fs';
 import { globalErrorHandler } from './common/utils.js';
 import AppError from './model/AppError.js';
-// import WebSocket, {WebSocketServer} from 'ws';
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+import { socketAuthenticateMiddleware } from './socket/utils.js';
+import socketChatHandler from './socket/socketChatHandler.js';
+import { findAllUserMessageGroups } from './db/repositories/MessageGroupRepository.js';
 
 dotenv.config();
 
 const app = express();
-
+const server = createServer(app);
 // Use cors middleware
 app.use(cors({
   origin: (origin, callback) => {
@@ -98,52 +102,45 @@ app.all('*', (req, res, next) => {
 app.use(globalErrorHandler);
 
 const port = process.env.SERVER_PORT;
-const server = app.listen(port, () => {
-  console.log('Server is running on port ', port);
+
+
+// Initialize the socket.io instance
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    // allowedHeaders: ["Content-Type"],
+    credentials: true
+  }
 });
 
-// web socker server must be separate from api
-// few api routes that we expose
-// const wsServer = new WebSocketServer({ noServer: true} );
+io.use(socketAuthenticateMiddleware);
 
-// const onSocketPreError = e => {
-//   console.log("Pre Socket Error: ", e);
-// }
+const { sendMessage, getGroupMessages, disconnect, } = socketChatHandler(io);
 
-// const onSocketPostError = e => {
-//   console.log("Post Socket Error: ", e);
-// }
+const onConnection = async (socket) => {
+  console.log('New client connected:', socket.authUser);
 
-// server.on('upgrade', (req, socket, head) => {
-//   socket.on('error', onSocketPreError);
+  if (socket.authUser) {
+    try {
+        // Get the user's groups
+        const userGroups = await findAllUserMessageGroups(socket.authUser.userId);
+        // Join each group room
+        userGroups.forEach(group => {
+            socket.join(group.id.toString());
+        });
+    } catch (error) {
+        console.error('Error fetching user groups:', error);
+    }
+  }
 
-//   // perform auth
-//   if (!req.headers['NoAuth']) {
-//     socket.write('401 Unauthorized!');
-//     socket.destroy();
-//     return;
-//   }
+  socket.on("send_message", sendMessage);
+  socket.on("get_messages", getGroupMessages);
+  socket.on('disconnect', disconnect);
+}
+io.on("connection", onConnection);
 
-//   // http handling error
-//   wsServer.handleUpgrade(req, socket, head, (ws) => {
-//     socket.removeListener('error', onSocketPreError);
-//     wsServer.emit('connection', ws, req);
-//   });
-// });
 
-// wsServer.on('connection', (ws, req) => {
-//   // web socket handling error
-//   ws.on('error', onSocketPostError);
-
-//   ws.on('message', (msg, isBinary) => {
-//     wsServer.clients.forEach(client => {
-//       if (ws !== client && client.readyState === WebSocket.OPEN) {
-//         client.send(msg, { binary: isBinary});
-//       }
-//     })
-//   });
-
-//   ws.on('close', () => {
-//     console.log("Connection closed.");
-//   });
-// })
+server.listen(port, () => {
+  console.log('Server is running on port ', port);
+});

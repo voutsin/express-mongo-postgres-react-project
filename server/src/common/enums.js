@@ -29,3 +29,14 @@ export const ReactionType = {
     WOW: 4,
     CRY: 5,
 }
+
+export const MessageStatus = {
+    SENT: {
+        code: 1,
+        text: 'Sent'
+    },
+    FAILED: {
+        code: 2,
+        text: 'Failed'
+    },
+}

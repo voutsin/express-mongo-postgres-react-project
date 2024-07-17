@@ -6,16 +6,19 @@ import { MdLogout, MdSearch, MdChat, MdNotifications, MdFace } from 'react-icons
 import { BASE_URL } from '../config/apiRoutes';
 import { ClassNames } from '../styles/classes';
 import NexGenLogoSVG from '../styles/images/logo';
-import { removeEmptyFields } from '../common/utils';
+import { buildUrl, removeEmptyFields } from '../common/utils';
 import TextInput from './Form/TextInput';
+import { selectUnreadCount } from '../redux/reducers/chatReducer';
 
 const Menu = props => {
     const [inputs, setInputs] = useState({});
-    const loginOk = props.auth && props.auth.authSuccess;
+    const { auth, unreadCount } = props;
+
+    const loginOk = auth && auth.authSuccess;
     const navigate = useNavigate();
 
     const handleClick = route => {
-        route && navigate(route.path);
+        route && navigate(buildUrl(route.path, { id: auth.id }));
     }
 
     const handleOpenNotifications = () => {
@@ -36,7 +39,7 @@ const Menu = props => {
         })
     }
 
-    const profilePicUrl = props.auth && props.auth.profilePictureThumb;
+    const profilePicUrl = auth && auth.profilePictureThumb;
     return(
         <React.Fragment>
             <div id={'nav'} className={ClassNames.NAV}>
@@ -55,6 +58,9 @@ const Menu = props => {
                 <div className={`${ClassNames.NAV_SECTION} ${ClassNames.NAV_UPDATES}`}>
                     {loginOk &&
                         <div className={`${ClassNames.NAV_ITEM}`}>
+                            {unreadCount && unreadCount > 0 && 
+                                <span className={ClassNames.UNREAD_MESSAGES}>{unreadCount}</span>
+                            }
                             <button id="chat" onClick={() => handleClick(ROUTES.CHAT)}><MdChat /></button>
                         </div>
                     }
@@ -83,6 +89,7 @@ const Menu = props => {
 
 const mapStateToProps = (state) => ({
     auth: state.auth,
+    unreadCount: selectUnreadCount(state),
 });
 
 export default connect(

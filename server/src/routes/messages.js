@@ -1,17 +1,12 @@
 import express from "express";
 import MessageController from "../controller/MessageController.js";
+import { addActiveUserIdInReq } from "../common/utils.js";
+import { findGroupValidations } from "../validators/messageValidator.js";
+
 const messagesRouter = express.Router();
 
-messagesRouter.get('/',  MessageController.findAll);
+messagesRouter.get('/groups', addActiveUserIdInReq, MessageController.findAllUserGroups);
 
-messagesRouter.post('/', async (req, res) => {
-    const request = {
-        groupId: 1,
-        senderId: 1,
-        content: 'test message',
-        timestamp: new Date(),
-    }
-    MessageController.save(request, res);
-})
+messagesRouter.delete('/groups/:id?', addActiveUserIdInReq, findGroupValidations, MessageController.deleteGroupById);
 
 export default messagesRouter;

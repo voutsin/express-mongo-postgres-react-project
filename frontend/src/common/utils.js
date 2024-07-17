@@ -363,3 +363,8 @@ export const updateTopFeedComment = (newComment, feedObj, commentsList, action) 
     }
     : null
 }
+
+export const findGroupNameByMembers = (members, userId) => {
+    const others = members.filter(m => m.id !== userId);
+    return others.map(m => m.name).join(', ');
+}

@@ -1,0 +1,133 @@
+import React, { useEffect, useState } from "react";
+import TextInput from '../../structure/Form/TextInput.js';
+import { Button, Form } from "../../structure/Form/Form.js";
+import { MdSend } from "react-icons/md";
+import { removeEmptyFields } from "../../common/utils";
+import { connect } from "react-redux";
+import { clearData, getGroupMessages, sendMessage } from "../../redux/actions/actions";
+import { selectMessageList } from "../../redux/reducers/chatReducer";
+import { selectApiState } from "../../redux/reducers/apiReducer.js";
+import { ClassNames } from "../../styles/classes.js";
+import UserImage from "../../structure/User/UserImage.js";
+
+const Chat = props => {
+    const [inputs, setInputs] = useState({});
+    const [messages, setMessages] = useState(null);
+
+    const { currentUserId, chat, receiverId, messagesList, getGroupMessages, sendMessage, clearData, error } = props;
+
+    useEffect(() => {
+        // load all messages
+        if (chat && chat.id) {
+            getGroupMessages(chat.id);
+        }
+      }, [chat, getGroupMessages]);
+
+    useEffect(() => {
+        if (messagesList && JSON.stringify(messagesList) !== JSON.stringify(messages)) {
+            setMessages(messagesList);
+        }
+
+        if (error) {
+            clearData(['error']);
+        }
+    }, [messagesList, messages, error, clearData]);
+
+    const handleChange = (name, value) => {
+        setInputs({
+            ...inputs,
+            [name]: value
+        });
+    }
+
+    const handleSend = (e) => {
+        e.preventDefault();
+        removeEmptyFields(inputs);
+        if (inputs.content) {
+            sendMessage(inputs.content, chat.id, receiverId);
+            setInputs({})
+        }
+    }
+
+    const headerInfo = {
+        users: chat && chat.members.filter(u => u.id !== currentUserId),
+    }
+
+    return (
+        <React.Fragment>
+            <div className={ClassNames.CHAT_ROOM}>
+                {chat && 
+                    <React.Fragment>
+                        <div className={ClassNames.CHAT_HEADER}>
+                            {headerInfo.users && headerInfo.users.length === 1 
+                                ? <div className="user">
+                                    <UserImage
+                                        id={headerInfo.users[0].id}
+                                        picUrl={headerInfo.users[0].profilePictureThumb}
+                                        username={headerInfo.users[0].username}
+                                        className={ClassNames.THUMBNAIL_IMG}
+                                    />
+                                    <span>{headerInfo.users[0].name}</span>
+                                </div>
+                                : <div className="user">
+                                    {headerInfo.users.map(user => (
+                                        <UserImage
+                                            id={user.id}
+                                            picUrl={user.profilePictureThumb}
+                                            username={user.username}
+                                            className={ClassNames.THUMBNAIL_IMG}
+                                        />
+                                    ))}
+                                </div>
+                            }
+                        </div>
+                        <div className={ClassNames.MESSAGES}>
+                            {messagesList && messagesList.map(message => {
+                                const user = chat.members.find(u => u.id === message.senderId);
+                                return message ? (
+                                    <div key={`message-${message.id}`} className={`${ClassNames.MESSAGE}${user.id === currentUserId ? ' current' : ''}`}>
+                                        <div className="user">
+                                            <UserImage
+                                                id={user.id}
+                                                picUrl={user.profilePictureThumb}
+                                                username={user.username}
+                                                className={ClassNames.THUMBNAIL_IMG}
+                                            />
+                                        </div>
+                                        <div className="text">
+                                            <span>{message.content}</span>
+                                        </div>
+                                    </div>
+                                ) : null
+                            })}
+                        </div>
+                        <div className="form">
+                            <Form data={inputs} onChange={handleChange}>
+                                <TextInput
+                                    type="text" 
+                                    name="content"
+                                    label='Message'
+                                />
+                            </Form>
+                            <Button extraClass={'send-btn'} onClick={handleSend} disabled={!inputs.content || inputs.content === ''}>
+                                <MdSend/>
+                            </Button>
+                        </div>
+                    </React.Fragment>
+                }
+            </div>
+        </React.Fragment>
+    )
+}
+
+const mapStateToProps = state => ({
+    messagesList: selectMessageList(state),
+    error: selectApiState(state, 'error'),
+});
+
+const mapDispatchToProps = dispatch => ({
+    getGroupMessages: (groupId, page, pageSize) => dispatch(getGroupMessages(groupId, page, pageSize)),
+    sendMessage: (content, groupId, receiverId) => dispatch(sendMessage(content, groupId, receiverId)),
+    clearData: (values) => dispatch(clearData(values)),
+})
+export default connect(mapStateToProps, mapDispatchToProps)(Chat);

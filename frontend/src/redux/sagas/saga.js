@@ -1,4 +1,4 @@
-import { takeLatest } from 'redux-saga/effects';
+import { fork, takeLatest } from 'redux-saga/effects';
 import ActionTypes from '../actions/actionTypes';
 import { handleUserLogin, handleUserLogout, handleUserVerification } from './handlers/auth';
 import { handleAcceptFriendRequest, handleBlockUser, handleDeleteFriendship, handleFindDetailedUserFriends, handleFindUserDetails, handleFindUserFriends, handleFindUserFriendsBirthdays, handleFindUserMedia, handleSendFriendRequest, handleUserRegistration } from './handlers/usersHandler';
@@ -6,6 +6,8 @@ import { handleGetUserFeed } from './handlers/feedHandler';
 import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
 import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleGetCommentReplies, handleGetPostComments, handleUpdateComment } from './handlers/commentHandler';
 import { handleAddNewPost, handleDeletePost, handleGetUserPosts, handleUpdatePost } from './handlers/postHandler';
+import { watchChat } from './chatSaga';
+import { handleGetUserMessageGroups } from './handlers/chatHandler';
 
 /**
  * when the action is triggered the watcher will execute the handle function
@@ -50,4 +52,7 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.UPDATE_REACTION, handleUpdateReaction);
     yield takeLatest(ActionTypes.DELETE_REACTION, handleDeleteReaction);
     yield takeLatest(ActionTypes.GET_COMMENT_REACTIONS, handleGetCommentReaction);
+    // chat
+    yield fork(watchChat);
+    yield takeLatest(ActionTypes.GET_MESSAGE_GROUPS, handleGetUserMessageGroups);
 }

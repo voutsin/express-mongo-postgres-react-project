@@ -3,13 +3,16 @@ import { connect } from 'react-redux';
 import { selectApiState } from "../../redux/reducers/apiReducer";
 import { FRIENDS_ROUTES } from "../../config/apiRoutes";
 import { findUserFriends } from "../../redux/actions/actions";
-import { getDeepProp } from "../../common/utils";
+import { buildUrl, getDeepProp } from "../../common/utils";
 import UserChatView from "./UserChatView";
 import { ClassNames } from "../../styles/classes";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../../config/routes";
 
 // TODO: add user online status
 const FriendsColumn = props => {
     const [friendsCallFlag, setFriendsCallFlag] = useState(false);
+    const navigate = useNavigate();
 
     const { postLink, shareModal } = props;
 
@@ -22,11 +25,12 @@ const FriendsColumn = props => {
 
     const friends = getDeepProp(props, 'findUserFriendsResponse.data.friends');
 
-    const handleUserClick = info => {
+    const handleUserClick = userInfo => {
         // TODO: add chat window
         if (postLink) {
             // add link to chat message
         }
+        navigate(buildUrl(ROUTES.CHAT.path, {id: props.auth.id}), { state: { externalUser: userInfo } });
     }
 
     return (

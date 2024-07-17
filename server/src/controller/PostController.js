@@ -30,7 +30,6 @@ const findPostById = asyncHandler(async (req, res, next) => {
     }
 });
 
-// TODO: add pages to endpoint
 const findAllUserPosts = asyncHandler(async (req, res, next) => {
     try {
         const userId = parseInt(req.query.id);
