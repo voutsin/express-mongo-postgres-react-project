@@ -23,7 +23,8 @@ const Chat = props => {
         sendMessage, 
         clearData, 
         error, 
-        readChatMessages 
+        readChatMessages,
+        clearReceiverId
     } = props;
 
     useEffect(() => {
@@ -55,7 +56,8 @@ const Chat = props => {
         removeEmptyFields(inputs);
         if (inputs.content) {
             sendMessage(inputs.content, chat.id, receiverId);
-            setInputs({})
+            setInputs({});
+            clearReceiverId();
         }
     }
 

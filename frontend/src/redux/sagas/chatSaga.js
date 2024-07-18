@@ -7,33 +7,6 @@ import { selectAuthState } from "../reducers/authReducer";
 
 const chatSocket = socket();
 
-function* logoutHandler() {
-    try {
-        const response = yield call(disconnectSocket);
-        if (response.status.code === 2) {
-            throw new Error(response.message);
-        } 
-    } catch (error) {
-        // handle error
-        //error.response.data.errors = []
-        const err = {response: {data: {errors: [error]}}}
-        yield put(setError(err));
-    }
-}
-
-function disconnectSocket() {
-    return new Promise((resolve, reject) => {
-        chatSocket.emit('disconnect', {}, (response) => {
-            if (response.status.code === 2) {
-                reject(response);
-            } else {
-                resolve(response);
-            }
-        });
-    });
-}
-
-
 function* sendMessageHandler(action) {
     try {
         const response = yield call(sendMessageToSocket, action.payload);
@@ -182,6 +155,5 @@ export function* watchChat() {
     yield takeEvery(ActionTypes.SEND_MESSAGE, sendMessageHandler);
     yield takeEvery(ActionTypes.GET_GROUP_MESSAGES, getMessagesHandler);
     yield takeEvery(ActionTypes.READ_GROUP_MESSAGES, readGroupMessagesHandler);
-    yield takeEvery(ActionTypes.LOGOUT, logoutHandler);
     yield fork(receiveMessagesDataHandler);
 }

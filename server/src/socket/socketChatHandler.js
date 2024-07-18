@@ -59,7 +59,7 @@ export default io => {
     const getGroupMessages = async function (payload, callback) {
         const { groupId, pageSize, page } = payload;
         const pageNo = parseInt(page) || 1; // default to page 1 if not provided
-        const limit = parseInt(pageSize) || 10; // default to 10 items per page if not provided
+        const limit = parseInt(pageSize) || 100; // default to 10 items per page if not provided
         const skip = (pageNo - 1) * limit;
 
         if (groupId) {

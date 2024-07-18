@@ -81,7 +81,7 @@ const ChatGroups = props => {
                                                     picUrl={user.profilePictureThumb}
                                                     username={user.username}
                                                     className={ClassNames.THUMBNAIL_IMG}
-                                                    link={false}
+                                                    blockLink={true}
                                                 />
                                             }
                                         </div>

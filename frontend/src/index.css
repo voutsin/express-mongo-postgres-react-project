@@ -378,7 +378,9 @@ input:-internal-autofill-selected, textarea:-internal-autofill-selected {color:v
 .send-btn {width: 60px;margin-left: 10px;display: flex;flex-wrap: wrap;justify-content: center;align-items: center;font-size: 22px;color: var(--trird-color)!important;}
 .send-btn:disabled {color: var(--light-gray-color);}
 .choose-user {padding-top: 20px;position: absolute;bottom: 0;left: 0;right: 0;}
-.chatroom .messages {margin-top: var(--chat-header-height);}
+.chatroom .messages {margin-top: var(--chat-header-height);height: calc(100% - 200px);overflow-y: auto;}
+.chatroom .messages::-webkit-scrollbar {display: none;}
+.chatroom .messages {-ms-overflow-style: none;scrollbar-width: none;}
 .chat-header {padding: 20px;height: 60px;position: absolute;top: 0;left: 0;right: 0;border-bottom: 1px solid var(--light-gray-color);box-shadow: 0 4px 10px -4px #8080806b;background: var(--body-color-light);}
 .chat-header .user {display: flex;flex-direction: row;justify-content: flex-start;align-items: center;}
 .chat-header .user .thumbnail-img {width: 60px;height: 60px;font-size: 50px;}
