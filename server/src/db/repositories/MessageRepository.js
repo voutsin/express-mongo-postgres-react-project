@@ -91,3 +91,42 @@ export const findAllGroupMessages = async (groupId, pageSize, skip) => {
         throw new Error(e);
     }
 }
+
+export const findUnreadMessagesInGroup = async (groupId, userId) => {
+    try {
+        const query = { 
+            readBy: { 
+                $nin: [Number(parseInt(userId))] 
+            }, 
+            groupId: new mongoose.Types.ObjectId(groupId),
+        }
+        const results = await Message.find(query);
+        return {
+            messages: results || [],
+            total: results ? results.length : 0
+        };
+    } catch (e) {
+        console.log("Find messages error: ", e);
+        throw new Error(e);
+    } 
+}
+
+export const addUserToGroupMessagesReadBy = async (groupId, userId) => {
+    try {
+        const query = { 
+            readBy: { 
+                $nin: [Number(parseInt(userId))] 
+            },
+            groupId: new mongoose.Types.ObjectId(groupId),
+        }
+        const results = await Message.updateMany(query, { $addToSet: { readBy: userId } });
+        
+        return {
+            ...results,
+            groupId
+        };
+    } catch (e) {
+        console.log("Find messages error: ", e);
+        throw new Error(e);
+    } 
+}

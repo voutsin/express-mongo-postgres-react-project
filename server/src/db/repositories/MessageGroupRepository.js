@@ -1,4 +1,4 @@
-import { groupToResDto } from "../../mapper/messageMapper.js";
+import { groupToResDto, simpleGroupResDto } from "../../mapper/messageMapper.js";
 import MessageGroup from "../../model/MessageGroup.js";
 import { postgresQuery } from "../postgres.js";
 import { findUsersInIds } from "../queries/userQueries.js";
@@ -46,7 +46,7 @@ export const findAllUserMessageGroups = async (userId, simple = false) => {
         // const foundGroups = await MessageGroup.aggregate(pipeline);
         const foundGroups = await MessageGroup.find({ members: parseInt(userId) })
           .sort({ timestamp: -1 });
-        return simple ? simpleGroupResDto(foundGroups) : await groupToResDto(foundGroups);
+        return simple ? simpleGroupResDto(foundGroups) : await groupToResDto(foundGroups, userId);
     } catch (e) {
         console.log("Query to MessageGroup error: ", e);
         throw new Error(e);

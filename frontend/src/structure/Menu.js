@@ -58,8 +58,8 @@ const Menu = props => {
                 <div className={`${ClassNames.NAV_SECTION} ${ClassNames.NAV_UPDATES}`}>
                     {loginOk &&
                         <div className={`${ClassNames.NAV_ITEM}`}>
-                            {unreadCount && unreadCount > 0 && 
-                                <span className={ClassNames.UNREAD_MESSAGES}>{unreadCount}</span>
+                            {unreadCount && unreadCount > 0 ? 
+                                <span className={ClassNames.UNREAD_MESSAGES}>{unreadCount}</span> : null
                             }
                             <button id="chat" onClick={() => handleClick(ROUTES.CHAT)}><MdChat /></button>
                         </div>

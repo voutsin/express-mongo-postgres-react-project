@@ -36,11 +36,6 @@ const ChatGroups = props => {
     useEffect(() => {
         // load all message groups
         getMessageGroupsList();
-      
-        // return () => {
-        //     // clear data
-        //     clearData(['GROUPS_LIST'])
-        // };
       }, []);
 
     useEffect(() => {
@@ -72,10 +67,11 @@ const ChatGroups = props => {
                                         className={ClassNames.GROUP_CHAT} 
                                         onClick={() => handleSelectChat(group)}
                                     >
-                                        {group.hasNewMessage && 
+                                        {group.hasNewMessage && group.hasNewMessage > 0 ?
                                             <div className={ClassNames.UNREAD_MESSAGES}>
                                                 <span>{group.hasNewMessage}</span>
                                             </div>
+                                            : null
                                         }
                                         <div className="icon">
                                             {others && others.length > 1  
@@ -85,6 +81,7 @@ const ChatGroups = props => {
                                                     picUrl={user.profilePictureThumb}
                                                     username={user.username}
                                                     className={ClassNames.THUMBNAIL_IMG}
+                                                    link={false}
                                                 />
                                             }
                                         </div>

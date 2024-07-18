@@ -22,4 +22,4 @@ export const authReducer = (state = defaultState, action) => {
 }
 
 //SELECTORS
-export const selectAuthState = (state) => state;
+export const selectAuthState = (state) => state && state.auth;

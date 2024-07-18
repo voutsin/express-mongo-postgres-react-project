@@ -116,7 +116,7 @@ const io = new Server(server, {
 
 io.use(socketAuthenticateMiddleware);
 
-const { sendMessage, getGroupMessages, disconnect, } = socketChatHandler(io);
+const { sendMessage, getGroupMessages, disconnect, markGroupMessagesReadByUser } = socketChatHandler(io);
 
 const onConnection = async (socket) => {
   console.log('New client connected:', socket.authUser);
@@ -124,7 +124,7 @@ const onConnection = async (socket) => {
   if (socket.authUser) {
     try {
         // Get the user's groups
-        const userGroups = await findAllUserMessageGroups(socket.authUser.userId);
+        const userGroups = await findAllUserMessageGroups(socket.authUser.userId, true);
         // Join each group room
         userGroups.forEach(group => {
             socket.join(group.id.toString());
@@ -136,6 +136,7 @@ const onConnection = async (socket) => {
 
   socket.on("send_message", sendMessage);
   socket.on("get_messages", getGroupMessages);
+  socket.on("read_messages", markGroupMessagesReadByUser);
   socket.on('disconnect', disconnect);
 }
 io.on("connection", onConnection);

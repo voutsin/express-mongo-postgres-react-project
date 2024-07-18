@@ -1,5 +1,5 @@
 import { MessageStatus } from "../common/enums.js";
-import { findAllGroupMessages, insertNewMessage, insertNewMessageAndGroup } from "../db/repositories/MessageRepository.js";
+import { addUserToGroupMessagesReadBy, findAllGroupMessages, insertNewMessage, insertNewMessageAndGroup } from "../db/repositories/MessageRepository.js";
 import { messageAndGroupResDto, messageToResDto } from "../mapper/messageMapper.js";
 
 export default io => {
@@ -31,12 +31,12 @@ export default io => {
                         // Find the socket for the member and join the new group room
                         const sockets = io.sockets.sockets;
                         sockets.forEach(socket => {
-                            if (socket.authUser && socket.authUser.userId === memberId) {
+                            if (authUser && authUser.userId === memberId) {
                                 socket.join(newGroupId.toString());
                             }
                         });
                     });
-                    const response = await messageAndGroupResDto(message, newGroupId);
+                    const response = await messageAndGroupResDto(message, newGroupId, authUser.userId);
                     io.to(newGroupId.toString()).emit('receive_message_and_group', response);
                 } else {
                     io.to(groupId.toString()).emit('receive_message', messageToResDto(message));
@@ -47,6 +47,7 @@ export default io => {
                 status: MessageStatus.SENT
             });
         } catch (error) {
+            console.log("ERROR: ", error)
             // Send error back to the user
             io.emit('error_message', 'Failed to save message');
             callback({
@@ -72,7 +73,8 @@ export default io => {
 
                 callback(response);
                 // Broadcast the message to all connected clients
-                io.to(groupId.toString()).emit('receive_messages', response);
+                const socket = this;
+                socket.emit('receive_messages', response);
             } catch (e) {
                 // Send error back to the user
                 io.emit('error_message', 'Failed to save message');
@@ -85,6 +87,29 @@ export default io => {
             throw new Error('No group id found.');
         }
     }
+
+    const markGroupMessagesReadByUser = async function (payload, callback) {
+        const { groupId } = payload;
+        const socket = this;
+        const { authUser } = socket;
+
+        try {
+            const results = await addUserToGroupMessagesReadBy(groupId, authUser.userId);
+            const response = {
+                ...results,
+                status: MessageStatus.SENT
+            };
+            callback(response);
+            // Broadcast the message to all connected clients
+            io.to(groupId.toString()).emit('messages_read', response);
+        } catch (e) {
+            io.emit('error_message', 'Failed to mark messages as read');
+            callback({
+                status: MessageStatus.FAILED
+            });
+        }
+
+    }
     
     const disconnect = function () {
         const socket = this;
@@ -94,6 +119,7 @@ export default io => {
     return {
         sendMessage,
         getGroupMessages,
+        markGroupMessagesReadByUser,
         disconnect,
     }
 };

@@ -316,7 +316,17 @@ export const setMessageData = message => ({
     payload: message
 });
 
-export const receiveMessage = (message) => ({
+export const receiveMessage = (message, activeUserId) => ({
     type: ActionTypes.RECEIVE_MESSAGE,
-    payload: message
+    payload: {message, activeUserId}
+});
+
+export const readGroupMessages = groupId => ({
+    type: ActionTypes.READ_GROUP_MESSAGES,
+    payload: {groupId}
+});
+
+export const updateGroupReads = (groupId, modifiedCount) => ({
+    type: ActionTypes.UPDATE_GROUP_READS,
+    payload: {groupId, modifiedCount}
 });

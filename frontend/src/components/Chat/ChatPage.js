@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 import ChooseNewChat from "./ChooseNewChat";
 import { Button } from "../../structure/Form/Form";
 import { clearChatData } from "../../redux/actions/actions";
+import { selectGroupList } from "../../redux/reducers/chatReducer";
 
 
 const ChatPage = props => {
@@ -14,7 +15,7 @@ const ChatPage = props => {
     const [receiverId, setReceiverId] = useState(null);
     const [usersView, setUsersView] = useState(false);
     const { id } = useParams();
-    const { auth } = props;
+    const { auth, groups } = props;
 
     const navigate = useNavigate();
 
@@ -39,6 +40,9 @@ const ChatPage = props => {
         navigate('/');
     }
 
+    const chatFromGroups = chat && groups && groups.find(g => g.id === chat.id);
+    const selectedChat = chatFromGroups || chat;
+
     return (
         <React.Fragment>
             <div className={ClassNames.CHAT_PAGE}>
@@ -47,7 +51,7 @@ const ChatPage = props => {
                         <Button onClick={toggleUsersView}>New Chat</Button>
                     </div>
                 </ChatGroups>
-                <Chat key={`chat-${chat ? chat.id : receiverId}`} chat={chat} currentUserId={parseInt(id)} receiverId={receiverId}/>
+                <Chat key={`chat-${selectedChat ? selectedChat.id : receiverId}`} chat={selectedChat} currentUserId={parseInt(id)} receiverId={receiverId}/>
                 {usersView && <ChooseNewChat handleChooseNewUser={handleChooseNewUser}/>}
             </div>    
         </React.Fragment>
@@ -56,6 +60,7 @@ const ChatPage = props => {
 
 const mapStateToProps = state => ({
     auth: state && state.auth,
+    groups: selectGroupList(state),
 });
 
 const mapDispatchToProps = dispatch => ({

@@ -17,7 +17,19 @@ const MessageSchema = new mongoose.Schema({
   timestamp: {
     type: Date,
     default: Date.now
+  },
+  readBy: [{
+    type: Number, // Array of user IDs who have read the message
+    default: []
+  }]
+});
+
+// Pre-save hook to add senderId to readBy array
+MessageSchema.pre('save', function(next) {
+  if (!this.readBy.includes(this.senderId)) {
+    this.readBy.push(this.senderId);
   }
+  next();
 });
 
 export default mongoose.model('Message', MessageSchema);

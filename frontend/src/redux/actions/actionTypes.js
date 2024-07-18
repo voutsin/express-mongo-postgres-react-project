@@ -66,6 +66,8 @@ const ActionTypes = {
     SEND_MESSAGE: 'sendMessage',
     SET_MESSAGE_DATA: 'setMessageData',
     RECEIVE_MESSAGE: 'receiveMessage',
+    READ_GROUP_MESSAGES: 'READ_GROUP_MESSAGES',
+    UPDATE_GROUP_READS: 'UPDATE_GROUP_READS',
 }
 
 export default ActionTypes;

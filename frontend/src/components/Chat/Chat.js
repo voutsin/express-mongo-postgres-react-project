@@ -4,7 +4,7 @@ import { Button, Form } from "../../structure/Form/Form.js";
 import { MdSend } from "react-icons/md";
 import { removeEmptyFields } from "../../common/utils";
 import { connect } from "react-redux";
-import { clearData, getGroupMessages, sendMessage } from "../../redux/actions/actions";
+import { clearData, getGroupMessages, readGroupMessages, sendMessage } from "../../redux/actions/actions";
 import { selectMessageList } from "../../redux/reducers/chatReducer";
 import { selectApiState } from "../../redux/reducers/apiReducer.js";
 import { ClassNames } from "../../styles/classes.js";
@@ -14,7 +14,17 @@ const Chat = props => {
     const [inputs, setInputs] = useState({});
     const [messages, setMessages] = useState(null);
 
-    const { currentUserId, chat, receiverId, messagesList, getGroupMessages, sendMessage, clearData, error } = props;
+    const { 
+        currentUserId, 
+        chat, 
+        receiverId, 
+        messagesList, 
+        getGroupMessages, 
+        sendMessage, 
+        clearData, 
+        error, 
+        readChatMessages 
+    } = props;
 
     useEffect(() => {
         // load all messages
@@ -31,7 +41,7 @@ const Chat = props => {
         if (error) {
             clearData(['error']);
         }
-    }, [messagesList, messages, error, clearData]);
+    }, [messagesList, messages, error, clearData, chat]);
 
     const handleChange = (name, value) => {
         setInputs({
@@ -51,6 +61,12 @@ const Chat = props => {
 
     const headerInfo = {
         users: chat && chat.members.filter(u => u.id !== currentUserId),
+    }
+
+    const handleFocus = () => {
+        if (chat.hasNewMessage && chat.hasNewMessage > 0) {
+            readChatMessages(chat.id);
+        }
     }
 
     return (
@@ -82,7 +98,7 @@ const Chat = props => {
                             }
                         </div>
                         <div className={ClassNames.MESSAGES}>
-                            {messagesList && messagesList.map(message => {
+                            {messagesList && messagesList.map(message => {                                
                                 const user = chat.members.find(u => u.id === message.senderId);
                                 return message ? (
                                     <div key={`message-${message.id}`} className={`${ClassNames.MESSAGE}${user.id === currentUserId ? ' current' : ''}`}>
@@ -107,6 +123,7 @@ const Chat = props => {
                                     type="text" 
                                     name="content"
                                     label='Message'
+                                    onFocus={handleFocus}
                                 />
                             </Form>
                             <Button extraClass={'send-btn'} onClick={handleSend} disabled={!inputs.content || inputs.content === ''}>
@@ -128,6 +145,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     getGroupMessages: (groupId, page, pageSize) => dispatch(getGroupMessages(groupId, page, pageSize)),
     sendMessage: (content, groupId, receiverId) => dispatch(sendMessage(content, groupId, receiverId)),
+    readChatMessages: groupId => dispatch(readGroupMessages(groupId)),
     clearData: (values) => dispatch(clearData(values)),
 })
 export default connect(mapStateToProps, mapDispatchToProps)(Chat);

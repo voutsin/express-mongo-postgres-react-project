@@ -8,11 +8,13 @@ import { buildUrl } from '../../common/utils';
 
 const UserImage = props => {
     const navigate = useNavigate();
-    const { picUrl, username, className, id } = props;
+    const { picUrl, username, className, id, link } = props;
 
     const handleClick = e => {
         e.preventDefault();
-        navigate(buildUrl(`${ROUTES.PROFILE.path}`, { id: id }));
+        if (!link) {
+            navigate(buildUrl(`${ROUTES.PROFILE.path}`, { id: id }));
+        }
     }
 
     const StyledDiv = styled.div`
