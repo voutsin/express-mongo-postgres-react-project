@@ -55,6 +55,7 @@ const ActionTypes = {
     FIND_USER_INFO: 'findUserInfo',
     FIND_USER_MEDIA: 'findUserMedia',
     FIND_USER_POST_LIST: 'findUserPosts',
+    GET_SINGLE_POST: 'GET_SINGLE_POST',
     SET_POST_LIST_DATA: 'setPostsListData',
     // chat
     CLEAR_CHAT_DATA: 'CLEAR_CHAT_DATA',
@@ -70,6 +71,10 @@ const ActionTypes = {
     UPDATE_GROUP_READS: 'UPDATE_GROUP_READS',
     GET_ACTIVE_CHAT_USERS: 'GET_ACTIVE_CHAT_USERS',
     SET_ONLINE_FRIENDS: 'SET_ONLINE_FRIENDS',
+    // notifications
+    GET_NOTIFICATIONS: 'GET_NOTIFICATIONS',
+    SET_NOTIFICATIONS_DATA: 'SET_NOTIFICATIONS_DATA',
+    CLEAR_NOTIFICATION_DATA: 'CLEAR_NOTIFICATION_DATA',
 }
 
 export default ActionTypes;

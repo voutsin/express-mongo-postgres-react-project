@@ -24,6 +24,7 @@ import { createServer } from 'http';
 import { socketAuthenticateMiddleware } from './socket/utils.js';
 import socketChatHandler from './socket/socketChatHandler.js';
 import { findAllUserMessageGroups } from './db/repositories/MessageGroupRepository.js';
+import socketNotificationHandler from './socket/socketNotificationHandler.js';
 
 dotenv.config();
 
@@ -116,8 +117,11 @@ const io = new Server(server, {
 
 io.use(socketAuthenticateMiddleware);
 
-const { sendMessage, getGroupMessages, disconnect, markGroupMessagesReadByUser, getActiveFriends } = socketChatHandler(io);
+const { sendMessage, getGroupMessages, markGroupMessagesReadByUser, getActiveFriends } = socketChatHandler(io);
+const { getUserNotifications } = socketNotificationHandler(io);
+
 const activeUsers = new Map();
+
 const onConnection = async (socket) => {
   console.log('New client connected:', socket.authUser);
 
@@ -140,7 +144,17 @@ const onConnection = async (socket) => {
   socket.on("get_messages", getGroupMessages);
   socket.on("read_messages", markGroupMessagesReadByUser);
   socket.on("get_online_friends", async (payload, callback) => await getActiveFriends(socket, callback, activeUsers));
-  socket.on('disconnect', () => disconnect(socket.id, activeUsers));
+
+  socket.on("get_notifications", getUserNotifications)
+  socket.on('disconnect', () => {
+      try {
+          // socket.disconnect(true);
+          // Remove the user from the active users map
+          activeUsers.delete(socket.id);
+      } catch (e) {
+          console.log('SOCKET ERROR: ', e);
+      }
+  });
 }
 io.on("connection", onConnection);
 

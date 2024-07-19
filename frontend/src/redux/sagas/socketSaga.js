@@ -1,10 +1,11 @@
 import { call, fork, put, select, take, takeEvery } from "redux-saga/effects";
-import { receiveMessage, setGroupMessagesData, setMessageGroupData, setOnlineFriendsList, updateGroupReads } from "../actions/actions";
+import { receiveMessage, setGroupMessagesData, setMessageGroupData, setNotificationsData, setOnlineFriendsList, updateGroupReads } from "../actions/actions";
 import { socket } from "../../config/socket";
 import ActionTypes from "../actions/actionTypes";
 import { selectAuthState } from "../reducers/authReducer";
 import { getMessagesHandler, getOnlineUsersHandler, readGroupMessagesHandler, sendMessageHandler } from "./handlers/chatHandler";
 import { eventChannel } from "redux-saga";
+import { getNotificationsHandler } from "./handlers/notificationHandler";
 
 const chatSocket = socket();
 
@@ -18,6 +19,7 @@ export function createSocketChannel(socket) {
         const onlineFriendsHandler = onlineFriends => emit({onlineFriends});
 
         // notifications
+        const notificationsDataHandler = (notifications) => emit({notifications});
 
         // general
         const errorHandler = (error) => emit({error});
@@ -30,6 +32,7 @@ export function createSocketChannel(socket) {
         socket.on('online_friends_list', onlineFriendsHandler);
 
         // notifications
+        socket.on('receive_notifications', notificationsDataHandler);
 
         // general
         socket.on('error_message', errorHandler);
@@ -43,6 +46,7 @@ export function createSocketChannel(socket) {
             socket.off('online_friends_list', onlineFriendsHandler);
             
             // notifications
+            socket.off('receive_notifications', notificationsDataHandler);
 
             // general
             socket.off('error_message', errorHandler);
@@ -54,11 +58,17 @@ function* socketDataHandler() {
     const channel = yield call(createSocketChannel, chatSocket);
     while (true) {
         const { 
+            // chat
             message, 
             messages, 
             messagesAndGroup, 
             readMessages,
             onlineFriends,
+
+            // notifications
+            notifications,
+
+            // general
             error 
         } = yield take(channel);
         
@@ -79,6 +89,8 @@ function* socketDataHandler() {
             const { activeFriends } = onlineFriends;
             const auth = yield select(selectAuthState)
             yield put(setOnlineFriendsList([...activeFriends, auth.id]));
+        } else if (notifications) {
+            yield put(setNotificationsData(notifications));
         }
     }
 }
@@ -89,6 +101,10 @@ export function* watchSocket() {
     yield takeEvery(ActionTypes.GET_GROUP_MESSAGES, (action) => getMessagesHandler(action, chatSocket));
     yield takeEvery(ActionTypes.READ_GROUP_MESSAGES, (action) => readGroupMessagesHandler(action, chatSocket));
     yield takeEvery(ActionTypes.GET_ACTIVE_CHAT_USERS, (action) => getOnlineUsersHandler(action, chatSocket));
+
     // notifications
+    yield takeEvery(ActionTypes.GET_NOTIFICATIONS, (action) => getNotificationsHandler(action, chatSocket));
+
+    // general
     yield fork(socketDataHandler);
 }

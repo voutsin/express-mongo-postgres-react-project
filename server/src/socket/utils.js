@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, SECRET_KEY } from "../common/utils.js";
 import AppError from "../model/AppError.js";
+import { MessageStatus } from '../common/enums.js';
 
 export const socketAuthenticateMiddleware = (socket, next) => {
     // only triggered when the client tries to reach the main namespace
@@ -40,3 +41,8 @@ export const socketAuthenticateMiddleware = (socket, next) => {
       });
     }
 };
+
+export const socketErrorCallback = e => ({
+    status: MessageStatus.FAILED,
+    message: {errors: [e]}
+});

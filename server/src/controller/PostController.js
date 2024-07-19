@@ -24,7 +24,10 @@ const findPostById = asyncHandler(async (req, res, next) => {
     try {
         const params = Object.values(req.params);
         const result = await postgresQuery(findPostByIdSQL, params);
-        res.json( await Promise.all(result.rows.map(async row => await detailedPostToResDto(row))));
+        if (result && result.rows.length > 0) {
+          const post = await detailedPostToResDto(result.rows[0]);
+          res.json(post);
+        }
     } catch (e) {
         next(new AppError('Internal Server Error: ' + e, 500));
     }

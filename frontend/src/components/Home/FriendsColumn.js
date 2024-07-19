@@ -43,7 +43,7 @@ const FriendsColumn = props => {
                         {friends && friends.map(friend => {
                             const info = friend.friend;
                             return (
-                                <UserChatView userInfo={info} onClick={handleUserClick} />
+                                <UserChatView key={`friend-${info.id}`} userInfo={info} onClick={handleUserClick} />
                             )
                         })}
                     </div>

@@ -272,6 +272,11 @@ export const getUserPosts = (userId, page, pageSize) => ({
     payload: {id: userId, page, pageSize}
 });
 
+export const getSinglePostData= postId => ({
+    type: ActionTypes.GET_SINGLE_POST,
+    payload: postId
+});
+
 export const setPostListData = posts => ({
     type: ActionTypes.SET_POST_LIST_DATA,
     payload: posts
@@ -338,4 +343,18 @@ export const getActiveChatUsers = () => ({
 export const setOnlineFriendsList = onlineFriendsList => ({
     type: ActionTypes.SET_ONLINE_FRIENDS,
     payload: onlineFriendsList
-})
+});
+
+export const getNotifications = (page, pageSize) => ({
+    type: ActionTypes.GET_NOTIFICATIONS,
+    payload: {page, pageSize}
+});
+
+export const setNotificationsData = notificationData => ({
+    type: ActionTypes.SET_NOTIFICATIONS_DATA,
+    payload: notificationData
+});
+
+export const clearNotificationData = () => ({
+    type: ActionTypes.CLEAR_NOTIFICATION_DATA,
+});

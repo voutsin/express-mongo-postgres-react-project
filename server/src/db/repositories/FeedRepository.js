@@ -328,3 +328,84 @@ export const deleteCommentReactionFeed = async commentId => {
         throw new Error(e);
     }
 }
+
+export const findFeedsByPostIdGroupByPost = async (postIds, userId, pageSize, skip) => {
+    try {
+        const matchStage = {
+            $match: {
+              "content.postId": { $in: postIds },
+              userId: { $ne: userId },
+              $or: [
+                { 'content.reactionId': { $ne: null } },
+                { 'content.commentId': { $ne: null } }
+              ]
+            }
+        };
+        
+        const countPipeline = [
+            matchStage,
+            {
+              $group: {
+                _id: "$content.postId"
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                totalGroups: { $sum: 1 }
+              }
+            }
+        ];
+
+        const feedPipeline = [
+            matchStage,
+            {
+              $sort: {
+                timestamp: -1
+              }
+            },
+            {
+              $group: {
+                _id: "$content.postId",
+                feeds: { 
+                    $push: {
+                      userId: "$userId",
+                      type: "$type",
+                      content: "$content",
+                      timestamp: "$timestamp"
+                    } 
+                },
+                mostRecentFeedTimestamp: { $first: "$timestamp" }
+              }
+            },
+            {
+              $sort: {
+                mostRecentFeedTimestamp: -1
+              }
+            },
+            {
+              $skip: skip
+            },
+            {
+              $limit: pageSize
+            },
+            {
+              $project: {
+                _id: 0,
+                postId: "$_id",
+                feeds: 1
+              }
+            }
+        ];
+
+        const feeds = await Feed.aggregate(feedPipeline);
+        const countResult = await Feed.aggregate(countPipeline);
+        return {
+            totalRecords: (countResult.length > 0) ? countResult[0].totalGroups : 0,
+            feeds,
+        }
+    } catch (e) {
+        console.log("Find Feeds error: ", e);
+        throw new Error(e);
+    }
+}

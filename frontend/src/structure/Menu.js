@@ -9,9 +9,11 @@ import NexGenLogoSVG from '../styles/images/logo';
 import { buildUrl, removeEmptyFields } from '../common/utils';
 import TextInput from './Form/TextInput';
 import { selectUnreadCount } from '../redux/reducers/chatReducer';
+import Notifications from '../components/Notifications/Notifications';
 
 const Menu = props => {
     const [inputs, setInputs] = useState({});
+    const [openNotifications, setNotificationModal] = useState(false);
     const { auth, unreadCount } = props;
 
     const loginOk = auth && auth.authSuccess;
@@ -21,9 +23,7 @@ const Menu = props => {
         route && navigate(buildUrl(route.path, { id: auth.id }));
     }
 
-    const handleOpenNotifications = () => {
-
-    }
+    const toggleNotifications = () => setNotificationModal(!openNotifications)
 
     const handleSearch = route => {
         const finalBody = removeEmptyFields(inputs);
@@ -66,9 +66,8 @@ const Menu = props => {
                     }
                     {loginOk &&
                         <div className={`${ClassNames.NAV_ITEM}`}>
-                            <button id="notifications" onClick={handleOpenNotifications}><MdNotifications /></button>
-                            <div className={ClassNames.NOT_WRAPPER}>
-                            </div>
+                            <button id="notifications" onClick={toggleNotifications}><MdNotifications /></button>
+                            {openNotifications ? <Notifications/> : null}
                         </div>
                     }
                     {loginOk && 

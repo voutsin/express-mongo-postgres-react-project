@@ -127,3 +127,21 @@ export function* handleGetUserPosts(action) {
         yield put(setError(error));
     }
 }
+
+export function* handleGetSinglePost(action) {
+    try {
+        const payload = {
+            routeObj: POSTS_ROUTES.FIND_SINGLE_POST_BY_ID,
+            data: { id: action.payload },
+            pathVar: true
+        };
+        const response = yield call(request, payload);
+        const { data } = response;
+
+        if (data) {
+            yield put(setPostListData([data]));
+        }
+    } catch (error) {
+        yield put(setError(error));
+    }
+}

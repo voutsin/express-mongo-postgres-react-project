@@ -33,6 +33,8 @@ export const ClassNames = {
     NAV_ACCOUNT_PIC: 'nav-account-pic-menu',
     NAV_SEARCH: 'nav-search',
     NOT_WRAPPER: 'menu-notification-wrapper',
+    NOTIFICATIONS_LIST: 'notification-list',
+    NOTIFICATION: 'notification-item',
     // login
     LOGIN_PAGE: 'login-page',
     LOGIN_WRAPPER: 'login-wrapper',
@@ -91,6 +93,8 @@ export const ClassNames = {
     SEND_TO_CHAT: 'send-to-chat',
     ACTION_BTNS: 'share-action-btns',
     POSTS_LIST: 'posts-list',
+    POST_ITEM: "post-item",
+    SINGLE_POST_WRAPPER: 'single-post-wrapper',
     // add new
     ADD_NEW_POST_ACTION: 'add-new-post-action',
     ADD_NEW_POST_WRAPPER: 'add-new-post-wrapper',

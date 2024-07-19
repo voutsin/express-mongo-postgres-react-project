@@ -5,7 +5,7 @@ import { handleAcceptFriendRequest, handleBlockUser, handleDeleteFriendship, han
 import { handleGetUserFeed } from './handlers/feedHandler';
 import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
 import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleGetCommentReplies, handleGetPostComments, handleUpdateComment } from './handlers/commentHandler';
-import { handleAddNewPost, handleDeletePost, handleGetUserPosts, handleUpdatePost } from './handlers/postHandler';
+import { handleAddNewPost, handleDeletePost, handleGetSinglePost, handleGetUserPosts, handleUpdatePost } from './handlers/postHandler';
 import { handleGetUserMessageGroups } from './handlers/chatHandler';
 import { watchSocket } from './socketSaga';
 
@@ -29,6 +29,7 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.DELETE_POST, handleDeletePost);
     yield takeLatest(ActionTypes.UPDATE_POST, handleUpdatePost);
     yield takeLatest(ActionTypes.FIND_USER_POST_LIST, handleGetUserPosts);
+    yield takeLatest(ActionTypes.GET_SINGLE_POST, handleGetSinglePost);
     // friends
     yield takeLatest(ActionTypes.FIND_USER_FRIENDS, handleFindUserFriends);
     yield takeLatest(ActionTypes.FIND_DETAILED_USER_FRIENDS, handleFindDetailedUserFriends);

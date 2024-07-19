@@ -3,6 +3,7 @@ import { postgresQuery } from "../db/postgres.js";
 import { findAllActiveFriendshipsByUserId } from "../db/queries/friendsQueries.js";
 import { addUserToGroupMessagesReadBy, findAllGroupMessages, insertNewMessage, insertNewMessageAndGroup } from "../db/repositories/MessageRepository.js";
 import { messageAndGroupResDto, messageToResDto } from "../mapper/messageMapper.js";
+import { socketErrorCallback } from "./utils.js";
 
 export default io => {
     
@@ -52,9 +53,7 @@ export default io => {
             console.log('SOCKET ERROR: ', e);
             // Send error back to the user
             io.emit('error_message', 'Failed to save message');
-            callback({
-                status: MessageStatus.FAILED
-            });
+            callback(socketErrorCallback(e));
         }
     }
 
@@ -78,15 +77,15 @@ export default io => {
                 const socket = this;
                 socket.emit('receive_messages', response);
             } catch (e) {
+                console.log('SOCKET ERROR: ', e);
                 // Send error back to the user
-                io.emit('error_message', 'Failed to save message');
-                callback({
-                    status: MessageStatus.FAILED,
-                    message: e
-                });
-            }
+                io.emit('error_message', 'Failed to get messages');
+                callback(socketErrorCallback(e));
+                }
         } else {
-            throw new Error('No group id found.');
+            // Send error back to the user
+            io.emit('error_message', 'Failed to save message');
+            callback(socketErrorCallback('No group id found.'));
         }
     }
 
@@ -106,10 +105,9 @@ export default io => {
             io.to(groupId.toString()).emit('messages_read', response);
         } catch (e) {
             console.log('SOCKET ERROR: ', e);
-            io.emit('error_message', 'Failed to mark messages as read');
-            callback({
-                status: MessageStatus.FAILED
-            });
+            // Send error back to the user
+            io.emit('error_message', 'Failed to read messages');
+            callback(socketErrorCallback(e));
         }
 
     }
@@ -141,20 +139,9 @@ export default io => {
             socket.emit('online_friends_list', response);
         } catch (e) {
             console.log('SOCKET ERROR: ', e);
-            io.emit('error_message', 'Failed to mark messages as read');
-            callback({
-                status: MessageStatus.FAILED
-            });
-        }
-    }
-    
-    const disconnect = function (socketId, activeUsers) {
-        try {
-            // socket.disconnect(true);
-            // Remove the user from the active users map
-            activeUsers.delete(socketId);
-        } catch (e) {
-            console.log('SOCKET ERROR: ', e);
+            // Send error back to the user
+            io.emit('error_message', 'Failed to get active friends');
+            callback(socketErrorCallback(e));
         }
     }
 
@@ -163,6 +150,5 @@ export default io => {
         getGroupMessages,
         markGroupMessagesReadByUser,
         getActiveFriends,
-        disconnect,
     }
 };

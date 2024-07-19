@@ -2,7 +2,7 @@ import Login from "../components/Auth/Login"
 import Register from "../components/Auth/Register";
 import ChatPage from "../components/Chat/ChatPage";
 import Home from "../components/Home/Home";
-import Post from "../components/Post/Post";
+import PostContainer from "../components/Post/PostContainer";
 import UserProfile from "../components/Profile/UserProfile";
 import SearchPage from "../components/Search/SearchPage";
 
@@ -35,6 +35,6 @@ export const ROUTES = {
     },
     POST: {
         path: '/post/:id',
-        component: Post
+        component: PostContainer
     },
 }

@@ -29,8 +29,7 @@ export function* getMessagesHandler(action, socket) {
     } catch (error) {
         // handle error
         console.error(error);
-        //error.response.data.errors = []
-        const err = {response: {data: {errors: [error]}}}
+        const err = {response: {data: error}}
         yield put(setError(err));
     }
 }
@@ -55,8 +54,7 @@ export function* readGroupMessagesHandler(action, socket) {
     } catch (error) {
         // handle error
         console.error(error);
-        //error.response.data.errors = []
-        const err = {response: {data: {errors: [error]}}}
+        const err = {response: {data: error}}
         yield put(setError(err));
     }
 }
@@ -82,8 +80,7 @@ export function* getOnlineUsersHandler(action, socket) {
     } catch (error) {
         // handle error
         console.error(error);
-        //error.response.data.errors = []
-        const err = {response: {data: {errors: [error]}}}
+        const err = {response: {data: error}}
         yield put(setError(err));
     }
 }
@@ -109,8 +106,7 @@ export function* sendMessageHandler(action, socket) {
     } catch (error) {
         // handle error
         console.error(error);
-        //error.response.data.errors = []
-        const err = {response: {data: {errors: [error]}}}
+        const err = {response: {data: error}}
         yield put(setError(err));
     }
 }
