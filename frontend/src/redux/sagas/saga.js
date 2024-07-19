@@ -6,8 +6,8 @@ import { handleGetUserFeed } from './handlers/feedHandler';
 import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
 import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleGetCommentReplies, handleGetPostComments, handleUpdateComment } from './handlers/commentHandler';
 import { handleAddNewPost, handleDeletePost, handleGetUserPosts, handleUpdatePost } from './handlers/postHandler';
-import { watchChat } from './chatSaga';
 import { handleGetUserMessageGroups } from './handlers/chatHandler';
+import { watchSocket } from './socketSaga';
 
 /**
  * when the action is triggered the watcher will execute the handle function
@@ -53,6 +53,6 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.DELETE_REACTION, handleDeleteReaction);
     yield takeLatest(ActionTypes.GET_COMMENT_REACTIONS, handleGetCommentReaction);
     // chat
-    yield fork(watchChat);
+    yield fork(watchSocket);
     yield takeLatest(ActionTypes.GET_MESSAGE_GROUPS, handleGetUserMessageGroups);
 }
