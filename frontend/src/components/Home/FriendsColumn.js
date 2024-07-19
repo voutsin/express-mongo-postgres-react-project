@@ -26,11 +26,12 @@ const FriendsColumn = props => {
     const friends = getDeepProp(props, 'findUserFriendsResponse.data.friends');
 
     const handleUserClick = userInfo => {
-        // TODO: add chat window
+        const state = { externalUser: userInfo };
         if (postLink) {
             // add link to chat message
+            state.externalMessage = postLink
         }
-        navigate(buildUrl(ROUTES.CHAT.path, {id: props.auth.id}), { state: { externalUser: userInfo } });
+        navigate(buildUrl(ROUTES.CHAT.path, {id: props.auth.id}), { state });
     }
 
     return (

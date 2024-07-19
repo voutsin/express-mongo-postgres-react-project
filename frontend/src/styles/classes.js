@@ -126,4 +126,5 @@ export const ClassNames = {
     MESSAGES: 'messages',
     MESSAGE: 'message',
     UNREAD_MESSAGES: 'unread-messages',
+    ONLINE_STATUS: 'online-status',
 }

@@ -6,8 +6,8 @@ import { ClassNames } from "../../styles/classes";
 import { connect } from "react-redux";
 import ChooseNewChat from "./ChooseNewChat";
 import { Button } from "../../structure/Form/Form";
-import { clearChatData } from "../../redux/actions/actions";
-import { selectGroupList } from "../../redux/reducers/chatReducer";
+import { clearChatData, getActiveChatUsers } from "../../redux/actions/actions";
+import { CHAT_STATE, selectGroupList } from "../../redux/reducers/chatReducer";
 import { arraysMatch } from "../../common/utils";
 
 
@@ -18,9 +18,14 @@ const ChatPage = props => {
     const [usersView, setUsersView] = useState(false);
     const { id } = useParams();
     
-    const { auth, groupsList } = props;
+    const { auth, groupsList, getOnlineUsers } = props;
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        getOnlineUsers();
+        setInterval(getOnlineUsers, 10000);
+    }, [])
 
     useEffect(() => {
         if (groupsList && chat && JSON.stringify(groupsList) !== JSON.stringify(groups)) {
@@ -36,7 +41,7 @@ const ChatPage = props => {
     const handleSelectChat = chat => {
         setChat(chat);
         setReceiverId(null);
-        props.clearData(['MESSAGES_LIST']);
+        props.clearData([CHAT_STATE.MESSAGES_LIST]);
     }
 
     const handleChooseNewUser = user => {
@@ -45,7 +50,7 @@ const ChatPage = props => {
             members: [auth, user]
         });
         setReceiverId(user.id);
-        props.clearData(['MESSAGES_LIST']);
+        props.clearData([CHAT_STATE.MESSAGES_LIST]);
     }
 
     const toggleUsersView = () => setUsersView(!usersView);
@@ -85,6 +90,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     clearData: values => dispatch(clearChatData(values)),
+    getOnlineUsers: () => dispatch(getActiveChatUsers()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChatPage);

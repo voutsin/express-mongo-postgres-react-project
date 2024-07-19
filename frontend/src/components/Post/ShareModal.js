@@ -11,16 +11,26 @@ const ShareModal = props => {
     const sendToChatRef = useRef(null);
     const [copied, setCopied] = useState(null);
 
+    const { post } = props;
+
+    const createPostLink = post => {
+        return buildUrl(`${BASE_URL}${ROUTES.POST.path}`, { id: post.id })
+    }
+
+    useEffect(() => {
+        if (post) {
+            const link = createPostLink(post);
+            navigator.clipboard.writeText(link);
+            setCopied(link);
+        }
+    }, []);
+
     useEffect(() => {
         const divHeight = sendToChatRef.current.offsetHeight;
         if (divHeight > 366) {
             sendToChatRef.current.style.overflowY = 'scroll';
         }
     }, [sendToChatRef]);
-
-    const createPostLink = post => {
-        return buildUrl(`${BASE_URL}${ROUTES.POST.path}`, { id: post.id })
-    }
 
     const handleCopyLink = () => {
         const link = createPostLink(props.post);

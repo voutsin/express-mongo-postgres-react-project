@@ -1,4 +1,6 @@
 import { MessageStatus } from "../common/enums.js";
+import { postgresQuery } from "../db/postgres.js";
+import { findAllActiveFriendshipsByUserId } from "../db/queries/friendsQueries.js";
 import { addUserToGroupMessagesReadBy, findAllGroupMessages, insertNewMessage, insertNewMessageAndGroup } from "../db/repositories/MessageRepository.js";
 import { messageAndGroupResDto, messageToResDto } from "../mapper/messageMapper.js";
 
@@ -47,7 +49,7 @@ export default io => {
                 status: MessageStatus.SENT
             });
         } catch (error) {
-            console.log("ERROR: ", error)
+            console.log('SOCKET ERROR: ', e);
             // Send error back to the user
             io.emit('error_message', 'Failed to save message');
             callback({
@@ -103,6 +105,7 @@ export default io => {
             // Broadcast the message to all connected clients
             io.to(groupId.toString()).emit('messages_read', response);
         } catch (e) {
+            console.log('SOCKET ERROR: ', e);
             io.emit('error_message', 'Failed to mark messages as read');
             callback({
                 status: MessageStatus.FAILED
@@ -110,16 +113,56 @@ export default io => {
         }
 
     }
+
+    const getActiveFriends = async function (socket, callback, activeUsers) {
+        const { authUser } = socket;
+        const activeFriends = [];
+
+        try {
+            const userFriendsRes = await postgresQuery(findAllActiveFriendshipsByUserId, [authUser.userId]);
+
+            if (userFriendsRes) {
+                const friendsIds = userFriendsRes.rows.map(f => f.friend_id);
+                activeUsers.forEach((value, key, map) => {
+                    const userId = value.userId;
+                    if (friendsIds.includes(userId)) {
+                        activeFriends.push(userId);
+                    }
+                });
+
+            }
+
+            const response = {
+                activeFriends,
+                status: MessageStatus.SENT
+            };
+            callback(response);
+            // Broadcast the message to all connected clients
+            socket.emit('online_friends_list', response);
+        } catch (e) {
+            console.log('SOCKET ERROR: ', e);
+            io.emit('error_message', 'Failed to mark messages as read');
+            callback({
+                status: MessageStatus.FAILED
+            });
+        }
+    }
     
-    const disconnect = function () {
-        const socket = this;
-        socket.disconnect(true);
+    const disconnect = function (socketId, activeUsers) {
+        try {
+            // socket.disconnect(true);
+            // Remove the user from the active users map
+            activeUsers.delete(socketId);
+        } catch (e) {
+            console.log('SOCKET ERROR: ', e);
+        }
     }
 
     return {
         sendMessage,
         getGroupMessages,
         markGroupMessagesReadByUser,
+        getActiveFriends,
         disconnect,
     }
 };

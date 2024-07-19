@@ -116,13 +116,15 @@ const io = new Server(server, {
 
 io.use(socketAuthenticateMiddleware);
 
-const { sendMessage, getGroupMessages, disconnect, markGroupMessagesReadByUser } = socketChatHandler(io);
-
+const { sendMessage, getGroupMessages, disconnect, markGroupMessagesReadByUser, getActiveFriends } = socketChatHandler(io);
+const activeUsers = new Map();
 const onConnection = async (socket) => {
   console.log('New client connected:', socket.authUser);
 
   if (socket.authUser) {
     try {
+        // When a user connects, add them to the active users map
+        activeUsers.set(socket.id, { userId: socket.authUser.userId, socketId: socket.id });
         // Get the user's groups
         const userGroups = await findAllUserMessageGroups(socket.authUser.userId, true);
         // Join each group room
@@ -137,7 +139,8 @@ const onConnection = async (socket) => {
   socket.on("send_message", sendMessage);
   socket.on("get_messages", getGroupMessages);
   socket.on("read_messages", markGroupMessagesReadByUser);
-  socket.on('disconnect', disconnect);
+  socket.on("get_online_friends", async (payload, callback) => await getActiveFriends(socket, callback, activeUsers));
+  socket.on('disconnect', () => disconnect(socket.id, activeUsers));
 }
 io.on("connection", onConnection);
 

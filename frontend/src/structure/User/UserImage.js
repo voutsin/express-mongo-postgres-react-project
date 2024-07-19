@@ -5,10 +5,11 @@ import { BASE_URL } from '../../config/apiRoutes';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import { buildUrl } from '../../common/utils';
+import { ClassNames } from '../../styles/classes';
 
 const UserImage = props => {
     const navigate = useNavigate();
-    const { picUrl, username, className, id, blockLink } = props;
+    const { picUrl, username, className, id, blockLink, onlineStatus, showStatus } = props;
 
     const handleClick = e => {
         e.preventDefault();
@@ -19,6 +20,7 @@ const UserImage = props => {
 
     const StyledDiv = styled.div`
         cursor: pointer;
+        position: relative;
     `;
 
     return (
@@ -31,6 +33,9 @@ const UserImage = props => {
                     /> 
                     : <MdFace /> 
                 }
+                {showStatus ? <div className={ClassNames.ONLINE_STATUS}>
+                    <span className={`circle ${onlineStatus ? 'online' : ''}`}></span>
+                </div> : null}
             </StyledDiv>
         </React.Fragment>
     )

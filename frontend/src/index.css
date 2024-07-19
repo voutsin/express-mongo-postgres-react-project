@@ -382,11 +382,16 @@ input:-internal-autofill-selected, textarea:-internal-autofill-selected {color:v
 .chatroom .messages::-webkit-scrollbar {display: none;}
 .chatroom .messages {-ms-overflow-style: none;scrollbar-width: none;}
 .chat-header {padding: 20px;height: 60px;position: absolute;top: 0;left: 0;right: 0;border-bottom: 1px solid var(--light-gray-color);box-shadow: 0 4px 10px -4px #8080806b;background: var(--body-color-light);}
+.chat-header .info {display: flex;flex-direction: column;align-items: flex-start;justify-content: center;}
 .chat-header .user {display: flex;flex-direction: row;justify-content: flex-start;align-items: center;}
 .chat-header .user .thumbnail-img {width: 60px;height: 60px;font-size: 50px;}
 .chat-header .user .thumbnail-img img {width: 60px;}
-.chat-header .user span {font-size: 18px;font-weight: 600;}
+.chat-header .user .name {font-size: 18px;font-weight: 600;}
+.chat-header .user .status {font-size: 12px;font-weight: 500;}
 .chat-page .friends-view {width: 350px;height: calc(100% - 40px);border-left: 1px solid var(--light-gray-color);}
 .chat-page .friends-view h4 {padding-left: 10px;width: max-content;}
 .unread-messages {z-index: 10;position: absolute;top: 0;left: 0;font-size: 10px;width: 15px;height: 15px;background: var(--error-color);border-radius: 50%;display: flex;justify-content: center;align-items: center;color: var(--body-color-light);}
 .unread-messages span {font-size: 10px;}
+.online-status {width: 10px;height: 10px;display: block;border-radius: 50%;position: absolute;bottom: 0;right: 0;border: 1px solid var(--text-contrast-color);overflow: hidden;}
+.online-status span {display: block;width: 100%;height: 100%;background: var(--light-gray-color);}
+.online-status .online {background: var(--success-color);}

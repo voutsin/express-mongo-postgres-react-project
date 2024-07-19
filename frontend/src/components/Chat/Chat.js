@@ -9,10 +9,14 @@ import { selectMessageList } from "../../redux/reducers/chatReducer";
 import { selectApiState } from "../../redux/reducers/apiReducer.js";
 import { ClassNames } from "../../styles/classes.js";
 import UserImage from "../../structure/User/UserImage.js";
+import { useLocation } from "react-router-dom";
 
 const Chat = props => {
     const [inputs, setInputs] = useState({});
     const [messages, setMessages] = useState(null);
+    const [externalMessageFlag, setExternalMessage] = useState(null);
+
+    const location = useLocation();
 
     const { 
         currentUserId, 
@@ -26,6 +30,16 @@ const Chat = props => {
         readChatMessages,
         clearReceiverId
     } = props;
+
+    useEffect(() => {
+        const externalMessage = location && location.state && location.state.externalMessage;
+        if (externalMessage && !externalMessageFlag) {
+            setInputs({
+                content: externalMessage
+            });
+            setExternalMessage(true);
+        }
+      }, [location, externalMessageFlag]);
 
     useEffect(() => {
         // load all messages
@@ -85,7 +99,10 @@ const Chat = props => {
                                         username={headerInfo.users[0].username}
                                         className={ClassNames.THUMBNAIL_IMG}
                                     />
-                                    <span>{headerInfo.users[0].name}</span>
+                                    <div className="info">
+                                        <span className="name">{headerInfo.users[0].name}</span>
+                                        <span className="status">{headerInfo.users[0].online ? 'Online' : 'Inactive'}</span>
+                                    </div>
                                 </div>
                                 : <div className="user">
                                     {headerInfo.users.map(user => (
@@ -94,6 +111,8 @@ const Chat = props => {
                                             picUrl={user.profilePictureThumb}
                                             username={user.username}
                                             className={ClassNames.THUMBNAIL_IMG}
+                                            onlineStatus={user.online}
+                                            showStatus={true}
                                         />
                                     ))}
                                 </div>

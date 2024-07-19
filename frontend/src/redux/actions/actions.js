@@ -330,3 +330,12 @@ export const updateGroupReads = (groupId, modifiedCount) => ({
     type: ActionTypes.UPDATE_GROUP_READS,
     payload: {groupId, modifiedCount}
 });
+
+export const getActiveChatUsers = () => ({
+    type: ActionTypes.GET_ACTIVE_CHAT_USERS,
+});
+
+export const setOnlineFriendsList = onlineFriendsList => ({
+    type: ActionTypes.SET_ONLINE_FRIENDS,
+    payload: onlineFriendsList
+})

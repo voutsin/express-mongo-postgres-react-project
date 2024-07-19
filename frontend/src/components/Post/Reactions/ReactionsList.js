@@ -9,8 +9,10 @@ import { selectApiState } from "../../../redux/reducers/apiReducer";
 import { FRIENDS_ROUTES, REACTIONS_ROUTES } from "../../../config/apiRoutes";
 import { MdPersonAdd, MdSend } from "react-icons/md";
 import Loader from "../../../structure/Loader";
-import { getDeepProp } from "../../../common/utils";
+import { buildUrl, getDeepProp } from "../../../common/utils";
 import { ReactionMapping } from "../../../common/enums";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../../../config/routes";
 
 const ReactionsList = props => {
     const [callFlag, setCallFlag] = useState(false);
@@ -18,6 +20,8 @@ const ReactionsList = props => {
     const [sendRequestCall, setSendRequestCall] = useState(false);
     const [reactionList, setReactionList] = useState([]);
     const [selectedTab, setSelectedTab] = useState(-1);
+
+    const navigate = useNavigate();
 
     const { auth, reactionsNumber } = props;
 
@@ -72,11 +76,8 @@ const ReactionsList = props => {
         }
     }
 
-    const handleOpenChat = () => {
-        // TODO: open chat when selecting message button
-        setTimeout(() => {
-            setSendRequestCall(true)
-        }, 5000);
+    const handleOpenChat = (user) => {
+        navigate(buildUrl(ROUTES.CHAT.path, {id: auth.id}), { state: { externalUser: user } });
     }
 
     const handleClickTab = (reactionType, targetIndex) => {
@@ -139,7 +140,7 @@ const ReactionsList = props => {
                                     {currentUser 
                                         ? <span className={ClassNames.MESSAGE_ICON}></span>
                                         : user.isFriends 
-                                            ? <Button onClick={() => handleOpenChat(user.id)} className={ClassNames.MESSAGE_ICON}><MdSend/></Button>
+                                            ? <Button onClick={() => handleOpenChat(user)} className={ClassNames.MESSAGE_ICON}><MdSend/></Button>
                                             : <LoadingButton 
                                                 onClick={() => handleSendRequest(user.id)} 
                                                 className={ClassNames.MESSAGE_ICON}

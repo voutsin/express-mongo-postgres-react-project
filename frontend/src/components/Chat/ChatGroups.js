@@ -82,6 +82,8 @@ const ChatGroups = props => {
                                                     username={user.username}
                                                     className={ClassNames.THUMBNAIL_IMG}
                                                     blockLink={true}
+                                                    onlineStatus={user.online}
+                                                    showStatus={true}
                                                 />
                                             }
                                         </div>

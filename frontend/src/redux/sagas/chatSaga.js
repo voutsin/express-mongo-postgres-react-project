@@ -1,6 +1,6 @@
 import { call, fork, put, select, take, takeEvery } from "redux-saga/effects";
 import { eventChannel } from 'redux-saga';
-import { receiveMessage, setError, setGroupMessagesData, setMessageGroupData, updateGroupReads } from "../actions/actions";
+import { receiveMessage, setError, setGroupMessagesData, setMessageGroupData, setOnlineFriendsList, updateGroupReads } from "../actions/actions";
 import { socket } from "../../config/socket";
 import ActionTypes from "../actions/actionTypes";
 import { selectAuthState } from "../reducers/authReducer";
@@ -15,6 +15,7 @@ function* sendMessageHandler(action) {
         } 
     } catch (error) {
         // handle error
+        console.error(error);
         //error.response.data.errors = []
         const err = {response: {data: {errors: [error]}}}
         yield put(setError(err));
@@ -41,6 +42,7 @@ function* getMessagesHandler(action) {
         } 
     } catch (error) {
         // handle error
+        console.error(error);
         //error.response.data.errors = []
         const err = {response: {data: {errors: [error]}}}
         yield put(setError(err));
@@ -67,6 +69,7 @@ function* readGroupMessagesHandler(action) {
         } 
     } catch (error) {
         // handle error
+        console.error(error);
         //error.response.data.errors = []
         const err = {response: {data: {errors: [error]}}}
         yield put(setError(err));
@@ -85,6 +88,33 @@ function readMessagesToSocket(payload) {
     });
 }
 
+function* getOnlineUsersHandler(action) {
+    try {
+        const response = yield call(getOnlineUsersFromSocket, action.payload);
+        if (response.status.code === 2) {
+            throw new Error(response.message);
+        } 
+    } catch (error) {
+        // handle error
+        console.error(error);
+        //error.response.data.errors = []
+        const err = {response: {data: {errors: [error]}}}
+        yield put(setError(err));
+    }
+}
+
+function getOnlineUsersFromSocket(payload) {
+    return new Promise((resolve, reject) => {
+        chatSocket.emit('get_online_friends', payload, (response) => {
+            if (response.status.code === 2) {
+                reject(response);
+            } else {
+                resolve(response);
+            }
+        });
+    });
+}
+
 function* receiveMessagesDataHandler() {
     const channel = yield call(createSocketChannel, chatSocket);
     while (true) {
@@ -93,6 +123,7 @@ function* receiveMessagesDataHandler() {
             messages, 
             messagesAndGroup, 
             readMessages,
+            onlineFriends,
             error 
         } = yield take(channel);
         
@@ -109,6 +140,10 @@ function* receiveMessagesDataHandler() {
         } else if (readMessages) {
             const { groupId, modifiedCount } = readMessages;
             yield put(updateGroupReads(groupId, modifiedCount))
+        } else if (onlineFriends) {
+            const { activeFriends } = onlineFriends;
+            const auth = yield select(selectAuthState)
+            yield put(setOnlineFriendsList([...activeFriends, auth.id]));
         }
     }
 }
@@ -131,6 +166,10 @@ function createSocketChannel(socket) {
             emit({readMessages: data})
         }
 
+        const onlineFriendsHandler = onlineFriends => {
+            emit({onlineFriends})
+        }
+
         const errorHandler = (error) => {
             emit({error});
         };
@@ -139,6 +178,7 @@ function createSocketChannel(socket) {
         socket.on('receive_messages', messagesDataHandler);
         socket.on('receive_message', messageHandler);
         socket.on('messages_read', readHandler);
+        socket.on('online_friends_list', onlineFriendsHandler);
         socket.on('error_message', errorHandler);
 
         return () => {
@@ -146,6 +186,7 @@ function createSocketChannel(socket) {
             socket.off('receive_messages', messagesDataHandler);
             socket.off('receive_message', messageHandler);
             socket.off('messages_read', readHandler);
+            socket.off('online_friends_list', onlineFriendsHandler);
             socket.off('error_message', errorHandler);
         };
     });
@@ -155,5 +196,6 @@ export function* watchChat() {
     yield takeEvery(ActionTypes.SEND_MESSAGE, sendMessageHandler);
     yield takeEvery(ActionTypes.GET_GROUP_MESSAGES, getMessagesHandler);
     yield takeEvery(ActionTypes.READ_GROUP_MESSAGES, readGroupMessagesHandler);
+    yield takeEvery(ActionTypes.GET_ACTIVE_CHAT_USERS, getOnlineUsersHandler);
     yield fork(receiveMessagesDataHandler);
 }

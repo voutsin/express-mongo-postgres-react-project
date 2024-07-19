@@ -3,6 +3,13 @@ import ActionTypes from "../actions/actionTypes";
 
 const defaultState = {};
 
+// FINALS
+export const CHAT_STATE = {
+    GROUPS_LIST: 'GROUPS_LIST',
+    MESSAGES_LIST: 'MESSAGES_LIST',
+    ONLINE_FRIENDS: 'ONLINE_FRIENDS',
+}
+
 export const chatReducer = (state = defaultState, action) => {
     let updatedState = { ...state };
 
@@ -21,7 +28,7 @@ export const chatReducer = (state = defaultState, action) => {
             return updatedState;
         case ActionTypes.SET_MESSAGE_GROUPS_DATA:
             const newGroupsList = action.payload;
-            const oldGroupsList = updatedState.GROUPS_LIST;
+            const oldGroupsList = updatedState[CHAT_STATE.GROUPS_LIST];
 
             let updatedGroupsList = [];
             if (oldGroupsList) {
@@ -34,7 +41,7 @@ export const chatReducer = (state = defaultState, action) => {
             
             return {
                 ...updatedState,
-                GROUPS_LIST: updatedGroupsList,
+                [CHAT_STATE.GROUPS_LIST]: updatedGroupsList,
             }
         case ActionTypes.UPDATE_GROUP_READS:
             const targetGroupId = action.payload.groupId;
@@ -42,8 +49,8 @@ export const chatReducer = (state = defaultState, action) => {
 
             return {
                 ...updatedState,
-                GROUPS_LIST: updatedState.GROUPS_LIST
-                    ? updatedState.GROUPS_LIST.map(g => {
+                [CHAT_STATE.GROUPS_LIST]: updatedState[CHAT_STATE.GROUPS_LIST]
+                    ? updatedState[CHAT_STATE.GROUPS_LIST].map(g => {
                         if (g.id === targetGroupId) {
                             return {
                                 ...g,
@@ -56,7 +63,7 @@ export const chatReducer = (state = defaultState, action) => {
             }
         case ActionTypes.SET_GROUP_MESSAGES_DATA:
             const newMessagesList = action.payload.messages;
-            const oldMessagesList = updatedState.MESSAGES_LIST;
+            const oldMessagesList = updatedState[CHAT_STATE.MESSAGES_LIST];
 
             let updatedMessagesList = [];
             if (oldMessagesList) {
@@ -69,11 +76,11 @@ export const chatReducer = (state = defaultState, action) => {
             
             return {
                 ...updatedState,
-                MESSAGES_LIST: updatedMessagesList,
+                [CHAT_STATE.MESSAGES_LIST]: updatedMessagesList,
             }
         case ActionTypes.RECEIVE_MESSAGE:
             const newMessage = action.payload.message;
-            const messagesList = updatedState.MESSAGES_LIST;
+            const messagesList = updatedState[CHAT_STATE.MESSAGES_LIST];
 
             const newMessagesGroupId = newMessage.groupId;
             const oldMessagesGroupId = messagesList && messagesList[0] && messagesList[0].groupId;
@@ -82,7 +89,7 @@ export const chatReducer = (state = defaultState, action) => {
             if (newMessagesGroupId !== oldMessagesGroupId) {
                 return {
                     ...updatedState,
-                    GROUPS_LIST: updatedState.GROUPS_LIST.map(g => {
+                    [CHAT_STATE.GROUPS_LIST]: updatedState[CHAT_STATE.GROUPS_LIST].map(g => {
                         if (g.id === newMessagesGroupId) {
                             const userRead = newMessage.readBy.includes(action.payload.activeUserId);
                             return {
@@ -92,32 +99,50 @@ export const chatReducer = (state = defaultState, action) => {
                         }
                         return g;
                     }),
-                    MESSAGES_LIST: updatedState.MESSAGES_LIST
-                        ? updatedState.MESSAGES_LIST
+                    [CHAT_STATE.MESSAGES_LIST]: updatedState[CHAT_STATE.MESSAGES_LIST]
+                        ? updatedState[CHAT_STATE.MESSAGES_LIST]
                         : [newMessage]
                 }
             }
 
             return {
                 ...updatedState,
-                MESSAGES_LIST: messagesList 
+                [CHAT_STATE.MESSAGES_LIST]: messagesList 
                     ? [
                         ...messagesList.filter(m => m.id !== newMessage.id),
                         newMessage
                     ]
                     : [newMessage]
             };
+        case ActionTypes.SET_ONLINE_FRIENDS:
+            const onlineFriends = action.payload;
+            const groupsList = updatedState[CHAT_STATE.GROUPS_LIST];
+
+            return {
+                ...updatedState,
+                [CHAT_STATE.ONLINE_FRIENDS]: action.payload,
+                [CHAT_STATE.GROUPS_LIST]: groupsList 
+                    ? groupsList.map(group => ({
+                        ...group,
+                        members: group.members.map(member => {
+                            member.online = onlineFriends.includes(member.id);
+                            return member;
+                        })
+                    }))
+                    : groupsList
+            }
         default:
             return state;
     }
 }
 
 //SELECTORS
-export const selectGroupList = (state) => (state.chat && state.chat.GROUPS_LIST);
-export const selectMessageList = (state) => (state.chat && state.chat.MESSAGES_LIST);
+export const selectGroupList = (state) => (state.chat && state.chat[CHAT_STATE.GROUPS_LIST]);
+export const selectMessageList = (state) => (state.chat && state.chat[CHAT_STATE.MESSAGES_LIST]);
+export const selectOnlineFriends = (state) => (state.chat && state.chat[CHAT_STATE.ONLINE_FRIENDS]);
 export const selectUnreadCount = state => {
-    if (state.chat && state.chat.GROUPS_LIST) {
-        const groups = state.chat.GROUPS_LIST.filter(g => g.hasNewMessage > 0);
+    if (state.chat && state.chat[CHAT_STATE.GROUPS_LIST]) {
+        const groups = state.chat[CHAT_STATE.GROUPS_LIST].filter(g => g.hasNewMessage > 0);
         return groups.length;
     } else return null;
 }
