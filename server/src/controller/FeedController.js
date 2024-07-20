@@ -35,7 +35,13 @@ const findUserPostFeed = asyncHandler(async (req, res, next) => {
         // find all active user's friends
         const friendsResults = await postgresQuery(findAllActiveFriendshipsByUserId, [userId]);
         if (!friendsResults || (friendsResults && friendsResults.rows.length === 0)) {
-            return res.status(200).send('No friends made yet. Consider adding some friends to see news!');
+            res.status(200).send({
+                page,
+                pageSize,
+                totalPages: 0,
+                totalRecords: 0,
+                feeds: []
+            });
         }
         const friendsIds = friendsResults.rows.map(row => row.friend_id);
         const userIds = uniq([

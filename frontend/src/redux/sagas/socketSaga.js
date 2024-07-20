@@ -1,11 +1,11 @@
 import { call, fork, put, select, take, takeEvery } from "redux-saga/effects";
-import { receiveMessage, setGroupMessagesData, setMessageGroupData, setNotificationsData, setOnlineFriendsList, updateGroupReads } from "../actions/actions";
+import { deleteNotification, receiveReadNotifications, receiveMessage, receiveNotification, receiveUnreadNotification, setGroupMessagesData, setMessageGroupData, setNotificationsData, setOnlineFriendsList, updateGroupReads } from "../actions/actions";
 import { socket } from "../../config/socket";
 import ActionTypes from "../actions/actionTypes";
 import { selectAuthState } from "../reducers/authReducer";
 import { getMessagesHandler, getOnlineUsersHandler, readGroupMessagesHandler, sendMessageHandler } from "./handlers/chatHandler";
 import { eventChannel } from "redux-saga";
-import { getNotificationsHandler } from "./handlers/notificationHandler";
+import { getNotificationsHandler, getUnreadNotificationsHandler, markReadNotificationsHandler } from "./handlers/notificationHandler";
 
 const chatSocket = socket();
 
@@ -20,6 +20,10 @@ export function createSocketChannel(socket) {
 
         // notifications
         const notificationsDataHandler = (notifications) => emit({notifications});
+        const notificationDataHandler = (notification) => emit({notification});
+        const deleteNotificationDataHandler = (deleteNotifications) => emit({deleteNotifications});
+        const unreadNotificationsDataHandler = (unreadNotifications) => emit({unreadNotifications});
+        const readNotificationsDataHandler = (readNotifications) => emit({readNotifications});
 
         // general
         const errorHandler = (error) => emit({error});
@@ -33,6 +37,10 @@ export function createSocketChannel(socket) {
 
         // notifications
         socket.on('receive_notifications', notificationsDataHandler);
+        socket.on('send_notification', notificationDataHandler);
+        socket.on('delete_notifications', deleteNotificationDataHandler);
+        socket.on('receive_unread_notifications', unreadNotificationsDataHandler);
+        socket.on('notifications_read', readNotificationsDataHandler);
 
         // general
         socket.on('error_message', errorHandler);
@@ -47,6 +55,10 @@ export function createSocketChannel(socket) {
             
             // notifications
             socket.off('receive_notifications', notificationsDataHandler);
+            socket.off('send_notification', notificationDataHandler);
+            socket.off('delete_notifications', deleteNotificationDataHandler);
+            socket.off('receive_unread_notifications', unreadNotificationsDataHandler);
+            socket.off('notifications_read', readNotificationsDataHandler);
 
             // general
             socket.off('error_message', errorHandler);
@@ -67,6 +79,10 @@ function* socketDataHandler() {
 
             // notifications
             notifications,
+            notification,
+            deleteNotifications,
+            unreadNotifications,
+            readNotifications,
 
             // general
             error 
@@ -91,6 +107,14 @@ function* socketDataHandler() {
             yield put(setOnlineFriendsList([...activeFriends, auth.id]));
         } else if (notifications) {
             yield put(setNotificationsData(notifications));
+        } else if (notification) {
+            yield put(receiveNotification(notification.notification));
+        } else if (deleteNotifications) {
+            yield put(deleteNotification(deleteNotifications.idsToBeDeleted));
+        } else if (unreadNotifications) {
+            yield put(receiveUnreadNotification(unreadNotifications));
+        } else if (readNotifications) {
+            yield put(receiveReadNotifications(readNotifications));
         }
     }
 }
@@ -104,6 +128,8 @@ export function* watchSocket() {
 
     // notifications
     yield takeEvery(ActionTypes.GET_NOTIFICATIONS, (action) => getNotificationsHandler(action, chatSocket));
+    yield takeEvery(ActionTypes.GET_UNREAD_NOTIFICATIONS, (action) => getUnreadNotificationsHandler(action, chatSocket));
+    yield takeEvery(ActionTypes.MARK_READ_NOTIFICATIONS, (action) => markReadNotificationsHandler(action, chatSocket));
 
     // general
     yield fork(socketDataHandler);

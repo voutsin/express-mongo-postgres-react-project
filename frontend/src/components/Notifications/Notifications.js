@@ -2,19 +2,20 @@ import React, { useEffect, useState } from "react";
 import { ClassNames } from "../../styles/classes";
 import { connect } from "react-redux";
 import { selectNotificationList, selectNotificationPage } from "../../redux/reducers/notificationReducer";
-import { clearNotificationData, getNotifications } from "../../redux/actions/actions";
+import { clearNotificationData, getNotifications, markReadNotifications } from "../../redux/actions/actions";
 import Loader from "../../structure/Loader";
 import NotificationItem from "./NotificationItem";
 
 const Notifications = props => {
     const [notifications, setNotifications] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState({page: 1, pageSize: 1});
+    const [page, setPage] = useState({page: 1, pageSize: 5});
 
-    const { getUserNotifications, notificationList, notificationPage, clearData } = props;
+    const { getUserNotifications, notificationList, notificationPage, clearData, markUserNotificationsRead } = props;
 
     useEffect(() => {
         getUserNotifications(page.page, page.pageSize);
+        markUserNotificationsRead();
 
         return () => {
             clearData();
@@ -78,6 +79,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     getUserNotifications: (page, pageSize) => dispatch(getNotifications(page, pageSize)),
+    markUserNotificationsRead: () => dispatch(markReadNotifications()),
     clearData: () => dispatch(clearNotificationData()),
 });
 

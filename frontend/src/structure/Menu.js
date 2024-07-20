@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { ROUTES, PUBLIC_ROUTES } from '../config/routes';
 import { useNavigate } from 'react-router-dom';
@@ -10,14 +10,20 @@ import { buildUrl, removeEmptyFields } from '../common/utils';
 import TextInput from './Form/TextInput';
 import { selectUnreadCount } from '../redux/reducers/chatReducer';
 import Notifications from '../components/Notifications/Notifications';
+import { selectNotificationUnreadList } from '../redux/reducers/notificationReducer';
+import { getUnreadNotifications } from '../redux/actions/actions';
 
 const Menu = props => {
     const [inputs, setInputs] = useState({});
     const [openNotifications, setNotificationModal] = useState(false);
-    const { auth, unreadCount } = props;
+    const { auth, unreadCount, notificationUnreadList, getUnreadNotificationsList } = props;
 
     const loginOk = auth && auth.authSuccess;
     const navigate = useNavigate();
+
+    useEffect(() => {
+        getUnreadNotificationsList();
+    }, []);
 
     const handleClick = route => {
         route && navigate(buildUrl(route.path, { id: auth.id }));
@@ -66,6 +72,9 @@ const Menu = props => {
                     }
                     {loginOk &&
                         <div className={`${ClassNames.NAV_ITEM}`}>
+                            {notificationUnreadList && notificationUnreadList.length > 0 ? 
+                                <span className={ClassNames.UNREAD_MESSAGES}>{notificationUnreadList.length}</span> : null
+                            }
                             <button id="notifications" onClick={toggleNotifications}><MdNotifications /></button>
                             {openNotifications ? <Notifications/> : null}
                         </div>
@@ -89,9 +98,14 @@ const Menu = props => {
 const mapStateToProps = (state) => ({
     auth: state.auth,
     unreadCount: selectUnreadCount(state),
+    notificationUnreadList: selectNotificationUnreadList(state),
+});
+
+const mapDispatchToProps = dispatch => ({
+    getUnreadNotificationsList: () => dispatch(getUnreadNotifications()),
 });
 
 export default connect(
     mapStateToProps,
-    null
+    mapDispatchToProps
 )(Menu);

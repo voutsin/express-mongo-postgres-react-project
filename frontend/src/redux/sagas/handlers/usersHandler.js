@@ -133,7 +133,7 @@ export function* handleAcceptFriendRequest(action) {
         const payload = {
             routeObj: FRIENDS_ROUTES.ACCEPT_FRIENDSHIP,
             data: { friendId: action.payload },
-            pathVar: true
+            putPathVar: true
         };
         const response = yield call(request, payload);
         const { data } = response;

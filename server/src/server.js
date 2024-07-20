@@ -118,7 +118,7 @@ const io = new Server(server, {
 io.use(socketAuthenticateMiddleware);
 
 const { sendMessage, getGroupMessages, markGroupMessagesReadByUser, getActiveFriends } = socketChatHandler(io);
-const { getUserNotifications } = socketNotificationHandler(io);
+const { getUserNotifications, getUserUnreadNotifications, markNotificationsReadByUser } = socketNotificationHandler(io);
 
 const activeUsers = new Map();
 
@@ -145,7 +145,10 @@ const onConnection = async (socket) => {
   socket.on("read_messages", markGroupMessagesReadByUser);
   socket.on("get_online_friends", async (payload, callback) => await getActiveFriends(socket, callback, activeUsers));
 
-  socket.on("get_notifications", getUserNotifications)
+  socket.on("get_notifications", getUserNotifications);
+  socket.on("get_unread_notifications", getUserUnreadNotifications);
+  socket.on("read_notifications", markNotificationsReadByUser);
+
   socket.on('disconnect', () => {
       try {
           // socket.disconnect(true);
@@ -158,6 +161,7 @@ const onConnection = async (socket) => {
 }
 io.on("connection", onConnection);
 
+export {io, activeUsers};
 
 server.listen(port, () => {
   console.log('Server is running on port ', port);

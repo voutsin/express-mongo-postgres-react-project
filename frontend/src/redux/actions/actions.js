@@ -350,9 +350,37 @@ export const getNotifications = (page, pageSize) => ({
     payload: {page, pageSize}
 });
 
+export const getUnreadNotifications = () => ({
+    type: ActionTypes.GET_UNREAD_NOTIFICATIONS,
+});
+
 export const setNotificationsData = notificationData => ({
     type: ActionTypes.SET_NOTIFICATIONS_DATA,
     payload: notificationData
+});
+
+export const receiveNotification = notificationData => ({
+    type: ActionTypes.RECEIVE_NOTIFICATION,
+    payload: notificationData
+});
+
+export const deleteNotification = idsToDelete => ({
+    type: ActionTypes.DELETE_NOTIFICATIONS,
+    payload: idsToDelete
+});
+
+export const receiveUnreadNotification = notificationData => ({
+    type: ActionTypes.RECEIVE_UNREAD_NOTIFICATIONS,
+    payload: notificationData
+});
+
+export const receiveReadNotifications = notificationData => ({
+    type: ActionTypes.READ_NOTIFICATIONS,
+    payload: notificationData
+});
+
+export const markReadNotifications = () => ({
+    type: ActionTypes.MARK_READ_NOTIFICATIONS,
 });
 
 export const clearNotificationData = () => ({

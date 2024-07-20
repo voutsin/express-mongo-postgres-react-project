@@ -1,26 +1,9 @@
 import { MessageStatus } from "../common/enums.js";
-import { postgresQuery } from "../db/postgres.js";
-import { findAllUserPostIdsSQL } from "../db/queries/postsQueries.js";
-import { findFeedsByPostIdGroupByPost } from "../db/repositories/FeedRepository.js";
+import { addUserToNotificationsReadBy, findUnreadUserNotifications, findUserNotifications } from "../db/repositories/NotificationRepository.js";
 import { feedToNotificationResDto } from "../mapper/feedMapper.js";
 import { socketErrorCallback } from "./utils.js";
 
 export default io => {
-    
-    const sendNotificaton = async function (payload, callback) {
-        try {
-            
-            const response = {
-                status: MessageStatus.SENT
-            }
-            callback(response);
-        } catch (e) {
-            // Send error back to the user
-            console.log('SOCKET ERROR: ', e)
-            io.emit('error_message', 'Failed to save message');
-            callback(socketErrorCallback(e));
-        }
-    }
 
     const getUserNotifications = async function (payload, callback) {
         try {
@@ -31,27 +14,19 @@ export default io => {
                 status: MessageStatus.SENT
             }
 
-            // find user posts
-            const postsResults = await postgresQuery(findAllUserPostIdsSQL, [parseInt(authUser.userId)]);
-            if (postsResults && postsResults.rows) {
-                const postIds = postsResults.rows.map(id => id.id);
+            const page = parseInt(payload.page) || 1; // default to page 1 if not provided
+            const pageSize = parseInt(payload.pageSize) || 10; // default to 10 items per page if not provided
+            const skip = (page - 1) * pageSize;
 
-                const page = parseInt(payload.page) || 1; // default to page 1 if not provided
-                const pageSize = parseInt(payload.pageSize) || 10; // default to 10 items per page if not provided
-                const skip = (page - 1) * pageSize;
-                
-                // find Feeds for given ids
-                const feedsResults = await findFeedsByPostIdGroupByPost(postIds, parseInt(authUser.userId), pageSize, skip)
-                const feeds = await feedToNotificationResDto(feedsResults.feeds);
-
-                response = {
-                    ...response,
-                    page,
-                    pageSize,
-                    totalPages: Math.ceil(feedsResults.totalRecords / pageSize),
-                    totalRecords: feedsResults.totalRecords,
-                    feeds,
-                }
+            const notificationResults = await findUserNotifications(parseInt(authUser.userId), pageSize, skip)
+            const notifications = await feedToNotificationResDto(notificationResults.notifications);
+            response = {
+                ...response,
+                page,
+                pageSize,
+                totalPages: Math.ceil(notificationResults.totalRecords / pageSize),
+                totalRecords: notificationResults.totalRecords,
+                feeds: notifications,
             }
             
             callback(response);
@@ -64,8 +39,58 @@ export default io => {
         }
     }
 
+    const getUserUnreadNotifications = async function (payload, callback) {
+        try {
+            const socket = this;
+            const { authUser } = socket;
+
+            let response = {
+                status: MessageStatus.SENT
+            }
+
+            const notificationResults = await findUnreadUserNotifications(parseInt(authUser.userId))
+            const notifications = await feedToNotificationResDto(notificationResults.notifications);
+            response = {
+                ...response,
+                totalRecords: notificationResults.total,
+                notifications,
+            }
+            
+            callback(response);
+            socket.emit('receive_unread_notifications', response);
+        } catch (e) {
+            // Send error back to the user
+            console.log('SOCKET ERROR: ', e)
+            io.emit('error_message', 'Failed to get notifications');
+            callback(socketErrorCallback(e));
+        }
+    }
+
+    const markNotificationsReadByUser = async function (payload, callback) {
+        const socket = this;
+        const { authUser } = socket;
+
+        try {
+            const results = await addUserToNotificationsReadBy(authUser.userId);
+            const response = {
+                ...results,
+                status: MessageStatus.SENT
+            };
+            callback(response);
+            // Broadcast the message to all connected clients
+            socket.emit('notifications_read', response);
+        } catch (e) {
+            console.log('SOCKET ERROR: ', e);
+            // Send error back to the user
+            io.emit('error_message', 'Failed to read messages');
+            callback(socketErrorCallback(e));
+        }
+
+    }
+
     return {
-        sendNotificaton,
         getUserNotifications,
+        getUserUnreadNotifications,
+        markNotificationsReadByUser,
     }
 };

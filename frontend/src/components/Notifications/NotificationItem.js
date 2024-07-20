@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { ClassNames } from "../../styles/classes";
 import UserImage from "../../structure/User/UserImage";
 import UserName from "../../structure/User/UserName";
-import { FeedType } from "../../common/enums";
 import { useNavigate } from "react-router-dom";
 import { buildUrl } from "../../common/utils";
 import { ROUTES } from "../../config/routes";
+import Modal from "../../structure/Modal";
+import AllFriends from "../Profile/Friends/AllFriends";
 
 const NotificationItem = props => {
+    const [friendsModalFlag, openFriendsModal] = useState(false);
+
     const { notification } = props;
     const navigate = useNavigate();
 
@@ -16,33 +19,62 @@ const NotificationItem = props => {
     }
 
     const {
-        topFeed,
-        postId
-    } = notification;
-
-    const user = topFeed ? topFeed.user : {};
-
-    const {
         type,
-        content
-    } = topFeed;
+        user,
+        postId,
+        targetId,
+    } = notification;
 
     const handleClickItem = (e) => {
         e.preventDefault();
-        if (postId) {
+
+        if (type === 1 || type === 2) {
+            openFriendsModal(true);
+        } else if (postId) {
             navigate(buildUrl(ROUTES.POST.path, { id: postId }))
         }
     }
 
-    const headerText = (user, userSize, comment, type) => {
-        const otherCount = userSize - 1;
+    const friendsModal = (
+        <Modal
+            handleClose={() => openFriendsModal(false)}
+            flag={friendsModalFlag}
+        >
+            <AllFriends
+                userId={targetId}
+            />
+        </Modal>
+    )
+
+    const headerText = () => {
+        let message = ' ';
+        switch(type) {
+            case 1: // ACCEPT_FRIEND_REQUEST
+                message += 'accepted your friend request.';
+                break;
+            case 2: // SEND_FRIEND_REQUEST
+                message += 'send you a friend request';
+                break;
+            case 3: // REACTION_TO_POST
+                message += 'reacted to your post.';
+                break;
+            case 4: // REACTION_TO_COMMENT
+                message += 'reacted to your comment.';
+                break;
+            case 5: // COMMENT_TO_POST
+                message += 'commented to a post.';
+                break;
+            case 6: // REPLY_TO_COMMENT
+                message += 'replied to your comment.';
+                break;
+            default:
+                break;
+        }
+        
         return (
             <React.Fragment>
                 <UserName name={user.name} id={user.id} blockLink={true}/>
-                {type === FeedType.COMMENT ? ' added a comment to your post'
-                : ` reacted${comment ? ' to your comment' : ''}`}
-                {userSize > 1 && ` and ${otherCount} other friend${otherCount > 1 ? 's' : ''} also interacted`}
-                .
+                {message}
             </React.Fragment>
         );
     }
@@ -58,9 +90,10 @@ const NotificationItem = props => {
                     blockLink={true}
                 />
                 <span className="text">
-                    {headerText(user, notification.users.length, content.commentId, type)}
+                    {headerText()}
                 </span>
             </div>
+            {friendsModalFlag && friendsModal}
         </React.Fragment>
     )
 }

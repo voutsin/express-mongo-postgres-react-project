@@ -102,6 +102,6 @@ export const insertNewReactionSQL =
 export const updateReactionSQL = `UPDATE reactions SET reaction_type = $2 WHERE id = $1 RETURNING*;`;
 
 // DELETE
-export const deleteReactoinByIdSQL = `DELETE FROM reactions WHERE id = $1 RETURNING *;`;
+export const deleteReactionByIdSQL = `DELETE FROM reactions WHERE id = $1 RETURNING *;`;
 export const deleteReactionsByCommentIdSQL = `DELETE FROM reactions WHERE comment_id = $1;`;
 export const deleteReactionsByPostIdSQL = `DELETE FROM reactions WHERE post_id = $1;`;

@@ -99,8 +99,8 @@ export const acceptFriendValidations = [
       }
       const friendships = await alreadyFriends(req, friendId);
       if (friendships.length > 0) {
-        const friendshipStatus = friendships[0].status;
-        if (FriendStatus.REQUESTED !== friendshipStatus) {
+        const friendshipStatus = friendships.find(f => f.status === FriendStatus.PENDING);
+        if (!friendshipStatus) {
           throw new Error('Cannot accept friendship with this user.');
         } 
       } else {
