@@ -3,13 +3,16 @@ import { connect } from 'react-redux';
 import { selectApiState } from "../../redux/reducers/apiReducer";
 import { FRIENDS_ROUTES } from "../../config/apiRoutes";
 import { findUserFriends } from "../../redux/actions/actions";
-import { getDeepProp } from "../../common/utils";
+import { buildUrl, getDeepProp } from "../../common/utils";
 import UserChatView from "./UserChatView";
 import { ClassNames } from "../../styles/classes";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../../config/routes";
 
 // TODO: add user online status
 const FriendsColumn = props => {
     const [friendsCallFlag, setFriendsCallFlag] = useState(false);
+    const navigate = useNavigate();
 
     const { postLink, shareModal } = props;
 
@@ -22,11 +25,13 @@ const FriendsColumn = props => {
 
     const friends = getDeepProp(props, 'findUserFriendsResponse.data.friends');
 
-    const handleUserClick = info => {
-        // TODO: add chat window
+    const handleUserClick = userInfo => {
+        const state = { externalUser: userInfo };
         if (postLink) {
             // add link to chat message
+            state.externalMessage = postLink
         }
+        navigate(buildUrl(ROUTES.CHAT.path, {id: props.auth.id}), { state });
     }
 
     return (
@@ -38,7 +43,7 @@ const FriendsColumn = props => {
                         {friends && friends.map(friend => {
                             const info = friend.friend;
                             return (
-                                <UserChatView userInfo={info} onClick={handleUserClick} />
+                                <UserChatView key={`friend-${info.id}`} userInfo={info} onClick={handleUserClick} />
                             )
                         })}
                     </div>

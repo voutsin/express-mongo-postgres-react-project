@@ -27,6 +27,8 @@ const ApiRoutesNames = {
     UPDATE_POST: 'UPDATE_POST',
     DELETE_POST: 'DELETE_POST',
     FIND_USER_POSTS: 'FIND_USER_POSTS',
+    FIND_SINGLE_POST_BY_ID: 'FIND_SINGLE_POST_BY_ID',
+    FIND_ALL_USER_GROUPS: 'FIND_ALL_USER_GROUPS',
 }
 
 const AUTH = '/auth';
@@ -141,9 +143,10 @@ export const FRIENDS_ROUTES = {
 }
 
 export const POSTS_ROUTES = {
-    FIND_BY_ID: {
+    FIND_SINGLE_POST_BY_ID: {
         route: `${POSTS}/single/:id`,
         type: ApiTypes.GET,
+        name: ApiRoutesNames.FIND_SINGLE_POST_BY_ID
     },
     FIND_USER_POSTS: {
         route: `${POSTS}/user`,
@@ -252,8 +255,9 @@ export const SEARCH_ROUTES = {
 }
 
 export const MESSAGE_ROUTES = {
-    FIND_ALL: {
-        route: `${MESSAGES}`,
+    FIND_ALL_USER_GROUPS: {
+        route: `${MESSAGES}/groups`,
         type: ApiTypes.GET,
+        name: ApiRoutesNames.FIND_ALL_USER_GROUPS
     },
 }

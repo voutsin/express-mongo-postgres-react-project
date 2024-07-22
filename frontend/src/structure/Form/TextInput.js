@@ -14,7 +14,8 @@ const TextInput = props => {
         onChange,
         required,
         height,
-        inputFocus
+        inputFocus,
+        customRef
     } = props;
 
     useEffect(() => {
@@ -31,6 +32,7 @@ const TextInput = props => {
 
     const parsedProps = {
         ...props,
+        customRef: null,
         className: className || 'form-input',
         value: (formData && formData[name]) ? formData[name] : '',
         onChange: (event) => {
@@ -51,7 +53,7 @@ const TextInput = props => {
                 <span className={`${ClassNames.INPUT_SPAN} ${filled ? ClassNames.INPUT_FILLED : ''}`} >
                     {inputLabel || ''}
                 </span>
-	            {type === 'textarea' ? <textarea {...parsedProps} style={styles} /> 
+	            {type === 'textarea' ? <textarea {...parsedProps} ref={customRef} style={styles} /> 
                 : <input {...parsedProps} ref={inputRef}/>}
 	        </label>
         </React.Fragment>

@@ -363,3 +363,26 @@ export const updateTopFeedComment = (newComment, feedObj, commentsList, action) 
     }
     : null
 }
+
+export const findGroupNameByMembers = (members, userId) => {
+    const others = members.filter(m => m.id !== userId);
+    return others.map(m => m.name).join(', ');
+}
+
+export const arraysMatch = (array1, array2) => {
+    if (!array1 || !array2) {
+        return false;
+    }
+
+    let match = true;
+    if (array1.length !== array2.length) {
+        return false;
+    }
+    array1.forEach(e => {
+        const found = array2.find(i => JSON.stringify(i) === JSON.stringify(e));
+        if (!found) {
+            match = false;
+        }
+    })
+    return match;
+}

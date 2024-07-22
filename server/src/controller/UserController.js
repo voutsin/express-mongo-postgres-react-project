@@ -12,6 +12,8 @@ import { postReqDtoToPost, postToResDto } from '../mapper/postMapper.js';
 import { insertNewFeedForPost } from '../db/repositories/FeedRepository.js';
 import AppError from "../model/AppError.js";
 import { join } from "path";
+import { acceptFriendshipNotification, deleteFriendshipNotification, insertFriendshipNotification } from "../db/repositories/NotificationRepository.js";
+import { emitNotification } from "../socket/utils.js";
 
 const findAll = asyncHandler(async (req, res, next) => {
     try {
@@ -121,6 +123,10 @@ const requestFriendship = asyncHandler(async (req, res, next) => {
     }
 
     if (results) {
+      // insert notification
+      const notification = await insertFriendshipNotification(params[0], params[1]);
+      await emitFriendshipNotification(notification, results, activeUser.id, next);
+
       // send the result where user_id equals active user
       const resposne = results.filter(result => result.user_id.toString() === activeUser.id).map(result => friendToResDto(result));
       res.json(resposne);
@@ -145,6 +151,10 @@ const acceptFriendship = asyncHandler(async (req, res, next) => {
     }
 
     if (results) {
+      // insert notification
+      const notification = await acceptFriendshipNotification(activeUser.id, params[0]);
+      await emitFriendshipNotification(notification, results, activeUser.id, next);
+
       // send the result where user_id equals active user
       const resposne = results.filter(result => result.user_id.toString() === activeUser.id).map(result => friendToResDto(result));
       res.json(resposne);
@@ -164,6 +174,10 @@ const deleteFriend = asyncHandler(async (req, res, next) => {
     const result = await postgresQuery(deleteFriendship, params);
     // return result
     if (result) {
+      // delete notification
+      const deleteNotificationResult = await deleteFriendshipNotification(activeUser.id, params[0]);
+      await emitDeleteFriendshipNotification(deleteNotificationResult.foundIds, result.rows, activeUser.id, next);
+
       res.json(result.rows.map(result => friendToResDto(result)));
       res.status(200);
     }
@@ -194,6 +208,9 @@ const blockUser = asyncHandler(async (req, res, next) => {
     
     // return result
     if (result) {
+      // delete notification
+      await deleteFriendshipNotification(activeUser.id, req.params.id);
+
       res.json(result.rows.map(result => friendToResDto(result)));
       res.status(200);
     }
@@ -322,6 +339,28 @@ const findUserPhotos = asyncHandler(async (req, res, next) => {
     next(new AppError('Internal Server Error: ' + e, 500));
   }
 });
+
+const emitFriendshipNotification = async (notification, friendships, activeUserId, next) => {
+  try {
+      const targetedUser = friendships && friendships.find(f => f.user_id !== parseInt(activeUserId));
+      if (targetedUser) {
+          emitNotification(targetedUser.user_id, notification, 'send_notification');
+      }
+  } catch(e) {
+      next(new AppError('Internal Server Error: ' + e, 500));
+  }
+}
+
+const emitDeleteFriendshipNotification = async (idsToBeDeleted, friendships, activeUserId, next) => {
+  try {
+      const targetedUser = friendships && friendships.find(f => f.user_id !== parseInt(activeUserId));
+      if (targetedUser) {
+          emitNotification(targetedUser.user_id, {idsToBeDeleted}, 'delete_notifications');
+      }
+  } catch(e) {
+      next(new AppError('Internal Server Error: ' + e, 500));
+  }
+}
 
 export default {
     findAll,

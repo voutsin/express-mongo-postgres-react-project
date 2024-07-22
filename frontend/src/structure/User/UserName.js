@@ -6,11 +6,13 @@ import { buildUrl } from '../../common/utils';
 
 const UserName = props => {
     const navigate = useNavigate();
-    const { name, id } = props;
+    const { name, id, blockLink } = props;
 
     const handleClick = e => {
         e.preventDefault();
-        navigate(buildUrl(`${ROUTES.PROFILE.path}`, { id: id }));
+        if (!blockLink) {
+            navigate(buildUrl(`${ROUTES.PROFILE.path}`, { id: id }));
+        }
     }
 
     const StyledDiv = styled.span`

@@ -1,11 +1,13 @@
-import { takeLatest } from 'redux-saga/effects';
+import { fork, takeLatest } from 'redux-saga/effects';
 import ActionTypes from '../actions/actionTypes';
 import { handleUserLogin, handleUserLogout, handleUserVerification } from './handlers/auth';
 import { handleAcceptFriendRequest, handleBlockUser, handleDeleteFriendship, handleFindDetailedUserFriends, handleFindUserDetails, handleFindUserFriends, handleFindUserFriendsBirthdays, handleFindUserMedia, handleSendFriendRequest, handleUserRegistration } from './handlers/usersHandler';
 import { handleGetUserFeed } from './handlers/feedHandler';
 import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
 import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleGetCommentReplies, handleGetPostComments, handleUpdateComment } from './handlers/commentHandler';
-import { handleAddNewPost, handleDeletePost, handleGetUserPosts, handleUpdatePost } from './handlers/postHandler';
+import { handleAddNewPost, handleDeletePost, handleGetSinglePost, handleGetUserPosts, handleUpdatePost } from './handlers/postHandler';
+import { handleGetUserMessageGroups } from './handlers/chatHandler';
+import { watchSocket } from './socketSaga';
 
 /**
  * when the action is triggered the watcher will execute the handle function
@@ -27,6 +29,7 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.DELETE_POST, handleDeletePost);
     yield takeLatest(ActionTypes.UPDATE_POST, handleUpdatePost);
     yield takeLatest(ActionTypes.FIND_USER_POST_LIST, handleGetUserPosts);
+    yield takeLatest(ActionTypes.GET_SINGLE_POST, handleGetSinglePost);
     // friends
     yield takeLatest(ActionTypes.FIND_USER_FRIENDS, handleFindUserFriends);
     yield takeLatest(ActionTypes.FIND_DETAILED_USER_FRIENDS, handleFindDetailedUserFriends);
@@ -50,4 +53,7 @@ export default function* rootSaga() {
     yield takeLatest(ActionTypes.UPDATE_REACTION, handleUpdateReaction);
     yield takeLatest(ActionTypes.DELETE_REACTION, handleDeleteReaction);
     yield takeLatest(ActionTypes.GET_COMMENT_REACTIONS, handleGetCommentReaction);
+    // chat
+    yield fork(watchSocket);
+    yield takeLatest(ActionTypes.GET_MESSAGE_GROUPS, handleGetUserMessageGroups);
 }

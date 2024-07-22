@@ -8,10 +8,15 @@ import { connect } from "react-redux";
 import { acceptFriendRequest, blockUser, cancelFriendRequest, clearData, declineFriendRequest, deleteFriendship, getDetailedUserFriends, sendFriendRequest, unBlockUser } from "../../../redux/actions/actions";
 import { selectApiState } from "../../../redux/reducers/apiReducer";
 import Loader from "../../../structure/Loader";
+import { useNavigate } from "react-router-dom";
+import { buildUrl } from "../../../common/utils";
+import { ROUTES } from "../../../config/routes";
 
 const FriendActionButtons = props => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
+
+    const navigate = useNavigate();
 
     const { 
         auth, 
@@ -46,8 +51,8 @@ const FriendActionButtons = props => {
         }
     }, [friend, notification, handleResponse]);
 
-    const handleOpenChat = () => {
-        // TODO: open chat when selecting message button
+    const handleOpenChat = (user) => {
+        navigate(buildUrl(ROUTES.CHAT.path, {id: auth.id}), { state: { externalUser: user } });
     }
 
     const handleUserAction = (name, value) => {
@@ -130,7 +135,7 @@ const FriendActionButtons = props => {
             <div className="actions">
                 {friend.isFriends && 
                     <div className="chat">
-                        <Button onClick={() => handleOpenChat(friend.id)} className={ClassNames.MESSAGE_ICON}>
+                        <Button onClick={() => handleOpenChat(friend)} className={ClassNames.MESSAGE_ICON}>
                             <MdSend/>
                         </Button>
                     </div>

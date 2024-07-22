@@ -15,7 +15,7 @@ export const ACCESS_TOKEN_COOKIE = 'accessToken';
 export const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
 export const UPLOAD_DIR = 'uploads';
-export const PROFILE_PIC_THUMBNAIL_PREFIX = 'profile_pic_thumbnail_';
+export const PROFILE_PIC_THUMBNAIL_PREFIX = 'profile_pic_thumbnail__';
 export const MEDIA_THUMBNAIL_PREFIX = 'media_thumbnail__';
 
 export const asyncHandler = fn => (req, res, next) => {
@@ -153,11 +153,9 @@ export const getThumbnailUrl = (id, originalUrl, forProfilePic) => {
 
   // get suffix
   const picName = path[path.length - 1];
-  const splittedName = picName.split('.');
-  const suffix = splittedName[splittedName.length - 1];
   
   return forProfilePic 
-    ? `${uploadPath}${PROFILE_PIC_THUMBNAIL_PREFIX}${id}.${suffix}` //TODO: might be wrong! should have file name instead of id
+    ? `${uploadPath}${PROFILE_PIC_THUMBNAIL_PREFIX}${picName}`
     : `${uploadPath}${MEDIA_THUMBNAIL_PREFIX}${picName}`;
 }
 

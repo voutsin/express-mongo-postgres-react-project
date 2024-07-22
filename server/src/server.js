@@ -19,12 +19,17 @@ import cors from 'cors';
 import { access, constants } from 'fs';
 import { globalErrorHandler } from './common/utils.js';
 import AppError from './model/AppError.js';
-// import WebSocket, {WebSocketServer} from 'ws';
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+import { socketAuthenticateMiddleware } from './socket/utils.js';
+import socketChatHandler from './socket/socketChatHandler.js';
+import { findAllUserMessageGroups } from './db/repositories/MessageGroupRepository.js';
+import socketNotificationHandler from './socket/socketNotificationHandler.js';
 
 dotenv.config();
 
 const app = express();
-
+const server = createServer(app);
 // Use cors middleware
 app.use(cors({
   origin: (origin, callback) => {
@@ -98,52 +103,66 @@ app.all('*', (req, res, next) => {
 app.use(globalErrorHandler);
 
 const port = process.env.SERVER_PORT;
-const server = app.listen(port, () => {
-  console.log('Server is running on port ', port);
+
+
+// Initialize the socket.io instance
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    // allowedHeaders: ["Content-Type"],
+    credentials: true
+  }
 });
 
-// web socker server must be separate from api
-// few api routes that we expose
-// const wsServer = new WebSocketServer({ noServer: true} );
+io.use(socketAuthenticateMiddleware);
 
-// const onSocketPreError = e => {
-//   console.log("Pre Socket Error: ", e);
-// }
+const { sendMessage, getGroupMessages, markGroupMessagesReadByUser, getActiveFriends } = socketChatHandler(io);
+const { getUserNotifications, getUserUnreadNotifications, markNotificationsReadByUser } = socketNotificationHandler(io);
 
-// const onSocketPostError = e => {
-//   console.log("Post Socket Error: ", e);
-// }
+const activeUsers = new Map();
 
-// server.on('upgrade', (req, socket, head) => {
-//   socket.on('error', onSocketPreError);
+const onConnection = async (socket) => {
+  console.log('New client connected:', socket.authUser);
 
-//   // perform auth
-//   if (!req.headers['NoAuth']) {
-//     socket.write('401 Unauthorized!');
-//     socket.destroy();
-//     return;
-//   }
+  if (socket.authUser) {
+    try {
+        // When a user connects, add them to the active users map
+        activeUsers.set(socket.id, { userId: socket.authUser.userId, socketId: socket.id });
+        // Get the user's groups
+        const userGroups = await findAllUserMessageGroups(socket.authUser.userId, true);
+        // Join each group room
+        userGroups.forEach(group => {
+            socket.join(group.id.toString());
+        });
+    } catch (error) {
+        console.error('Error fetching user groups:', error);
+    }
+  }
 
-//   // http handling error
-//   wsServer.handleUpgrade(req, socket, head, (ws) => {
-//     socket.removeListener('error', onSocketPreError);
-//     wsServer.emit('connection', ws, req);
-//   });
-// });
+  socket.on("send_message", sendMessage);
+  socket.on("get_messages", getGroupMessages);
+  socket.on("read_messages", markGroupMessagesReadByUser);
+  socket.on("get_online_friends", async (payload, callback) => await getActiveFriends(socket, callback, activeUsers));
 
-// wsServer.on('connection', (ws, req) => {
-//   // web socket handling error
-//   ws.on('error', onSocketPostError);
+  socket.on("get_notifications", getUserNotifications);
+  socket.on("get_unread_notifications", getUserUnreadNotifications);
+  socket.on("read_notifications", markNotificationsReadByUser);
 
-//   ws.on('message', (msg, isBinary) => {
-//     wsServer.clients.forEach(client => {
-//       if (ws !== client && client.readyState === WebSocket.OPEN) {
-//         client.send(msg, { binary: isBinary});
-//       }
-//     })
-//   });
+  socket.on('disconnect', () => {
+      try {
+          // socket.disconnect(true);
+          // Remove the user from the active users map
+          activeUsers.delete(socket.id);
+      } catch (e) {
+          console.log('SOCKET ERROR: ', e);
+      }
+  });
+}
+io.on("connection", onConnection);
 
-//   ws.on('close', () => {
-//     console.log("Connection closed.");
-//   });
-// })
+export {io, activeUsers};
+
+server.listen(port, () => {
+  console.log('Server is running on port ', port);
+});

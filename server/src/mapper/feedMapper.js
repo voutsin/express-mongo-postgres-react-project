@@ -99,3 +99,20 @@ export const feedByPostResDto = async feedRes => {
 const findTopFeed = feeds => {
     return feeds[0];
 }
+
+export const feedToNotificationResDto = async notifications => {
+    const activeFriendsIds = uniq(notifications.filter(feed => feed.userId != null).map(feed => feed.userId));
+    const activeUserResults = activeFriendsIds.length > 0 ? await postgresQuery(findUsersInIds(activeFriendsIds.toString())) : null;
+    const users = activeUserResults ? activeUserResults.rows.map(user => userToResDto(user)) : [];
+
+    return notifications.map(notification => ({
+        id: notification._id,
+        user: users.find(u => u.id === notification.userId),
+        type: notification.type,
+        postId: notification.postId,
+        commentId: notification.commentId,
+        targetId: notification.targetId,
+        timestamp: notification.timestamp,
+        readBy: notification.readBy,
+    }));
+}

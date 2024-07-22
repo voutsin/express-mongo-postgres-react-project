@@ -7,12 +7,9 @@ import UserImage from "../../structure/User/UserImage";
 const BirthdayDetails = props => {
 
     const {
-        birthdayList
-    } = props
-
-    const handleMessageFriend = info => {
-        // TODO: open chat modal
-    }
+        birthdayList,
+        handleOpenChat
+    } = props;
 
     const itemsList = birthdayList && birthdayList.map(item => {
         const today = new Date();
@@ -33,7 +30,7 @@ const BirthdayDetails = props => {
                     <span className={'user-age'}>Age: {friendAge}</span>
                     <span className={'friends-time'}>Friends Since: {friendsSince}</span>
                 </div>
-                <button className={ClassNames.MESSAGE_ICON} onClick={() => handleMessageFriend(item)}><MdSend/></button>
+                <button className={ClassNames.MESSAGE_ICON} onClick={() => handleOpenChat(item)}><MdSend/></button>
             </div>
         )
     })

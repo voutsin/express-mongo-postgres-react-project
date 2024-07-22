@@ -25,12 +25,12 @@ export const apiReducer = (state = defaultState, action) => {
             })
             return updatedState;
         case ActionTypes.SET_ERROR:
+            console.error(action.payload)
             const { error } = action.payload;
             if (!error || isObjectEmpty(error)) {
                 return {...state}
             }
             const errors = error.response.data.message.errors || error.response.data.errors || error.response.data.error;
-            
             const errorMessage = Array.isArray(errors) ? errors.map(err => err.msg || err).join(', <br/>') : errors;
             return {
                 ...state,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { ROUTES, PUBLIC_ROUTES } from '../config/routes';
 import { useNavigate } from 'react-router-dom';
@@ -6,21 +6,30 @@ import { MdLogout, MdSearch, MdChat, MdNotifications, MdFace } from 'react-icons
 import { BASE_URL } from '../config/apiRoutes';
 import { ClassNames } from '../styles/classes';
 import NexGenLogoSVG from '../styles/images/logo';
-import { removeEmptyFields } from '../common/utils';
+import { buildUrl, removeEmptyFields } from '../common/utils';
 import TextInput from './Form/TextInput';
+import { selectUnreadCount } from '../redux/reducers/chatReducer';
+import Notifications from '../components/Notifications/Notifications';
+import { selectNotificationUnreadList } from '../redux/reducers/notificationReducer';
+import { getUnreadNotifications } from '../redux/actions/actions';
 
 const Menu = props => {
     const [inputs, setInputs] = useState({});
-    const loginOk = props.auth && props.auth.authSuccess;
+    const [openNotifications, setNotificationModal] = useState(false);
+    const { auth, unreadCount, notificationUnreadList, getUnreadNotificationsList } = props;
+
+    const loginOk = auth && auth.authSuccess;
     const navigate = useNavigate();
 
+    useEffect(() => {
+        getUnreadNotificationsList();
+    }, []);
+
     const handleClick = route => {
-        route && navigate(route.path);
+        route && navigate(buildUrl(route.path, { id: auth.id }));
     }
 
-    const handleOpenNotifications = () => {
-
-    }
+    const toggleNotifications = () => setNotificationModal(!openNotifications)
 
     const handleSearch = route => {
         const finalBody = removeEmptyFields(inputs);
@@ -36,7 +45,7 @@ const Menu = props => {
         })
     }
 
-    const profilePicUrl = props.auth && props.auth.profilePictureThumb;
+    const profilePicUrl = auth && auth.profilePictureThumb;
     return(
         <React.Fragment>
             <div id={'nav'} className={ClassNames.NAV}>
@@ -55,14 +64,19 @@ const Menu = props => {
                 <div className={`${ClassNames.NAV_SECTION} ${ClassNames.NAV_UPDATES}`}>
                     {loginOk &&
                         <div className={`${ClassNames.NAV_ITEM}`}>
+                            {unreadCount && unreadCount > 0 ? 
+                                <span className={ClassNames.UNREAD_MESSAGES}>{unreadCount}</span> : null
+                            }
                             <button id="chat" onClick={() => handleClick(ROUTES.CHAT)}><MdChat /></button>
                         </div>
                     }
                     {loginOk &&
                         <div className={`${ClassNames.NAV_ITEM}`}>
-                            <button id="notifications" onClick={handleOpenNotifications}><MdNotifications /></button>
-                            <div className={ClassNames.NOT_WRAPPER}>
-                            </div>
+                            {notificationUnreadList && notificationUnreadList.length > 0 ? 
+                                <span className={ClassNames.UNREAD_MESSAGES}>{notificationUnreadList.length}</span> : null
+                            }
+                            <button id="notifications" onClick={toggleNotifications}><MdNotifications /></button>
+                            {openNotifications ? <Notifications/> : null}
                         </div>
                     }
                     {loginOk && 
@@ -83,9 +97,15 @@ const Menu = props => {
 
 const mapStateToProps = (state) => ({
     auth: state.auth,
+    unreadCount: selectUnreadCount(state),
+    notificationUnreadList: selectNotificationUnreadList(state),
+});
+
+const mapDispatchToProps = dispatch => ({
+    getUnreadNotificationsList: () => dispatch(getUnreadNotifications()),
 });
 
 export default connect(
     mapStateToProps,
-    null
+    mapDispatchToProps
 )(Menu);

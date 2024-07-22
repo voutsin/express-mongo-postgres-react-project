@@ -7,6 +7,7 @@ import { findPostByIdAndActiveUserSQL, userCanAccessPostSQL } from '../db/querie
 import { findReactionByIdAndActiveUserSQL } from '../db/queries/reactionsQueries.js';
 import { findByEmail, findByUserName, findUserById } from '../db/queries/userQueries.js';
 import bcrypt from 'bcrypt';
+import { findMessageGroupById } from '../db/repositories/MessageGroupRepository.js';
 
 export const emailExists = async email => {
     const res = await postgresQuery(findByEmail, [email]);
@@ -82,4 +83,9 @@ export const commentExists = async commentId => {
 export const reactionExists = async reactionId => {
     const reactionResult = await postgresQuery(findReactionByIdAndActiveUserSQL, [reactionId]);
     return reactionResult && reactionResult.rows.length > 0 ? reactionResult.rows[0] : false;
+}
+
+export const groupExists = async groupId => {
+    const groupResult = await findMessageGroupById(groupId);
+    return (groupResult);
 }

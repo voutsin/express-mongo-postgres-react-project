@@ -272,7 +272,117 @@ export const getUserPosts = (userId, page, pageSize) => ({
     payload: {id: userId, page, pageSize}
 });
 
+export const getSinglePostData= postId => ({
+    type: ActionTypes.GET_SINGLE_POST,
+    payload: postId
+});
+
 export const setPostListData = posts => ({
     type: ActionTypes.SET_POST_LIST_DATA,
     payload: posts
+});
+
+// CHAT
+export const disconnectSocket = () => ({
+    type: ActionTypes.DISCONNECT_SOCKET,
+});
+
+export const clearChatData = stateValues => ({
+    type: ActionTypes.CLEAR_CHAT_DATA,
+    payload: stateValues
+});
+
+export const getMessageGroups = () => ({
+    type: ActionTypes.GET_MESSAGE_GROUPS,
+});
+
+export const setMessageGroupData = groups => ({
+    type: ActionTypes.SET_MESSAGE_GROUPS_DATA,
+    payload: groups
+});
+
+export const getGroupMessages = (groupId, page, pageSize) => ({
+    type: ActionTypes.GET_GROUP_MESSAGES,
+    payload: { groupId, page, pageSize }
+});
+
+export const setGroupMessagesData = messages => ({
+    type: ActionTypes.SET_GROUP_MESSAGES_DATA,
+    payload: messages
+});
+
+export const sendMessage = (content, groupId, receiverId) => ({
+    type: ActionTypes.SEND_MESSAGE,
+    payload: { content, groupId, receiverId }
+});
+
+export const setMessageData = message => ({
+    type: ActionTypes.SET_MESSAGE_DATA,
+    payload: message
+});
+
+export const receiveMessage = (message, activeUserId) => ({
+    type: ActionTypes.RECEIVE_MESSAGE,
+    payload: {message, activeUserId}
+});
+
+export const readGroupMessages = groupId => ({
+    type: ActionTypes.READ_GROUP_MESSAGES,
+    payload: {groupId}
+});
+
+export const updateGroupReads = (groupId, modifiedCount) => ({
+    type: ActionTypes.UPDATE_GROUP_READS,
+    payload: {groupId, modifiedCount}
+});
+
+export const getActiveChatUsers = () => ({
+    type: ActionTypes.GET_ACTIVE_CHAT_USERS,
+});
+
+export const setOnlineFriendsList = onlineFriendsList => ({
+    type: ActionTypes.SET_ONLINE_FRIENDS,
+    payload: onlineFriendsList
+});
+
+export const getNotifications = (page, pageSize) => ({
+    type: ActionTypes.GET_NOTIFICATIONS,
+    payload: {page, pageSize}
+});
+
+export const getUnreadNotifications = () => ({
+    type: ActionTypes.GET_UNREAD_NOTIFICATIONS,
+});
+
+export const setNotificationsData = notificationData => ({
+    type: ActionTypes.SET_NOTIFICATIONS_DATA,
+    payload: notificationData
+});
+
+export const receiveNotification = notificationData => ({
+    type: ActionTypes.RECEIVE_NOTIFICATION,
+    payload: notificationData
+});
+
+export const deleteNotification = idsToDelete => ({
+    type: ActionTypes.DELETE_NOTIFICATIONS,
+    payload: idsToDelete
+});
+
+export const receiveUnreadNotification = notificationData => ({
+    type: ActionTypes.RECEIVE_UNREAD_NOTIFICATIONS,
+    payload: notificationData
+});
+
+export const receiveReadNotifications = notificationData => ({
+    type: ActionTypes.READ_NOTIFICATIONS,
+    payload: notificationData
+});
+
+export const markReadNotifications = () => ({
+    type: ActionTypes.MARK_READ_NOTIFICATIONS,
+});
+
+export const clearNotificationData = () => ({
+    type: ActionTypes.CLEAR_NOTIFICATION_DATA,
 });

@@ -3,15 +3,19 @@ import { connect } from 'react-redux';
 import { findUserFriendsBirthdays } from "../../redux/actions/actions";
 import { selectApiState } from "../../redux/reducers/apiReducer";
 import { FRIENDS_ROUTES } from "../../config/apiRoutes";
-import { getDeepProp } from "../../common/utils";
+import { buildUrl, getDeepProp } from "../../common/utils";
 import { ClassNames } from "../../styles/classes";
 import { MdCake } from "react-icons/md";
 import Modal from "../../structure/Modal";
 import BirthdayDetails from "./BirthdayDetails";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../../config/routes";
 
 const BirthdaysView = props => {
     const [friendsCallFlag, setFriendsCallFlag] = useState(false);
     const [birthdayModal, openBirthdayModal] = useState(false);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (props.auth && props.auth.id && !friendsCallFlag) {
@@ -19,6 +23,10 @@ const BirthdaysView = props => {
             setFriendsCallFlag(true);
         }
     }, [props, friendsCallFlag]);
+
+    const handleOpenChat = user => {
+        navigate(buildUrl(ROUTES.CHAT.path, {id: props.auth.id}), { state: { externalUser: user } });
+    }
 
     const birthdays = getDeepProp(props, 'findUserFriendsResponse.data');
 
@@ -49,6 +57,7 @@ const BirthdaysView = props => {
         >
             <BirthdayDetails
                 birthdayList={birthdays}
+                handleOpenChat={handleOpenChat}
             />
         </Modal>
     )

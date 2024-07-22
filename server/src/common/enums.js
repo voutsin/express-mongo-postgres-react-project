@@ -29,3 +29,23 @@ export const ReactionType = {
     WOW: 4,
     CRY: 5,
 }
+
+export const MessageStatus = {
+    SENT: {
+        code: 1,
+        text: 'Sent'
+    },
+    FAILED: {
+        code: 2,
+        text: 'Failed'
+    },
+}
+
+export const NotificationTypes = {
+    ACCEPT_FRIEND_REQUEST: 1,
+    SEND_FRIEND_REQUEST: 2,
+    REACTION_TO_POST: 3,
+    REACTION_TO_COMMENT: 4,
+    COMMENT_TO_POST: 5,
+    REPLY_TO_COMMENT: 6,
+}

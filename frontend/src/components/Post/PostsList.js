@@ -61,7 +61,7 @@ const PostsList = props => {
                         {postsList && postsList.length > 0 && 
                             postsList.map((post, index) => {
                                 return(
-                                    <div className="post-item" key={`post-item-${index}${post.id}`}>
+                                    <div className={ClassNames.POST_ITEM} key={`post-item-${index}${post.id}`}>
                                         <Post key={`post-${index}${post.id}`} post={post} />
                                     </div>
                                 )

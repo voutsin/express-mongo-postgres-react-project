@@ -32,7 +32,9 @@ export const ClassNames = {
     NAV_ACCOUNT: 'nav-account-info',
     NAV_ACCOUNT_PIC: 'nav-account-pic-menu',
     NAV_SEARCH: 'nav-search',
-    NOT_WRAPPER: 'notification-wrapper',
+    NOT_WRAPPER: 'menu-notification-wrapper',
+    NOTIFICATIONS_LIST: 'notification-list',
+    NOTIFICATION: 'notification-item',
     // login
     LOGIN_PAGE: 'login-page',
     LOGIN_WRAPPER: 'login-wrapper',
@@ -91,6 +93,8 @@ export const ClassNames = {
     SEND_TO_CHAT: 'send-to-chat',
     ACTION_BTNS: 'share-action-btns',
     POSTS_LIST: 'posts-list',
+    POST_ITEM: "post-item",
+    SINGLE_POST_WRAPPER: 'single-post-wrapper',
     // add new
     ADD_NEW_POST_ACTION: 'add-new-post-action',
     ADD_NEW_POST_WRAPPER: 'add-new-post-wrapper',
@@ -115,4 +119,16 @@ export const ClassNames = {
     USER_PHOTOS_LIST: 'photos',
     USER_PHOTO_ITEM: 'photo',
     FRIENDSHIPS_TABS: 'friendship-tabs',
+    // chat
+    CHAT_PAGE: 'chat-page',
+    CHAT_GROUPS_WRAPPER: 'chat-groups-wrapper',
+    CHAT_GROUPS_INNER: 'chat-group-inner',
+    CHAT_GROUPS: 'chat-groups',
+    GROUP_CHAT: 'group',
+    CHAT_ROOM: 'chatroom',
+    CHAT_HEADER: 'chat-header',
+    MESSAGES: 'messages',
+    MESSAGE: 'message',
+    UNREAD_MESSAGES: 'unread-messages',
+    ONLINE_STATUS: 'online-status',
 }

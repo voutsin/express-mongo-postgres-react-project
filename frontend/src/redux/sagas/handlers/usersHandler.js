@@ -118,13 +118,6 @@ export function* handleSendFriendRequest(action) {
         };
         const response = yield call(request, payload);
         const { data } = response;
-        
-        // const reduxPayload = {
-        //     data: data,
-        //     apiSuccess: true,
-        //     apiRouteName: FRIENDS_ROUTES.REQUEST_FRIENDSHIP.name,
-        // }
-        // yield put(setApiData(reduxPayload));
 
         if (data) {
             // find friend and set isFriends: false and isFriendsStatus: '1'
@@ -140,17 +133,10 @@ export function* handleAcceptFriendRequest(action) {
         const payload = {
             routeObj: FRIENDS_ROUTES.ACCEPT_FRIENDSHIP,
             data: { friendId: action.payload },
-            pathVar: true
+            putPathVar: true
         };
         const response = yield call(request, payload);
         const { data } = response;
-        
-        // const reduxPayload = {
-        //     data: data,
-        //     apiSuccess: true,
-        //     apiRouteName: FRIENDS_ROUTES.ACCEPT_FRIENDSHIP.name,
-        // }
-        // yield put(setApiData(reduxPayload));
 
         if (data) {
             // find friend and set isFriends: true and isFriendsStatus: '3'
@@ -170,13 +156,6 @@ export function* handleDeleteFriendship(action) {
         };
         const response = yield call(request, payload);
         const { data } = response;
-        
-        // const reduxPayload = {
-        //     data: data,
-        //     apiSuccess: true,
-        //     apiRouteName: FRIENDS_ROUTES.DELETE_FRIENDSHIP.name,
-        // }
-        // yield put(setApiData(reduxPayload));
 
         if (data) {
             // find friend and set isFriends: false and isFriendsStatus: null
@@ -196,13 +175,6 @@ export function* handleBlockUser(action) {
         };
         const response = yield call(request, payload);
         const { data } = response;
-        
-        // const reduxPayload = {
-        //     data: data,
-        //     apiSuccess: true,
-        //     apiRouteName: FRIENDS_ROUTES.BLOCK_FRIEND.name,
-        // }
-        // yield put(setApiData(reduxPayload));
 
         if (data) {
             // find friend and set isFriends: false and isFriendsStatus: '4'
