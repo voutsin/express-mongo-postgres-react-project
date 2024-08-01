@@ -21,18 +21,23 @@ export const MEDIA_THUMBNAIL_PREFIX = 'media_thumbnail__';
 export const asyncHandler = fn => (req, res, next) => {
   // check validations
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  const errorMessages = !errors.isEmpty() ? errors.array() : req.errorMessages || null;
+  if (errorMessages) {
       if (req.file) {
         // Optionally, delete the uploaded file if validation fails
         const mediaThumbnailUrl = getThumbnailUrl(null, req.file.path, false);
+        const profileThumbnailUrl = getThumbnailUrl(null, req.file.path, true);
         unlink(req.file.path, (err) => {
           if (err) console.error('Failed to delete file:', err);
         });
         unlink(mediaThumbnailUrl, (err) => {
           if (err) console.error('Failed to delete thumbnail file:', err);
         });
+        unlink(profileThumbnailUrl, (err) => {
+          if (err) console.error('Failed to delete thumbnail file:', err);
+        });
       }
-      return next(new AppError({ errors: errors.array() }, 400));
+      return next(new AppError({ errors: errorMessages }, 400));
   }
   
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -51,6 +56,20 @@ export const globalErrorHandler = (err, req, res, next) => {
       ...err,
       message,
     }); // Log the error details for debugging
+    if (req.file) {
+      // Optionally, delete the uploaded file if validation fails
+      const mediaThumbnailUrl = getThumbnailUrl(null, req.file.path, false);
+      const profileThumbnailUrl = getThumbnailUrl(null, req.file.path, true);
+      unlink(req.file.path, (err) => {
+        if (err) console.error('Failed to delete file:', err);
+      });
+      unlink(mediaThumbnailUrl, (err) => {
+        if (err) console.error('Failed to delete thumbnail file:', err);
+      });
+      unlink(profileThumbnailUrl, (err) => {
+        if (err) console.error('Failed to delete thumbnail file:', err);
+      });
+    }
   }
 
   res.status(err.statusCode).json({
@@ -167,3 +186,15 @@ export const timestampToDate = timestamp => {
   // Format the date
   return date.toLocaleDateString();
 }
+
+export const checkRequiredFields = (body, requiredFields) => {
+  let result = true;
+  Object.keys(body).forEach(key => {
+    if (requiredFields.includes(key) && body[key] == null) {
+      result = false;
+    }
+  });
+  return result;
+}
+
+export const stringToBoolean = string => string.toLowerCase() === 'true';

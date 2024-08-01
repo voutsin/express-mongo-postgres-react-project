@@ -7,6 +7,7 @@ const ApiRoutesNames = {
     FIND_USER_FRIENDS_BIRTHDAYS: 'FIND_USER_FRIENDS_BIRTHDAYS',
     FIND_USER_BY_ID: 'FIND_USER_BY_ID',
     FIND_USER_MEDIA: 'FIND_USER_MEDIA',
+    EDIT_USER: 'EDIT_USER',
     GET_FEED: 'GET_FEED',
     VIEW_POST_REACTIONS: 'VIEW_POST_REACTIONS',
     VIEW_COMMENT_REACTIONS: 'VIEW_COMMENT_REACTIONS',
@@ -90,9 +91,10 @@ export const USERS_ROUTES = {
         type: ApiTypes.GET,
         name: ApiRoutesNames.FIND_USER_MEDIA
     },
-    EDIT: {
+    EDIT_USER: {
         route: `${USERS}/edit`,
         type: ApiTypes.PUT,
+        name: ApiRoutesNames.EDIT_USER
     },
     EDIT_PROF_PIC: {
         route: `${USERS}/edit/profilePic`,

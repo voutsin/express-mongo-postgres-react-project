@@ -24,12 +24,19 @@ export const insertNewUser = `INSERT INTO users (
 
 // UPDATE
 export const updateUserSQL = `UPDATE users SET 
-    email = $2,
-    password_hash = $3,
-    profile_pic = $4,
-    displayed_name = $5,
-    description = $6 
-    birth_date = $7 
+    email = $2, 
+    profile_pic = $3, 
+    displayed_name = $4, 
+    description = $5, 
+    birth_date = $6 
+WHERE username = $1 RETURNING *; `;
+export const updateUserAndPasswordSQL = `UPDATE users SET 
+    email = $2, 
+    profile_pic = $3, 
+    displayed_name = $4, 
+    description = $5, 
+    birth_date = $6, 
+    password_hash = $7 
 WHERE username = $1 RETURNING *; `;
 export const deactivateUser = `UPDATE users SET active = 0 WHERE id = $1 RETURNING *;`;
 export const updateProfilePic = `UPDATE users SET profile_pic = $2 WHERE id = $1 RETURNING *;`;

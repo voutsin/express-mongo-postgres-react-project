@@ -108,6 +108,8 @@ export const ClassNames = {
     USER_HEADER_WRAPPER: 'user-header-wrapper',
     USER_PROFILE_IMG: 'user-profile-img',
     USER_PROFILE_INFO: 'user-profile-info',
+    USER_PROFILE_ACTIONS: 'user-profile-actions',
+    EDIT_USER_WRAPPER: 'edit-user-wrapper',
     USERNAME_DIV: 'username-div',
     USER_INFO_DIV: 'info-div',
     USER_SIDEBAR_WRAPPER: 'user-sidebar-wrapper',

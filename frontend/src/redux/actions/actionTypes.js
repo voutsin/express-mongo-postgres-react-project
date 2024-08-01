@@ -54,6 +54,8 @@ const ActionTypes = {
     UPDATE_POST_DATA: 'updatePostData',
     FIND_USER_INFO: 'findUserInfo',
     FIND_USER_MEDIA: 'findUserMedia',
+    UPDATE_USER: 'updateUser',
+    UPDATE_USER_DATA: 'updateUserData',
     FIND_USER_POST_LIST: 'findUserPosts',
     GET_SINGLE_POST: 'GET_SINGLE_POST',
     SET_POST_LIST_DATA: 'setPostsListData',

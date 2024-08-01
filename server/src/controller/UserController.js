@@ -1,8 +1,8 @@
 import { FriendStatus, PostType } from "../common/enums.js";
-import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, MEDIA_THUMBNAIL_PREFIX, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, UPLOAD_DIR, asyncHandler, getActiveUser } from "../common/utils.js";
+import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_EXPIRE_TIME, MEDIA_THUMBNAIL_PREFIX, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_EXPIRE_TIME, SECRET_KEY, UPLOAD_DIR, asyncHandler, getActiveUser, stringToBoolean } from "../common/utils.js";
 import { postgresQuery } from "../db/postgres.js";
 import { findAllActiveFriendshipsByUserId, insertNewFriendshipRequest, insertNewFriendshipPending, updatePendingFriendship, deleteFriendship, findFriendshipByIds, updateFriendship, insertBlockedFriendship, findUserFrinedsBirthdays, findAllDetailedActiveFriendshipsByUserId } from "../db/queries/friendsQueries.js";
-import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserSQL } from "../db/queries/userQueries.js";
+import { deactivateUser, findAllUsersSQL, findUserById, insertNewUser, updateProfilePic, updateUserAndPasswordSQL, updateUserSQL } from "../db/queries/userQueries.js";
 import { detailedFriendToResDto, detailedFriendToResDtoWithCounters, friendAndUserResDto, friendToResDto, newUserReqDtoToUser, updateUserReqDtoToUser, userDetailedResDto, userToResDto } from "../mapper/userMapper.js";
 import { validationResult } from 'express-validator';
 import { readdir, unlink } from 'fs';
@@ -54,7 +54,7 @@ const findByUserId = asyncHandler(async (req, res, next) => {
     const params = Object.values(req.params).map(param => parseInt(param));
     const result = await postgresQuery(findUserById, params);
     if (result.rows.length > 0) {
-      res.json(userDetailedResDto(result.rows[0]));
+      res.json(await userDetailedResDto(result.rows[0], req.userId));
       res.status(200);
     }
   } catch (e) {
@@ -64,14 +64,27 @@ const findByUserId = asyncHandler(async (req, res, next) => {
 
 const updateUser = asyncHandler(async (req, res, next) => {
   try {
+    const body = Object.assign({}, req.body);
+    
+    const reqBody = {
+        ...body,
+        profilePictureUrl: req.file ? req.file.path : null,
+    }
+    
     // mapper
-    const finalBody = await updateUserReqDtoToUser(req.body);
+    const finalBody = await updateUserReqDtoToUser(reqBody);
+
     // update query
     const params = Object.values(finalBody);
-    const result = await postgresQuery(updateUserSQL, params);
+    const result = await postgresQuery(stringToBoolean(reqBody.changePasswordFlag) ? updateUserAndPasswordSQL : updateUserSQL, params);
+
     // return result
     if (result) {
-      res.json(userToResDto(result.rows[0]));
+      const user = await userDetailedResDto(result.rows[0], req.userId);
+      // add new post about profile picture
+      await addNewPostForProfilePic(user.id, user.name, user.profilePictureUrl);
+
+      res.json(user);
       res.status(200);
     }
   } catch (e) {
@@ -359,6 +372,26 @@ const emitDeleteFriendshipNotification = async (idsToBeDeleted, friendships, act
       }
   } catch(e) {
       next(new AppError('Internal Server Error: ' + e, 500));
+  }
+}
+
+const addNewPostForProfilePic = async (userId, username, profilePicPath) => {
+  try {
+    // add user post about new profile pic
+    const finalBody = {
+        userId: parseInt(userId),
+        content: `New Profile picture for user ${username}`,
+        postType: PostType.PROFILE_PIC,
+        mediaUrl: profilePicPath,
+    }
+
+    const postParams = Object.values(postReqDtoToPost(finalBody));
+    const postResult = await postgresQuery(createNewPostSQL, postParams);
+
+    // add post to feed
+    await insertNewFeedForPost(postResult.rows[0], parseInt(userId));
+  } catch (e) {
+    next(new AppError('Internal Server Error: ' + e, 500));
   }
 }
 

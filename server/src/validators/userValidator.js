@@ -4,7 +4,9 @@ import { findOtherUsersByEmail } from '../db/queries/userQueries.js';
 import { postgresQuery } from '../db/postgres.js';
 import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
 import { FriendStatus } from '../common/enums.js';
-import { getActiveUser } from '../common/utils.js';
+import { checkRequiredFields, getActiveUser, getThumbnailUrl, stringToBoolean } from '../common/utils.js';
+import AppError from '../model/AppError.js';
+import { unlink } from 'fs';
 
 export const loginValidations = [
   body('username')
@@ -27,36 +29,60 @@ export const loginValidations = [
     }),
 ];
 
-export const updateUserValidations = [
-  // check if username already exists
-  body('username')
-    .exists().withMessage('Username is required')
-    .notEmpty().withMessage('Username cannot be empty')
-    .custom(async (username, { req }) => {
-      if (!(await usernameExists(username))) {
-          throw new Error('Username does not exist');
+export const updateUserValidations = async (req, res, next) => {
+  const body = Object.assign({}, req.body);
+
+  try {
+      let errorMessages = [];
+
+      const required = [
+        'username',
+        'email',
+        'name',
+      ];
+      const checkNulls = checkRequiredFields(body, required);
+      if (!checkNulls) {
+        errorMessages.push('Please fill mandatory fields.');
       }
-      if (!userIsTheCurrent(req, username, 'username')) {
-        throw new Error('Access denied for user ' + username);
+
+      if (!(await usernameExists(body.username))) {
+        errorMessages.push('Username does not exist');
       }
-    }),
-  // Check if the email is valid
-  body('email')
-    .exists().withMessage('Email is required')
-    .notEmpty().withMessage('Email cannot be empty')
-    .custom(async (email, { req }) => {
+      if (!userIsTheCurrent(req, req.userId, 'id')) {
+        errorMessages.push('Access denied for user ' + body.username);
+      }
+
       if (await emailEditCheck(req)) {
-        throw new Error('Email already in use');
+        errorMessages.push('Email already in use');
       }
-    }),
-  body('password')
-    .exists().withMessage('Password is required')
-    .notEmpty().withMessage('Password cannot be empty')
-    .isLength({ min: 5 }).withMessage('Password must be at least 5 characters long'),
-  body('name')
-    .exists().withMessage('Name is required')
-    .notEmpty().withMessage('Name cannot be empty'),
-]
+
+      if (stringToBoolean(body.changePasswordFlag)) {
+        if (!body.password) {
+          errorMessages.push('Password is required.');
+        }
+
+        if (!body.confirmPassword) {
+          errorMessages.push('Password confirmation is required.');
+        }
+
+        if (body.password !== body.confirmPassword) {
+          errorMessages.push('Passwords do not match.');
+        }
+
+        if (body.password && body.password.length < 5) {
+          errorMessages.push('Password must be at least 5 characters long.');
+        }
+      }
+
+      if (errorMessages.length > 0) {
+        req.errorMessages = errorMessages;
+      }
+      next();
+  } catch (e) {
+      console.error('Error in update user validation:', e);
+      res.status(500).json({ message: 'Error processing the request' });
+  }
+}
 
 export const requestFriendValidations = [
   // check if username already exists

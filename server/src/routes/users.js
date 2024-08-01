@@ -16,7 +16,7 @@ usersRouter.get('/search/:text?', searchUserValidations, UserController.searchUs
 usersRouter.get('/:id?', addActiveUserIdInReq, findUserByIdValidations, UserController.findByUserId);
 
 // update user
-usersRouter.put('/edit', updateUserValidations, UserController.updateUser);
+usersRouter.put('/edit', addActiveUserIdInReq, uploadMiddleware.single('profile_pic'), createThumbnail, createMediaThumbnail, updateUserValidations, UserController.updateUser);
 
 // add profile pic
 usersRouter.put('/edit/profilePic', addActiveUserIdInReq, uploadMiddleware.single('profile_pic'), createThumbnail, createMediaThumbnail, UserController.editProfilePic);

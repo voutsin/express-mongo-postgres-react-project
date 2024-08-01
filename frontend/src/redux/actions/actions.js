@@ -272,6 +272,16 @@ export const getUserPosts = (userId, page, pageSize) => ({
     payload: {id: userId, page, pageSize}
 });
 
+export const updateUser = inputs => ({
+    type: ActionTypes.UPDATE_USER,
+    payload: inputs
+});
+
+export const updateUserData = user => ({
+    type: ActionTypes.UPDATE_USER_DATA,
+    payload: user
+});
+
 export const getSinglePostData= postId => ({
     type: ActionTypes.GET_SINGLE_POST,
     payload: postId

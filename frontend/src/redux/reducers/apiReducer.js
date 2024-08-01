@@ -1,6 +1,6 @@
 import { NotifyTypes } from "../../common/enums";
 import { getDeepProp, getReplyParentComment, groupedComments, isObjectEmpty, updateTopFeedComment } from "../../common/utils";
-import { COMMENTS_ROUTES, FEED_ROUTES } from "../../config/apiRoutes";
+import { COMMENTS_ROUTES, FEED_ROUTES, USERS_ROUTES } from "../../config/apiRoutes";
 import ActionTypes from "../actions/actionTypes";
 
 
@@ -416,6 +416,18 @@ export const apiReducer = (state = defaultState, action) => {
                 [COMMENTS_ROUTES.ADD_NEW_COMMENT.name]: null,
                 [COMMENTS_ROUTES.UPDATE_COMMENT.name]: null,
                 [COMMENTS_ROUTES.DELETE_COMMENT.name]: null,
+            }
+
+        case ActionTypes.UPDATE_USER_DATA:
+            const updatedUser = action.payload;
+            const userData = updatedState[USERS_ROUTES.FIND_BY_ID.name];
+
+            return {
+                ...updatedState,
+                [USERS_ROUTES.FIND_BY_ID.name]: userData ? {
+                    ...userData,
+                    data: updatedUser
+                } : null,
             }
 
         default:

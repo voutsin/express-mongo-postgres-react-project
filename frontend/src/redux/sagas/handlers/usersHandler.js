@@ -1,5 +1,5 @@
 import { call, put } from "redux-saga/effects";
-import { clearData, notify, setApiData, setError } from "../../actions/actions";
+import { clearData, notify, setApiData, setError, updateUserData } from "../../actions/actions";
 import { multiPartRequest, request } from "../requests/authReqs";
 import { AUTH_ROUTES, FRIENDS_ROUTES, USERS_ROUTES } from "../../../config/apiRoutes";
 import { NotifyTypes } from "../../../common/enums";
@@ -222,6 +222,37 @@ export function* handleFindUserMedia(action) {
             apiRouteName: USERS_ROUTES.FIND_USER_MEDIA.name,
         }
         yield put(setApiData(reduxPayload));
+    } catch (error) {
+        yield put(setError(error));
+    }
+}
+
+export function* handleUpdateUser(action) {
+    try {
+        const {
+            finalBody, file
+        } = action.payload;
+
+        const formData = new FormData();
+        if (file) {
+            formData.append('profile_pic', file);
+        }
+        Object.keys(finalBody).forEach(key => {
+            formData.append(key, finalBody[key]);
+        });
+
+        const userPayload = {
+            routeObj: USERS_ROUTES.EDIT_USER,
+            data: formData,
+        };
+
+        const response = yield call(multiPartRequest, userPayload);
+
+        const { data } = response;
+        
+        if (data) {
+            yield put(updateUserData(data));
+        }
     } catch (error) {
         yield put(setError(error));
     }

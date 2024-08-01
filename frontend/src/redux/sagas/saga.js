@@ -1,7 +1,7 @@
 import { fork, takeLatest } from 'redux-saga/effects';
 import ActionTypes from '../actions/actionTypes';
 import { handleUserLogin, handleUserLogout, handleUserVerification } from './handlers/auth';
-import { handleAcceptFriendRequest, handleBlockUser, handleDeleteFriendship, handleFindDetailedUserFriends, handleFindUserDetails, handleFindUserFriends, handleFindUserFriendsBirthdays, handleFindUserMedia, handleSendFriendRequest, handleUserRegistration } from './handlers/usersHandler';
+import { handleAcceptFriendRequest, handleBlockUser, handleDeleteFriendship, handleFindDetailedUserFriends, handleFindUserDetails, handleFindUserFriends, handleFindUserFriendsBirthdays, handleFindUserMedia, handleSendFriendRequest, handleUpdateUser, handleUserRegistration } from './handlers/usersHandler';
 import { handleGetUserFeed } from './handlers/feedHandler';
 import { handleAddNewReaction, handleDeleteReaction, handleGetCommentReaction, handleGetPostReactions, handleUpdateReaction } from './handlers/reactionHandler';
 import { handleAddNewComment, handleAddReplyComment, handleDeleteComment, handleGetCommentReplies, handleGetPostComments, handleUpdateComment } from './handlers/commentHandler';
@@ -21,6 +21,7 @@ export default function* rootSaga() {
     // users
     yield takeLatest(ActionTypes.FIND_USER_INFO, handleFindUserDetails);
     yield takeLatest(ActionTypes.FIND_USER_MEDIA, handleFindUserMedia);
+    yield takeLatest(ActionTypes.UPDATE_USER, handleUpdateUser);
     // feed
     yield takeLatest(ActionTypes.GET_USER_FEED, handleGetUserFeed);
     // post

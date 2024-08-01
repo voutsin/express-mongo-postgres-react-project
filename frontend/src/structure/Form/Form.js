@@ -21,7 +21,7 @@ export const Form = props => {
         <form data={data} onSubmit={onSubmit} className={className} onChange={handleChange}>
             {React.Children.map(children, child => {
                 // Clone the child element with the additional prop
-                return React.cloneElement(child, { formData: data, onFormChange: handleChange });
+                return child ? React.cloneElement(child, { formData: data, onFormChange: handleChange }) : null;
             })}
         </form>
     )

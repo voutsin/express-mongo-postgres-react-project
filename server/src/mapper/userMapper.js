@@ -2,8 +2,9 @@ import bcrypt from 'bcrypt';
 import { uniq } from 'underscore';
 import { postgresQuery } from '../db/postgres.js';
 import { findUsersInIds } from '../db/queries/userQueries.js';
-import { getThumbnailUrl, timestampToDate } from '../common/utils.js';
+import { getThumbnailUrl, stringToBoolean, timestampToDate } from '../common/utils.js';
 import { FriendStatus } from '../common/enums.js';
+import { findFriendshipByIds } from '../db/queries/friendsQueries.js';
 
 export const newUserReqDtoToUser = async req => {
     const saltRounds = 10;
@@ -19,17 +20,25 @@ export const newUserReqDtoToUser = async req => {
     }
 }
 
-export const updateUserReqDtoToUser = async req => {
+export const updateUserReqDtoToUser = async (req) => {
     const saltRounds = 10;
-    return {
+    let result = {
         username: req.username,
         email: req.email,
-        password_hash: await bcrypt.hash(req.password, saltRounds),
         profile_pic: req.profilePictureUrl,
         displayed_name: req.name,
         description: req.description,
         birth_date: req.birthDate,
     }
+
+    if (stringToBoolean(req.changePasswordFlag)) {
+        return {
+            ...result,
+            password_hash: await bcrypt.hash(req.password, saltRounds)
+        }
+    }
+
+    return result;
 }
 
 export const userToResDto = user => {
@@ -121,10 +130,14 @@ export const friendAndUserResDto = result => ({
     friendBirthDate: timestampToDate(result.birth_date),
 });
 
-export const userDetailedResDto = user => {
+export const userDetailedResDto = async (user, activeUserId) => {
+    const friendshipRes = await postgresQuery(findFriendshipByIds, [user.id, activeUserId]);
+    const friendship = friendshipRes && friendshipRes.rows[0];
     return {
         ...userToResDto(user),
         createdAt: timestampToDate(user.created_at),
         birthDate: timestampToDate(user.birth_date),
+        isFriends: friendship && friendship.status === FriendStatus.ACCEPTED,
+        isFriendsStatus: friendship && friendship.status,
     }
 }
