@@ -6,7 +6,9 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     profile_pic VARCHAR(255),
     displayed_name VARCHAR(255) NOT NULL,
-    description VARCHAR(255)
+    description VARCHAR(255),
+    birth_date date,
+    active INT NOT NULL DEFAULT 1
 );
 INSERT INTO users (
     username,
@@ -48,15 +50,9 @@ CREATE TABLE comments (
     post_id INTEGER REFERENCES posts(id),
     user_id INTEGER REFERENCES users(id),
     content TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE replies (
-    id SERIAL PRIMARY KEY,
-    comment_id INTEGER REFERENCES comments(id),
-    user_id INTEGER REFERENCES users(id),
-    content TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_reply INT DEFAULT 0,
+    reply_comment_id INTEGER
 );
 
 CREATE TABLE reactions (

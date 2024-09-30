@@ -1,25 +1,32 @@
-import logo from './logo.svg';
+import React from "react";
 import './App.css';
+import Layout from './structure/Layout';
+import { Route, Routes } from 'react-router-dom';
+import RequireAuth from './config/RequireAuth';
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import { ROUTES, PUBLIC_ROUTES } from "./config/routes";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+      <Routes>
+          <Route path={ROUTES.BASE.path} element={<Layout />}>
+            {/* protected routes */}
+            <Route element={<RequireAuth />}>
+                {Object.values(ROUTES).map(route => {
+                  const Component = route.component;
+                  return (
+                    <Route exact path={route.path} element={<Component />} />
+                  );
+                })}
+            </Route>
+
+            {/* public routes */}
+            <Route exact path={PUBLIC_ROUTES.LOGIN.path} element={<Login />}/>
+            <Route exact path={PUBLIC_ROUTES.REGISTER.path} element={<Register />}/>
+          </Route>
+      </Routes>
+  )
 }
 
 export default App;

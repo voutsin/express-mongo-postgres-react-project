@@ -6,74 +6,163 @@ import dotenv from "dotenv";
 import authRouter from './routes/auth.js';
 import cookieParser from 'cookie-parser';
 import { authenticate } from './validators/authenticate.js';
-// import WebSocket, {WebSocketServer} from 'ws';
+import friendsRouter from './routes/friends.js';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import postsRouter from './routes/posts.js';
+import bodyParser from 'body-parser';
+import feedsRouter from './routes/feeds.js';
+import commentsRouter from './routes/comments.js';
+import reactionsRouter from './routes/reactions.js';
+import searchRouter from './routes/search.js';
+import cors from 'cors';
+import { access, constants } from 'fs';
+import { globalErrorHandler } from './common/utils.js';
+import AppError from './model/AppError.js';
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+import { socketAuthenticateMiddleware } from './socket/utils.js';
+import socketChatHandler from './socket/socketChatHandler.js';
+import { findAllUserMessageGroups } from './db/repositories/MessageGroupRepository.js';
+import socketNotificationHandler from './socket/socketNotificationHandler.js';
 
 dotenv.config();
 
 const app = express();
+const server = createServer(app);
+// Use cors middleware
+app.use(cors({
+  origin: (origin, callback) => {
+    callback(null, origin); // Allow all origins
+  },
+  credentials: true // Allow credentials (cookies, authorization headers, etc.)
+}));
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+// for parsing application/json
+app.use(bodyParser.json()); 
+
+// for parsing application/xwww-
+app.use(bodyParser.urlencoded({ extended: true })); 
+//form-urlencoded
+
 // Use the cookie-parser middleware
 app.use(cookieParser());
 
-const mongoDb = connectToMongoDB();
+connectToMongoDB();
+
+//An error handling middleware
+app.use(function (err, req, res, next) {
+  res.status(500);
+  res.send("Oops, something went wrong. ", err)
+});
 
 app.use('/auth', authRouter);
 
-// apply authenticate jwt token middleware
-app.use(authenticate);
-// all the routes after authenticate use will use this middleware
-app.use('/users', usersRouter);
-app.use('/messages', messagesRouter);
+// Serve static files from the "uploads" directory
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const port = process.env.SERVER_PORT;
-const server = app.listen(port, () => {
-  console.log('Server is running on port ', port);
+app.get('/uploads/:userId/:filename', (req, res) => {
+  const { userId, filename } = req.params;
+  const filepath = join(__dirname, '..', 'uploads', userId, filename);
+
+  // Check if the file exists
+  access(filepath, constants.F_OK, (err) => {
+      if (err) {
+          // Send a 404 response if the file is not found
+          return res.status(404).json({ message: 'File not found' });
+      }
+
+      // Send the file if it exists
+      res.sendFile(filepath);
+  });
 });
 
-// web socker server must be separate from api
-// few api routes that we expose
-// const wsServer = new WebSocketServer({ noServer: true} );
+// apply authenticate jwt token middleware
+app.use(authenticate);
 
-// const onSocketPreError = e => {
-//   console.log("Pre Socket Error: ", e);
-// }
+// all the routes after authenticate use will use this middleware
+app.use('/users', usersRouter);
+app.use('/friends', friendsRouter);
+app.use('/messages', messagesRouter);
+app.use('/posts', postsRouter);
+app.use('/feed', feedsRouter);
+app.use('/comments', commentsRouter);
+app.use('/reactions', reactionsRouter);
+app.use('/search', searchRouter);
 
-// const onSocketPostError = e => {
-//   console.log("Post Socket Error: ", e);
-// }
 
-// server.on('upgrade', (req, socket, head) => {
-//   socket.on('error', onSocketPreError);
+// Handling all undefined routes
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
 
-//   // perform auth
-//   if (!req.headers['NoAuth']) {
-//     socket.write('401 Unauthorized!');
-//     socket.destroy();
-//     return;
-//   }
 
-//   // http handling error
-//   wsServer.handleUpgrade(req, socket, head, (ws) => {
-//     socket.removeListener('error', onSocketPreError);
-//     wsServer.emit('connection', ws, req);
-//   });
-// });
+// Use the global error handling middleware
+app.use(globalErrorHandler);
 
-// wsServer.on('connection', (ws, req) => {
-//   // web socket handling error
-//   ws.on('error', onSocketPostError);
+const port = process.env.SERVER_PORT;
 
-//   ws.on('message', (msg, isBinary) => {
-//     wsServer.clients.forEach(client => {
-//       if (ws !== client && client.readyState === WebSocket.OPEN) {
-//         client.send(msg, { binary: isBinary});
-//       }
-//     })
-//   });
 
-//   ws.on('close', () => {
-//     console.log("Connection closed.");
-//   });
-// })
+// Initialize the socket.io instance
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    // allowedHeaders: ["Content-Type"],
+    credentials: true
+  }
+});
+
+io.use(socketAuthenticateMiddleware);
+
+const { sendMessage, getGroupMessages, markGroupMessagesReadByUser, getActiveFriends } = socketChatHandler(io);
+const { getUserNotifications, getUserUnreadNotifications, markNotificationsReadByUser } = socketNotificationHandler(io);
+
+const activeUsers = new Map();
+
+const onConnection = async (socket) => {
+  console.log('New client connected:', socket.authUser);
+
+  if (socket.authUser) {
+    try {
+        // When a user connects, add them to the active users map
+        activeUsers.set(socket.id, { userId: socket.authUser.userId, socketId: socket.id });
+        // Get the user's groups
+        const userGroups = await findAllUserMessageGroups(socket.authUser.userId, true);
+        // Join each group room
+        userGroups.forEach(group => {
+            socket.join(group.id.toString());
+        });
+    } catch (error) {
+        console.error('Error fetching user groups:', error);
+    }
+  }
+
+  socket.on("send_message", sendMessage);
+  socket.on("get_messages", getGroupMessages);
+  socket.on("read_messages", markGroupMessagesReadByUser);
+  socket.on("get_online_friends", async (payload, callback) => await getActiveFriends(socket, callback, activeUsers));
+
+  socket.on("get_notifications", getUserNotifications);
+  socket.on("get_unread_notifications", getUserUnreadNotifications);
+  socket.on("read_notifications", markNotificationsReadByUser);
+
+  socket.on('disconnect', () => {
+      try {
+          // socket.disconnect(true);
+          // Remove the user from the active users map
+          activeUsers.delete(socket.id);
+      } catch (e) {
+          console.log('SOCKET ERROR: ', e);
+      }
+  });
+}
+io.on("connection", onConnection);
+
+export {io, activeUsers};
+
+server.listen(port, () => {
+  console.log('Server is running on port ', port);
+});
